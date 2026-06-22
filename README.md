@@ -123,6 +123,41 @@ To force a full database reset after smoke:
 RESET_AFTER_SMOKE=true ./scripts/api-smoke.sh
 ```
 
+### Playwright Smoke
+
+Install the Chromium browser used by local Playwright smoke:
+
+```bash
+pnpm exec playwright install chromium
+```
+
+Run the minimal browser smoke after PostgreSQL is running, the database has been reset, and the backend is available on `http://127.0.0.1:8080`.
+
+Reset the database:
+
+```bash
+./scripts/reset-db.sh
+```
+
+Start the backend in one terminal:
+
+```bash
+mvn spring-boot:run
+```
+
+Run the browser smoke in another terminal:
+
+```bash
+pnpm run test:e2e
+```
+
+`pnpm run test:e2e` starts or reuses the Vite dev server at `http://127.0.0.1:3001`, keeps `VITE_USE_MOCK_FALLBACK=false`, and covers:
+
+- `/wiki-nodes`
+- `/retrieval-test`
+
+Playwright smoke is not part of the basic GitHub Actions workflow yet because it depends on local PostgreSQL, a running backend, and the frontend dev server.
+
 ## Manual Persistence Smoke
 
 1. Start PostgreSQL and the backend.
