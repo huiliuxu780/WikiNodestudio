@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: ${WIKINODE_DB_URL:jdbc:postgresql://localhost:5432/wikinode_studio}
+    username: ${WIKINODE_DB_USERNAME:wikinode}
+    password: ${WIKINODE_DB_PASSWORD:wikinode}
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: ${PORT:8080}
