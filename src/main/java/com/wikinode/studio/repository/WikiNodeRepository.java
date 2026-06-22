@@ -177,8 +177,8 @@ public class WikiNodeRepository {
       node,
       score,
       matchedFields.isEmpty()
-        ? "Returned as low-confidence WikiNode candidate from mock repository."
-        : "Query matched %s on WikiNode object fields.".formatted(String.join(", ", matchedFields)),
+        ? "Returned as a related WikiNode."
+        : "Matched relevant WikiNode content.",
       matchedFields,
       backlinks(node.nodeId()),
       outgoingLinks(node.nodeId())
@@ -394,9 +394,6 @@ public class WikiNodeRepository {
       如涉及人为损坏，请参考 [[人为损坏判定规则]]。
       如客户无法提供购买凭证，请参考 [[购买凭证规则]]。
 
-      ## 召回重点
-
-      Retrieval 应召回本 WikiNode，而不是底层向量 chunk。
       """,
       List.of("保修", "售后", "政策"),
       "published",

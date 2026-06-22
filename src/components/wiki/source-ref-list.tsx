@@ -13,11 +13,10 @@ export function SourceRefList({ sourceRefs }: { sourceRefs: SourceRef[] }) {
           <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
             <span>paragraphRef: {source.paragraphRef ?? "none"}</span>
             <span>version: {source.version ?? "none"}</span>
-            <span>sourceUrl: {source.sourceUrl ?? "mock local source"}</span>
+            <span>sourceUrl: {source.sourceUrl ?? "none"}</span>
           </div>
         </div>
       ))}
     </div>
   )
 }
-

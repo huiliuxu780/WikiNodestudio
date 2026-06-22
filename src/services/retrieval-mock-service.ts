@@ -43,8 +43,8 @@ export function searchWikiNodes(query: RetrievalQuery): RetrievalResult[] {
         node,
         score,
         matchedReason: matchedFields.length
-          ? `Query matched ${matchedFields.join(", ")} on WikiNode object fields.`
-          : "Returned as low-confidence WikiNode candidate from mock corpus.",
+          ? "Matched relevant WikiNode content."
+          : "Returned as a related WikiNode.",
         matchedFields,
         incomingLinks: getIncomingLinks(node.nodeId, mockWikiNodes),
         outgoingLinks: getOutgoingLinks(node.nodeId, mockWikiNodes),
@@ -54,4 +54,3 @@ export function searchWikiNodes(query: RetrievalQuery): RetrievalResult[] {
     .sort((left, right) => right.score - left.score)
     .slice(0, query.topK)
 }
-

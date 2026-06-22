@@ -39,9 +39,9 @@ const data = {
       plan: "Workspace",
     },
     {
-      name: "Policy Sandbox",
+      name: "Policy Workspace",
       logo: GitBranchIcon,
-      plan: "Mock only",
+      plan: "Workspace",
     },
   ],
   platform: [
@@ -110,4 +110,3 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     </Sidebar>
   )
 }
-

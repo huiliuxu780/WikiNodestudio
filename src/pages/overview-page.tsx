@@ -1,4 +1,3 @@
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { PageHeader } from "@/components/layout/page-header"
@@ -16,12 +15,8 @@ export function OverviewPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader title="Overview" description="WikiNode knowledge service health for product and ops review." />
+      <PageHeader title="Overview" />
       <ApiErrorNotice error={nodesError ?? brokenLinksError} />
-      <Alert>
-        <AlertTitle>MVP Boundary</AlertTitle>
-        <AlertDescription>当前 MVP 只验证 WikiNode、双链、Retrieval API，不做 Agent 平台。</AlertDescription>
-      </Alert>
       <div className="grid gap-4 md:grid-cols-4">
         <MetricCard label="Total WikiNodes" value={nodes.length} />
         <MetricCard label="Published" value={published.length} />

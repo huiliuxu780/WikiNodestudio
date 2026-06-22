@@ -9,6 +9,13 @@ import { StatusBadge } from "@/components/wiki/status-badge"
 import type { RetrievalResult } from "@/types/retrieval"
 import { toPercent } from "@/utils/formatters"
 
+const fieldLabels: Record<string, string> = {
+  title: "Title",
+  summary: "Summary",
+  tags: "Tags",
+  contentMarkdown: "Content",
+}
+
 export function RetrievalResultCard({ result }: { result: RetrievalResult }) {
   return (
     <Card>
@@ -33,18 +40,22 @@ export function RetrievalResultCard({ result }: { result: RetrievalResult }) {
             <Badge key={tag} variant="outline">{tag}</Badge>
           ))}
         </div>
-        <InfoRow label="matchedReason" value={result.matchedReason} />
-        <InfoRow label="matchedFields" value={result.matchedFields.join(", ") || "none"} />
-        <InfoRow label="sourceRefs" value={result.node.sourceRefs.map((source) => source.sourceTitle).join(", ")} />
-        <InfoRow label="outgoingLinks" value={result.outgoingLinks.map((link) => link.targetTitle).join(", ") || "none"} />
-        <InfoRow label="incomingLinks" value={result.incomingLinks.map((link) => link.fromTitle).join(", ") || "none"} />
+        <InfoRow label="Reason" value={result.matchedReason} />
+        <InfoRow label="Matched" value={formatMatchedFields(result.matchedFields)} />
+        <InfoRow label="Sources" value={result.node.sourceRefs.map((source) => source.sourceTitle).join(", ") || "none"} />
+        <InfoRow label="Outgoing" value={result.outgoingLinks.map((link) => link.targetTitle).join(", ") || "none"} />
+        <InfoRow label="Incoming" value={result.incomingLinks.map((link) => link.fromTitle).join(", ") || "none"} />
         <div className="rounded-md border bg-muted/30 p-3">
-          <div className="mb-1 text-xs font-medium text-muted-foreground">content preview</div>
+          <div className="mb-1 text-xs font-medium text-muted-foreground">Content</div>
           <p className="line-clamp-3 text-muted-foreground">{result.node.contentMarkdown}</p>
         </div>
       </CardContent>
     </Card>
   )
+}
+
+function formatMatchedFields(fields: string[]) {
+  return fields.map((field) => fieldLabels[field] ?? field).join(", ") || "none"
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {
@@ -55,4 +66,3 @@ function InfoRow({ label, value }: { label: string; value: string }) {
     </div>
   )
 }
-

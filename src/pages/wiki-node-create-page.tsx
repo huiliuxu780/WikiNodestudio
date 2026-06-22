@@ -5,7 +5,7 @@ import { ArrowLeftIcon, PlusIcon } from "lucide-react"
 import { ApiErrorNotice } from "@/components/api-error-notice"
 import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -57,7 +57,6 @@ export function WikiNodeCreatePage() {
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
         title="Create WikiNode"
-        description="Create a draft WikiNode and let the API recalculate links, backlinks, and broken references."
         actions={
           <Button variant="outline" asChild>
             <Link to="/wiki-nodes">
@@ -70,7 +69,6 @@ export function WikiNodeCreatePage() {
       <Card>
         <CardHeader>
           <CardTitle>WikiNode fields</CardTitle>
-          <CardDescription>Only the product-level WikiNode DTO is submitted. Retrieval still returns WikiNode objects.</CardDescription>
         </CardHeader>
         <CardContent>
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>

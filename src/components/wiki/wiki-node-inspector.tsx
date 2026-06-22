@@ -59,12 +59,10 @@ export function WikiNodeInspector({
             <IndexStatusBadge status={node.indexStatus} />
           </div>
           <MetaRow label="lastIndexedAt" value={node.lastIndexedAt ?? "not indexed"} />
-          <MetaRow label="vector document id" value={`mock-vector-doc-${node.nodeId}`} />
           <div className="rounded-md border bg-background p-3">
-            <div className="mb-2 text-xs font-medium text-muted-foreground">Indexed content preview</div>
+            <div className="mb-2 text-xs font-medium text-muted-foreground">Content preview</div>
             <p className="line-clamp-5 text-sm text-muted-foreground">{node.contentMarkdown}</p>
           </div>
-          <p className="text-xs text-muted-foreground">Only published nodes can be indexed.</p>
         </TabsContent>
       </Tabs>
     </aside>

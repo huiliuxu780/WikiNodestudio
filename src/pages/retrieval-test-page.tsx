@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { useSearchParams } from "react-router-dom"
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { ApiErrorNotice } from "@/components/api-error-notice"
 import { PageHeader } from "@/components/layout/page-header"
 import { RetrievalQueryPanel } from "@/components/retrieval/retrieval-query-panel"
@@ -28,11 +27,7 @@ export function RetrievalTestPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader title="Knowledge Retrieval Test" description="Validate that retrieval returns WikiNode objects instead of vector chunks." />
-      <Alert>
-        <AlertTitle>Object contract</AlertTitle>
-        <AlertDescription>Retrieval Test returns WikiNode objects, not vector chunks.</AlertDescription>
-      </Alert>
+      <PageHeader title="Knowledge Retrieval Test" />
       <RetrievalQueryPanel
         value={query}
         onChange={setQuery}

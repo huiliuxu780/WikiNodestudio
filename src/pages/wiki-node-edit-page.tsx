@@ -72,7 +72,6 @@ export function WikiNodeEditPage() {
       <div className="border-b p-4">
         <PageHeader
           title={node.title}
-          description="AppSidebar controls product navigation; WikiNode Explorer controls knowledge-base node navigation."
           actions={
             <>
               <NodeTypeBadge type={node.nodeType} />

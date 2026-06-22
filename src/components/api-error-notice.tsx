@@ -6,7 +6,7 @@ export function ApiErrorNotice({ error }: { error: Error | null }) {
 
   return (
     <Alert variant="destructive">
-      <AlertTitle>API request failed</AlertTitle>
+      <AlertTitle>Request failed</AlertTitle>
       <AlertDescription>{formatApiError(error)}</AlertDescription>
     </Alert>
   )
@@ -15,7 +15,7 @@ export function ApiErrorNotice({ error }: { error: Error | null }) {
 function formatApiError(error: Error) {
   if (error instanceof ApiError) {
     const apiMessage = extractApiMessage(error.body)
-    return `${apiMessage ?? error.message}. Disable mock fallback only when the Spring Boot API is running and DTOs match src/types/*.`
+    return apiMessage ?? error.message
   }
 
   return error.message

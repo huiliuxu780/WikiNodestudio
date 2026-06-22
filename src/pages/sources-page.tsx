@@ -15,12 +15,12 @@ export function SourcesPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader title="Sources" description="Mock source inventory and WikiNode lineage tracing." />
+      <PageHeader title="Sources" />
       <ApiErrorNotice error={sourcesError ?? nodesError} />
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Mock Sources</CardTitle>
+            <CardTitle className="text-base">Source Inventory</CardTitle>
           </CardHeader>
           <CardContent className="overflow-x-auto">
             <table className="w-full text-left text-sm">

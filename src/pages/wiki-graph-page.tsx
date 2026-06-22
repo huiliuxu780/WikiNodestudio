@@ -9,7 +9,7 @@ export function WikiGraphPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader title="Wiki Graph" description="Lightweight relationship graph for WikiNode links and broken references." />
+      <PageHeader title="Wiki Graph" />
       <ApiErrorNotice error={error} />
       <WikiGraphView nodes={nodes} />
     </div>

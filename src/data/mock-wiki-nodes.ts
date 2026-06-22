@@ -16,7 +16,7 @@ export const mockWikiNodes: WikiNode[] = [
     nodeType: "policy",
     summary: "定义保修期内维修免费范围、收费例外和凭证要求。",
     contentMarkdown:
-      "## 适用范围\n\n保修期内的产品故障原则上提供免费维修。\n\n保修期外维修请参考 [[收费政策]]。\n如涉及人为损坏，请参考 [[人为损坏判定规则]]。\n如客户无法提供购买凭证，请参考 [[购买凭证规则]]。\n\n## 召回重点\n\n外部系统应召回本 WikiNode，而不是底层向量 chunk。",
+      "## 适用范围\n\n保修期内的产品故障原则上提供免费维修。\n\n保修期外维修请参考 [[收费政策]]。\n如涉及人为损坏，请参考 [[人为损坏判定规则]]。\n如客户无法提供购买凭证，请参考 [[购买凭证规则]]。",
     tags: ["保修", "售后", "收费", "凭证"],
     status: "published",
     sourceRefs: [{ ...feishuPolicyRef, paragraphRef: "P-12" }],
