@@ -5,5 +5,21 @@ current_files:
   active_tasks: docs/current/ACTIVE_TASKS.yaml
   blockers: docs/current/BLOCKERS.md
 requirements: {}
-stories: {}
-tasks: {}
+baselines:
+  MVP_V0_1:
+    release: docs/release/mvp-baseline-v0.1.md
+    acceptance: docs/release/mvp-acceptance-checklist.md
+    rules: AGENTS.md
+stories:
+  US001:
+    file: docs/current/STORY_QUEUE.yaml
+    release: docs/release/mvp-baseline-v0.1.md
+    acceptance: docs/release/mvp-acceptance-checklist.md
+tasks:
+  IM001:
+    file: docs/current/ACTIVE_TASKS.yaml
+    gate: docs/quality/GATE_REGISTRY.md
+    workflow: .github/workflows/ci.yml
+    playwright: tests/e2e/mvp-smoke.spec.ts
+    reset_script: scripts/reset-db.sh
+    api_smoke: scripts/api-smoke.sh

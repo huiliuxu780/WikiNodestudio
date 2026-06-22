@@ -12,9 +12,9 @@ Current development must stay inside confirmed task scope. The standing MVP excl
 
 ## Current Queue
 
-`docs/current/STORY_QUEUE.yaml` and `docs/current/ACTIVE_TASKS.yaml` are empty. There is no executable ready story in the current layer.
+`docs/current/STORY_QUEUE.yaml` and `docs/current/ACTIVE_TASKS.yaml` now identify the next ready engineering hardening task: PostgreSQL integration CI plus Playwright smoke CI.
 
-When the queue is empty, the next worker must not guess the next implementation task. It must first create or confirm a candidate requirement/story/Gate, then seed the current queue only after the scope is approved.
+The next implementation pass should update GitHub Actions to orchestrate PostgreSQL, Spring Boot, Vite, and the existing two-page Playwright smoke. It must keep the scope to CI integration only and must not expand product behavior.
 
 ## Current Execution Rules
 
@@ -30,7 +30,8 @@ When the queue is empty, the next worker must not guess the next implementation 
 ## Current Stop Conditions
 
 - Real external data sources or integrations.
-- Database persistence unless a matching task is active.
+- Database persistence changes unless a matching task is active.
+- CI service orchestration beyond PostgreSQL, Spring Boot, Vite, and Playwright Chromium.
 - Unconfirmed new dependencies or package/lockfile changes.
 - Authentication or permission boundaries.
 - Approval, export, batch-operation, or production workflow capabilities.
@@ -40,4 +41,4 @@ When the queue is empty, the next worker must not guess the next implementation 
 
 ## Current Recommendation
 
-For new work, confirm the smallest useful story or Gate Plan before implementation. Prefer verification and baseline hardening before expanding product scope.
+Next recommended task: implement the Integration CI Gate for PostgreSQL integration CI plus Playwright smoke CI, then verify the GitHub Actions run before expanding browser smoke coverage.

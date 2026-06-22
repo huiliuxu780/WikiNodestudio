@@ -5,4 +5,21 @@ notes:
   - "Only ready, in_progress, and blocked stories belong here."
   - "Done history stays in legacy files or archive."
   - "Archive entries are not executable."
-stories: []
+stories:
+  - id: US001
+    title: "PostgreSQL integration CI plus Playwright smoke CI"
+    status: ready
+    goal: "Run the persisted backend and two-page browser smoke inside GitHub Actions without changing product behavior."
+    acceptance:
+      - "GitHub Actions starts a PostgreSQL service for the integration job."
+      - "Spring Boot starts with WIKINODE_DB_URL, WIKINODE_DB_USERNAME, and WIKINODE_DB_PASSWORD from the CI environment."
+      - "CI verifies /api/wiki-nodes against the running backend."
+      - "CI installs Playwright Chromium and runs pnpm run test:e2e."
+      - "Browser smoke remains limited to /wiki-nodes and /retrieval-test."
+      - "Retrieval remains WikiNode-based and does not expose chunk or document payloads."
+    non_goals:
+      - "No Source import."
+      - "No vector database."
+      - "No embedding pipeline."
+      - "No chunk exposure."
+      - "No permissions, version management, or publishing approval flow."

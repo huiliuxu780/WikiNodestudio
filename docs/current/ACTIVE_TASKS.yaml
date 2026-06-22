@@ -5,4 +5,34 @@ notes:
   - "Only current executable tasks belong here."
   - "Each ready story must have a matching active task before execution."
   - "Done task history stays in legacy files or archive."
-tasks: []
+tasks:
+  - id: IM001
+    title: "Implement Integration CI Gate"
+    status: ready
+    story_ids: [US001]
+    allowed_files:
+      - ".github/workflows/ci.yml"
+      - "README.md"
+      - "docs/current/**"
+      - "docs/quality/**"
+      - "docs/registry/**"
+    forbidden_files:
+      - "src/main/java/com/wikinode/studio/api/**"
+      - "src/main/java/com/wikinode/studio/model/**"
+      - "src/types/**"
+      - "src/pages/**"
+      - "src/components/**"
+      - "src/services/**"
+      - "src/main/resources/db/migration/**"
+    gates:
+      - "Backend unit/contract gate: mvn test."
+      - "Frontend quality gate: pnpm install --frozen-lockfile, pnpm run lint, pnpm run build."
+      - "PostgreSQL integration gate: start PostgreSQL service, run Flyway through Spring Boot startup, verify /api/wiki-nodes."
+      - "Browser smoke gate: install Playwright Chromium, start/reuse Vite dev server, run pnpm run test:e2e."
+      - "Non-goals gate: reject vector DB, embedding, chunk exposure, Source import, permissions, versioning, and publishing approval."
+    stop_conditions:
+      - "Any API or DTO contract change."
+      - "Any UI/page behavior change."
+      - "Any new product feature."
+      - "Any Playwright scope expansion beyond /wiki-nodes and /retrieval-test."
+      - "Any CI service beyond PostgreSQL unless the user confirms scope expansion."

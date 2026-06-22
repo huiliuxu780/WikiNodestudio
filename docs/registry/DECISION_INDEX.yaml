@@ -1,2 +1,10 @@
 version: 1
-decisions: []
+decisions:
+  - id: D001
+    date: "2026-06-22"
+    title: "Plan PostgreSQL integration CI plus Playwright smoke CI as the next hardening task"
+    rationale: "MVP v0.1 already has local persistence, reset, API smoke, browser smoke, baseline CI, and Harness governance; the next risk is reproducing the persisted browser path in CI."
+    related:
+      - US001
+      - IM001
+      - MVP_V0_1
