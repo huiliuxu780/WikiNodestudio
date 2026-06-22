@@ -2,6 +2,23 @@
 
 WikiNode Studio is a React + Spring Boot MVP for editing WikiNode knowledge units, resolving double links, checking broken links, and testing retrieval results that return `WikiNode` objects.
 
+## MVP Baseline
+
+Current baseline:
+
+- [WikiNode Studio MVP Baseline v0.1](docs/release/mvp-baseline-v0.1.md)
+- [MVP v0.1 Acceptance Checklist](docs/release/mvp-acceptance-checklist.md)
+
+Recommended acceptance order:
+
+1. Reset the local database with `./scripts/reset-db.sh`.
+2. Start the backend and frontend.
+3. Run `./scripts/api-smoke.sh`.
+4. Open `/`, `/wiki-nodes`, `/wiki-nodes/wn-001`, `/broken-links`, `/wiki-graph`, `/retrieval-test`, `/sources`, `/index-status`, and `/settings`.
+5. Verify create, edit, broken link repair, backlinks, retrieval, persistence, and reset behavior with the checklist.
+
+The v0.1 baseline intentionally excludes Source import, file parsing, vector database, embedding, chunk exposure, permissions, version management, publishing approval, multi-tenancy, and complex retrieval ranking.
+
 ## Local Development
 
 ### PostgreSQL
