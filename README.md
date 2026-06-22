@@ -56,17 +56,32 @@ Keep `VITE_USE_MOCK_FALLBACK=false` for real backend integration.
 
 ## Verification
 
+Local quality checks:
+
 ```bash
 mvn test
 pnpm run lint
 pnpm run build
 ```
 
+GitHub Actions runs the same baseline on `push` and `pull_request`:
+
+- Backend CI: sets up JDK 21 with Maven cache, then runs `mvn test`.
+- Frontend CI: sets up Node.js 22 and pnpm 11 with pnpm cache, then runs `pnpm install --frozen-lockfile`, `pnpm run lint`, and `pnpm run build`.
+
+The CI baseline does not require local PostgreSQL. Repository/API tests use the test profile and in-memory or H2-backed test setup.
+
 Run repeatable API smoke against a running backend:
 
 ```bash
 ./scripts/api-smoke.sh
 ```
+
+These local checks are intentionally not part of the basic CI workflow because they require a running PostgreSQL-backed backend:
+
+- `./scripts/reset-db.sh`
+- `./scripts/api-smoke.sh`
+- Manual persistence smoke
 
 The API smoke script validates:
 
