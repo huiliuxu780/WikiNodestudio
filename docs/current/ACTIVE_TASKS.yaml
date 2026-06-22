@@ -1,0 +1,8 @@
+version: 1
+updated_at: "2026-06-22"
+source_of_truth: "current_active_tasks"
+notes:
+  - "Only current executable tasks belong here."
+  - "Each ready story must have a matching active task before execution."
+  - "Done task history stays in legacy files or archive."
+tasks: []

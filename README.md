@@ -19,6 +19,24 @@ Recommended acceptance order:
 
 The v0.1 baseline intentionally excludes Source import, file parsing, vector database, embedding, chunk exposure, permissions, version management, publishing approval, multi-tenancy, and complex retrieval ranking.
 
+## Project Development Rules / Codex Harness
+
+This repository includes a lightweight Codex Harness for development governance and quality checks:
+
+- [AGENTS.md](AGENTS.md) is the Codex development rules entry point.
+- [docs/current/](docs/current/) stores current project state, story queue, active tasks, and blockers.
+- [docs/quality/](docs/quality/) stores quality gates, Done Report format, Gate Plan format, and workflow rules.
+- [docs/registry/](docs/registry/) stores lookup indexes for current state, decisions, and traceability.
+- [scripts/check.sh](scripts/check.sh) is the local Harness quality check entry point.
+- [scripts/check-state.sh](scripts/check-state.sh) validates current/registry state consistency.
+- [scripts/tests/](scripts/tests/) stores script-level tests and validation helpers.
+
+Before non-trivial development, read `AGENTS.md` and the current state files. Before finishing a task, run the relevant product checks plus:
+
+```bash
+bash scripts/check.sh
+```
+
 ## Local Development
 
 ### PostgreSQL
