@@ -1,0 +1,253 @@
+package com.wikinode.studio;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.annotation.DirtiesContext;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+class WikiNodeApiContractTest {
+
+  @LocalServerPort
+  private int port;
+
+  private final HttpClient httpClient = HttpClient.newHttpClient();
+
+  @Test
+  void listsWikiNodesWithFrontendDtoShape() throws Exception {
+    HttpResponse<String> response = get("/api/wiki-nodes");
+
+    assertThat(response.statusCode()).isEqualTo(200);
+    assertThat(response.body()).contains("\"nodeId\"");
+    assertThat(response.body()).contains("\"contentMarkdown\"");
+    assertThat(response.body()).contains("\"sourceRefs\"");
+    assertThat(response.body()).contains("\"indexStatus\"");
+  }
+
+  @Test
+  void returnsWikiNodeDetailsAndLinks() throws Exception {
+    HttpResponse<String> detail = get("/api/wiki-nodes/wn-001");
+    HttpResponse<String> links = get("/api/wiki-nodes/wn-001/links");
+    HttpResponse<String> backlinks = get("/api/wiki-nodes/wn-002/backlinks");
+
+    assertThat(detail.statusCode()).isEqualTo(200);
+    assertThat(detail.body()).contains("\"nodeId\":\"wn-001\"");
+    assertThat(detail.body()).contains("\"title\":\"保修政策\"");
+    assertThat(links.statusCode()).isEqualTo(200);
+    assertThat(links.body()).contains("\"fromNodeId\":\"wn-001\"");
+    assertThat(links.body()).contains("\"relationType\":\"reference\"");
+    assertThat(backlinks.statusCode()).isEqualTo(200);
+    assertThat(backlinks.body()).contains("\"toNodeId\":\"wn-002\"");
+  }
+
+  @Test
+  void listsBrokenLinksAsUnresolvedWikiLinks() throws Exception {
+    HttpResponse<String> response = get("/api/broken-links");
+
+    assertThat(response.statusCode()).isEqualTo(200);
+    assertThat(response.body()).contains("\"resolved\":false");
+    assertThat(response.body()).contains("\"targetTitle\"");
+  }
+
+  @Test
+  void retrievalReturnsWikiNodeObjectsNotChunks() throws Exception {
+    String body = """
+      {
+        "query": "洗碗机保修期内维修收费吗？",
+        "filters": {},
+        "topK": 5
+      }
+      """;
+
+    HttpResponse<String> response = post("/api/retrieval-test", body);
+
+    assertThat(response.statusCode()).isEqualTo(200);
+    assertThat(response.body()).contains("\"node\":");
+    assertThat(response.body()).contains("\"nodeId\"");
+    assertThat(response.body()).contains("\"contentMarkdown\"");
+    assertThat(response.body()).doesNotContain("\"chunk\"");
+    assertThat(response.body()).doesNotContain("\"document\"");
+  }
+
+  @Test
+  void updatesWikiNodeContentAndRecalculatesBrokenLinks() throws Exception {
+    String updatedNode = """
+      {
+        "nodeId": "wn-001",
+        "slug": "wn-001",
+        "title": "保修政策",
+        "nodeType": "policy",
+        "summary": "保修期内产品故障的维修原则和例外条件。",
+        "contentMarkdown": "## 适用范围\\n\\n保修期内的产品故障原则上提供免费维修。\\n\\n请参考 [[new-node|新节点]]。",
+        "tags": ["保修", "售后", "政策"],
+        "status": "published",
+        "sourceRefs": [],
+        "indexStatus": "indexed",
+        "incomingCount": 0,
+        "outgoingCount": 0,
+        "brokenLinkCount": 0,
+        "createdAt": "2026-06-10",
+        "updatedAt": "2026-06-18",
+        "lastIndexedAt": "2026-06-18"
+      }
+      """;
+
+    HttpResponse<String> update = put("/api/wiki-nodes/wn-001", updatedNode);
+    HttpResponse<String> links = get("/api/wiki-nodes/wn-001/links");
+    HttpResponse<String> brokenLinks = get("/api/broken-links");
+
+    assertThat(update.statusCode()).isEqualTo(200);
+    assertThat(update.body()).contains("\"nodeId\":\"wn-001\"");
+    assertThat(update.body()).contains("\"slug\":\"wn-001\"");
+    assertThat(update.body()).contains("\"brokenLinkCount\":1");
+    assertThat(links.statusCode()).isEqualTo(200);
+    assertThat(links.body()).contains("\"targetTitle\":\"new-node\"");
+    assertThat(links.body()).contains("\"resolved\":false");
+    assertThat(brokenLinks.statusCode()).isEqualTo(200);
+    assertThat(brokenLinks.body()).contains("\"targetTitle\":\"new-node\"");
+  }
+
+  @Test
+  void createsWikiNodeAndRepairsSlugBacklinksAndRetrieval() throws Exception {
+    String updatedNode = """
+      {
+        "nodeId": "wn-001",
+        "slug": "wn-001",
+        "title": "保修政策",
+        "nodeType": "policy",
+        "summary": "保修期内产品故障的维修原则和例外条件。",
+        "contentMarkdown": "## 适用范围\\n\\n请参考 [[new-node|新节点]]。",
+        "tags": ["保修", "售后", "政策"],
+        "status": "published",
+        "sourceRefs": [],
+        "indexStatus": "indexed",
+        "incomingCount": 0,
+        "outgoingCount": 0,
+        "brokenLinkCount": 0,
+        "createdAt": "2026-06-10",
+        "updatedAt": "2026-06-18",
+        "lastIndexedAt": "2026-06-18"
+      }
+      """;
+    String newNode = """
+      {
+        "slug": "new-node",
+        "title": "新节点",
+        "nodeType": "term",
+        "summary": "用于验证创建节点后修复断链。",
+        "contentMarkdown": "## 新内容\\n\\n新节点保存后可以被 Retrieval 命中。",
+        "tags": ["联调", "新节点"],
+        "status": "draft",
+        "sourceRefs": [],
+        "indexStatus": "not_indexed"
+      }
+      """;
+    String retrievalQuery = """
+      {
+        "query": "新节点保存",
+        "filters": {},
+        "topK": 5
+      }
+      """;
+
+    HttpResponse<String> update = put("/api/wiki-nodes/wn-001", updatedNode);
+    HttpResponse<String> create = post("/api/wiki-nodes", newNode);
+    HttpResponse<String> links = get("/api/wiki-nodes/wn-001/links");
+    HttpResponse<String> backlinks = get("/api/wiki-nodes/new-node/backlinks");
+    HttpResponse<String> brokenLinks = get("/api/broken-links");
+    HttpResponse<String> retrieval = post("/api/retrieval-test", retrievalQuery);
+
+    assertThat(update.statusCode()).isEqualTo(200);
+    assertThat(create.statusCode()).isEqualTo(200);
+    assertThat(create.body()).contains("\"nodeId\":\"new-node\"");
+    assertThat(create.body()).contains("\"slug\":\"new-node\"");
+    assertThat(links.body()).contains("\"toNodeId\":\"new-node\"");
+    assertThat(links.body()).contains("\"toTitle\":\"新节点\"");
+    assertThat(links.body()).contains("\"targetTitle\":\"new-node\"");
+    assertThat(links.body()).contains("\"resolved\":true");
+    assertThat(backlinks.statusCode()).isEqualTo(200);
+    assertThat(backlinks.body()).contains("\"fromNodeId\":\"wn-001\"");
+    assertThat(brokenLinks.body()).doesNotContain("\"targetTitle\":\"new-node\"");
+    assertThat(retrieval.statusCode()).isEqualTo(200);
+    assertThat(retrieval.body()).contains("\"node\":");
+    assertThat(retrieval.body()).contains("\"nodeId\":\"new-node\"");
+    assertThat(retrieval.body()).doesNotContain("\"chunk\"");
+  }
+
+  @Test
+  void createAndUpdateReturnClearErrorsForConflictsAndMissingNodes() throws Exception {
+    String duplicateSlugNode = """
+      {
+        "nodeId": "duplicate-node",
+        "slug": "wn-002",
+        "title": "重复 slug 节点",
+        "nodeType": "term",
+        "summary": "重复 slug 应该失败。",
+        "contentMarkdown": "",
+        "tags": [],
+        "status": "draft",
+        "sourceRefs": [],
+        "indexStatus": "not_indexed"
+      }
+      """;
+    String missingNode = """
+      {
+        "nodeId": "missing-node",
+        "slug": "missing-node",
+        "title": "不存在节点",
+        "nodeType": "term",
+        "summary": "",
+        "contentMarkdown": "",
+        "tags": [],
+        "status": "draft",
+        "sourceRefs": [],
+        "indexStatus": "not_indexed"
+      }
+      """;
+
+    HttpResponse<String> duplicate = post("/api/wiki-nodes", duplicateSlugNode);
+    HttpResponse<String> missing = put("/api/wiki-nodes/missing-node", missingNode);
+
+    assertThat(duplicate.statusCode()).isEqualTo(409);
+    assertThat(duplicate.body()).contains("slug");
+    assertThat(missing.statusCode()).isEqualTo(404);
+  }
+
+  private HttpResponse<String> get(String path) throws Exception {
+    return httpClient.send(
+      HttpRequest.newBuilder(uri(path)).GET().build(),
+      HttpResponse.BodyHandlers.ofString()
+    );
+  }
+
+  private HttpResponse<String> post(String path, String body) throws Exception {
+    return httpClient.send(
+      HttpRequest.newBuilder(uri(path))
+        .header("Content-Type", "application/json")
+        .POST(HttpRequest.BodyPublishers.ofString(body))
+        .build(),
+      HttpResponse.BodyHandlers.ofString()
+    );
+  }
+
+  private HttpResponse<String> put(String path, String body) throws Exception {
+    return httpClient.send(
+      HttpRequest.newBuilder(uri(path))
+        .header("Content-Type", "application/json")
+        .PUT(HttpRequest.BodyPublishers.ofString(body))
+        .build(),
+      HttpResponse.BodyHandlers.ofString()
+    );
+  }
+
+  private URI uri(String path) {
+    return URI.create("http://127.0.0.1:%d%s".formatted(port, path));
+  }
+}
