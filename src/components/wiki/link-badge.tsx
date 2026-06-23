@@ -14,7 +14,11 @@ export function LinkBadge({
   node?: WikiNode
 }) {
   const content = (
-    <Badge variant={resolved ? "secondary" : "destructive"} className="mx-0.5 align-middle">
+    <Badge
+      variant={resolved ? "secondary" : "destructive"}
+      className="mx-0.5 align-middle"
+      data-testid={resolved ? "resolved-link-badge" : "broken-link-badge"}
+    >
       {resolved ? <Link2Icon data-icon="inline-start" /> : <Link2OffIcon data-icon="inline-start" />}
       {title}
     </Badge>
@@ -23,4 +27,3 @@ export function LinkBadge({
   if (!resolved || !node) return content
   return <Link to={`/wiki-nodes/${node.nodeId}`}>{content}</Link>
 }
-

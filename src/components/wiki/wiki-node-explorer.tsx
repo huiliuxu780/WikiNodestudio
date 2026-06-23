@@ -1,7 +1,11 @@
 import { Link } from "react-router-dom"
+import { AlertTriangleIcon } from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { IndexStatusBadge } from "@/components/wiki/index-status-badge"
+import { StatusBadge } from "@/components/wiki/status-badge"
 import type { WikiNode } from "@/types/wiki"
 import { nodeTypeLabels } from "@/utils/formatters"
 
@@ -33,7 +37,7 @@ export function WikiNodeExplorer({
     .slice(0, 3)
 
   return (
-    <aside className="flex min-h-0 flex-col gap-3 border-r bg-muted/20 p-3">
+    <aside className="flex min-h-0 flex-col gap-3 border-r bg-muted/20 p-3" data-testid="wikinode-explorer">
       <Input
         placeholder="搜索知识节点"
         value={query}
@@ -44,15 +48,7 @@ export function WikiNodeExplorer({
           <section className="flex flex-col gap-2">
             <div className="text-xs font-medium text-muted-foreground">最近更新</div>
             {recentNodes.map((node) => (
-              <Link
-                key={node.nodeId}
-                to={`/wiki-nodes/${node.nodeId}`}
-                className="rounded-md px-2 py-1.5 text-sm hover:bg-accent"
-                data-current={node.nodeId === currentNodeId}
-              >
-                <span className="block truncate font-medium">{node.title}</span>
-                <span className="text-xs text-muted-foreground">{node.updatedAt}</span>
-              </Link>
+              <ExplorerNodeLink key={node.nodeId} node={node} currentNodeId={currentNodeId} meta={node.updatedAt} />
             ))}
           </section>
           {grouped.map(([nodeType, groupNodes]) => (
@@ -61,19 +57,47 @@ export function WikiNodeExplorer({
                 {nodeTypeLabels[nodeType as keyof typeof nodeTypeLabels]}
               </div>
               {groupNodes.map((node) => (
-                <Link
-                  key={node.nodeId}
-                  to={`/wiki-nodes/${node.nodeId}`}
-                  className="rounded-md px-2 py-1.5 text-sm data-[current=true]:bg-accent data-[current=true]:font-medium hover:bg-accent"
-                  data-current={node.nodeId === currentNodeId}
-                >
-                  <span className="block truncate">{node.title}</span>
-                </Link>
+                <ExplorerNodeLink key={node.nodeId} node={node} currentNodeId={currentNodeId} />
               ))}
             </section>
           ))}
         </div>
       </ScrollArea>
     </aside>
+  )
+}
+
+function ExplorerNodeLink({
+  node,
+  currentNodeId,
+  meta,
+}: {
+  node: WikiNode
+  currentNodeId: string
+  meta?: string
+}) {
+  const isCurrent = node.nodeId === currentNodeId
+
+  return (
+    <Link
+      to={`/wiki-nodes/${node.nodeId}`}
+      className="rounded-md border border-transparent px-2 py-2 text-sm data-[current=true]:border-border data-[current=true]:bg-accent data-[current=true]:font-medium hover:bg-accent"
+      data-current={isCurrent}
+    >
+      <span className="flex min-w-0 items-center justify-between gap-2">
+        <span className="truncate">{node.title}</span>
+        {node.brokenLinkCount > 0 ? (
+          <Badge variant="destructive" aria-label={`${node.brokenLinkCount} broken links`}>
+            <AlertTriangleIcon data-icon="inline-start" />
+            {node.brokenLinkCount}
+          </Badge>
+        ) : null}
+      </span>
+      <span className="mt-1 flex flex-wrap items-center gap-1">
+        <StatusBadge status={node.status} />
+        <IndexStatusBadge status={node.indexStatus} />
+        {meta ? <span className="text-xs text-muted-foreground">{meta}</span> : null}
+      </span>
+    </Link>
   )
 }

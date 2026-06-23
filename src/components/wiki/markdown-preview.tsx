@@ -5,9 +5,13 @@ import type { WikiNode } from "@/types/wiki"
 import { parseWikiLinks } from "@/utils/link-parser"
 
 export function MarkdownPreview({
+  title,
+  summary,
   markdown,
   nodes,
 }: {
+  title?: string
+  summary?: string
   markdown: string
   nodes: WikiNode[]
 }) {
@@ -15,7 +19,9 @@ export function MarkdownPreview({
   const lines = markdown.split("\n")
 
   return (
-    <div className="prose prose-sm max-w-none text-sm leading-6">
+    <div className="prose prose-sm max-w-none text-sm leading-6" data-testid="markdown-preview">
+      {title ? <h2 className="mb-2 text-base font-semibold text-foreground">{title}</h2> : null}
+      {summary ? <p className="mb-4 rounded-md bg-muted/40 p-3 text-sm text-muted-foreground">{summary}</p> : null}
       {lines.map((line, lineIndex) => {
         if (line.startsWith("## ")) {
           return (

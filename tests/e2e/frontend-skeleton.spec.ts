@@ -117,12 +117,30 @@ test.describe("Frontend skeleton IA", () => {
     await page.goto("/wiki-nodes/wn-001")
 
     await expect(page.getByRole("heading", { name: "保修期内维修服务政策" })).toBeVisible()
+    await expect(page.getByTestId("wikinode-editor-workspace")).toBeVisible()
+    await expect(page.getByTestId("wikinode-explorer")).toBeVisible()
+    await expect(page.getByTestId("wikinode-markdown-editor")).toBeVisible()
+    await expect(page.getByTestId("wikinode-inspector")).toBeVisible()
     await expect(page.getByRole("tab", { name: "Metadata" })).toBeVisible()
     await expect(page.getByRole("tab", { name: "Links" })).toBeVisible()
     await expect(page.getByRole("tab", { name: "Sources" })).toBeVisible()
     await expect(page.getByRole("tab", { name: "Index" })).toBeVisible()
     await page.getByRole("tab", { name: "Segments" }).click()
+    await expect(page.getByText("Index Segments are controlled retrieval units generated from WikiNodes before vector-store sync")).toBeVisible()
     await expect(page.getByText("SEG-001")).toBeVisible()
     await expect(page.getByText("Index Segment").nth(1)).toBeVisible()
+    await expect(page.getByText(/Chunk Management/i)).toHaveCount(0)
+  })
+
+  test("WikiNode editor preview renders resolved and broken WikiLink badges", async ({ page }) => {
+    await page.goto("/wiki-nodes/wn-001")
+
+    await page.getByRole("tab", { name: "预览" }).click()
+    await expect(page.getByTestId("markdown-preview")).toBeVisible()
+    await expect(page.getByTestId("resolved-link-badge").filter({ hasText: "收费政策" })).toBeVisible()
+
+    await page.goto("/wiki-nodes/wn-006")
+    await page.getByRole("tab", { name: "预览" }).click()
+    await expect(page.getByTestId("broken-link-badge").filter({ hasText: "洗衣机排水规范" })).toBeVisible()
   })
 })
