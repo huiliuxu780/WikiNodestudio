@@ -9,6 +9,12 @@ current_files:
   active_tasks: docs/current/ACTIVE_TASKS.yaml
   blockers: docs/current/BLOCKERS.md
 requirements: {}
+external_requirements:
+  WEKNORA_WIKIGRAPH_ANALYSIS:
+    source: /Users/mac/Desktop/开发任务.md
+    planned_output: docs/current/WEKNORA_WIKI_GRAPH_ANALYSIS.md
+  FRONTEND_SHELL_FULL_NAV:
+    source: /Users/mac/Desktop/开发任务.md
 product_docs:
   PRODUCT_SCOPE:
     file: docs/current/PRODUCT_SCOPE.md
@@ -34,6 +40,12 @@ stories:
     file: docs/current/STORY_QUEUE.yaml
     release: docs/release/mvp-baseline-v0.1.md
     acceptance: docs/release/mvp-acceptance-checklist.md
+  US004:
+    file: docs/current/STORY_QUEUE.yaml
+    requirement: WEKNORA_WIKIGRAPH_ANALYSIS
+  US005:
+    file: docs/current/STORY_QUEUE.yaml
+    requirement: FRONTEND_SHELL_FULL_NAV
 tasks:
   IM001:
     file: docs/current/ACTIVE_TASKS.yaml
@@ -42,3 +54,13 @@ tasks:
     playwright: tests/e2e/mvp-smoke.spec.ts
     reset_script: scripts/reset-db.sh
     api_smoke: scripts/api-smoke.sh
+  IM004:
+    file: docs/current/ACTIVE_TASKS.yaml
+    gate: docs/quality/GATE_REGISTRY.md
+    planned_output: docs/current/WEKNORA_WIKI_GRAPH_ANALYSIS.md
+  IM005:
+    file: docs/current/ACTIVE_TASKS.yaml
+    gate: docs/quality/GATE_REGISTRY.md
+    frontend_routes: src/app/router.tsx
+    app_shell: src/components/app-sidebar.tsx
+    smoke: tests/e2e/mvp-smoke.spec.ts

@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D004
+    date: "2026-06-23"
+    title: "Register WeKnora analysis and frontend shell skeleton as independent ready tasks"
+    rationale: "The user provided two development tasks in /Users/mac/Desktop/开发任务.md and explicitly recommended separate branches/sessions. The current queue now tracks source analysis and frontend skeleton work separately so analysis stays read-only and frontend work stays mock-only/frontend-only."
+    related:
+      - US004
+      - IM004
+      - US005
+      - IM005
   - id: D003
     date: "2026-06-23"
     title: "Persist WikiNode Studio full product plan in current project docs"

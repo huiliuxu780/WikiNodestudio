@@ -23,3 +23,32 @@ stories:
       - "No embedding pipeline."
       - "No chunk exposure."
       - "No permissions, version management, or publishing approval flow."
+  - id: US004
+    title: "WeKnora WikiGraph source analysis"
+    status: ready
+    goal: "Analyze Tencent/WeKnora WikiGraph, Wiki Browser, Wiki Mode, and knowledge search source paths for WikiNode Studio reuse without changing product code."
+    acceptance:
+      - "Report confirms whether WeKnora has WikiGraph, Wiki Browser, Wiki Mode, Markdown Wiki Page, references/relationships, and knowledge search paths."
+      - "Report lists relevant frontend, backend, docs, API, and data-model files with reuse recommendations."
+      - "Report distinguishes direct reuse, adapt-before-reuse, and do-not-adopt areas for WikiNode Studio."
+      - "Report proposes WikiNode, WikiLink, WikiGraph, Index Segment, and Retrieval data-model guidance."
+      - "Report is saved as docs/current/WEKNORA_WIKI_GRAPH_ANALYSIS.md."
+    non_goals:
+      - "No modification to WeKnora source."
+      - "No WikiNode Studio product implementation."
+      - "No Agent, Chatbot, Workflow, MCP, IM, or LLM answer-generation analysis beyond direct graph/search coupling notes."
+  - id: US005
+    title: "WikiNode Studio frontend shell and full navigation skeleton"
+    status: ready
+    goal: "Build the sidebar-07 product shell, full product navigation, routes, mock data, core static pages, and WikiNode-centered types without connecting real backend features."
+    acceptance:
+      - "Application shell keeps shadcn new-york-v4 sidebar-07 structure with AppSidebar, SidebarInset, SidebarTrigger, Separator, and Breadcrumb."
+      - "Full product navigation and routes are available for Platform, Knowledge, Governance, System, and Admin areas."
+      - "Core static pages are not blank: Overview, WikiNode List, WikiNode Editor, Wiki Graph, Index Segments, Retrieval Test, Sources, and Settings/System."
+      - "Mock data includes Knowledge Bases, Sources, Raw Materials, WikiNodes, WikiLinks, Index Segments, Retrieval Logs, Quality Issues, and Users at the requested minimum counts."
+      - "Retrieval results remain WikiNode-centered; matched Index Segments appear only in debug mode."
+      - "No visible product surface uses Chunk Management, Agent, Chatbot, Workflow, MCP, or vector-database ownership language."
+    non_goals:
+      - "No real backend API connection."
+      - "No real vector database, embedding pipeline, login, file upload, parser, Agent, Chatbot, Workflow, MCP, IM, or LLM answer-generation work."
+      - "No package or lockfile changes unless the user separately confirms a dependency decision."
