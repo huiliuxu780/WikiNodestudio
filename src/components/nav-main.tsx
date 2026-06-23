@@ -20,12 +20,12 @@ function isActivePath(pathname: string, url: string) {
   return pathname === url || pathname.startsWith(`${url}/`)
 }
 
-export function NavMain({ items }: { items: ProductNavItem[] }) {
+export function NavMain({ title = "Platform", items }: { title?: string; items: ProductNavItem[] }) {
   const { pathname } = useLocation()
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>工作台</SidebarGroupLabel>
+      <SidebarGroupLabel>{title}</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
           const Icon = item.icon

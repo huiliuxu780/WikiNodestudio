@@ -1,10 +1,18 @@
 import {
   ActivityIcon,
+  ArchiveIcon,
   DatabaseIcon,
   FileTextIcon,
   GitBranchIcon,
+  HardDriveIcon,
+  LibraryIcon,
   LayoutDashboardIcon,
   Link2OffIcon,
+  PackageIcon,
+  ShieldCheckIcon,
+  SlidersHorizontalIcon,
+  TagsIcon,
+  UserCogIcon,
   SearchIcon,
   SettingsIcon,
 } from "lucide-react"
@@ -46,48 +54,100 @@ const data = {
   ],
   platform: [
     {
-      title: "总览",
+      title: "Overview",
       url: "/",
       icon: LayoutDashboardIcon,
     },
     {
-      title: "知识节点",
+      title: "Knowledge Bases",
+      url: "/knowledge-bases",
+      icon: LibraryIcon,
+    },
+    {
+      title: "WikiNodes",
       url: "/wiki-nodes",
       icon: FileTextIcon,
     },
     {
-      title: "知识图谱",
+      title: "Wiki Graph",
       url: "/wiki-graph",
       icon: GitBranchIcon,
     },
     {
-      title: "检索测试",
+      title: "Retrieval Test",
       url: "/retrieval-test",
       icon: SearchIcon,
     },
   ],
   knowledge: [
     {
-      title: "来源",
+      title: "Sources",
       url: "/sources",
       icon: DatabaseIcon,
     },
     {
-      title: "索引状态",
-      url: "/index-status",
+      title: "Raw Materials",
+      url: "/raw-materials",
+      icon: ArchiveIcon,
+    },
+    {
+      title: "Index Segments",
+      url: "/index-segments",
+      icon: PackageIcon,
+    },
+    {
+      title: "Publishing & Index",
+      url: "/publishing",
       icon: ActivityIcon,
     },
     {
-      title: "断链检查",
+      title: "Broken Links",
       url: "/broken-links",
       icon: Link2OffIcon,
     },
   ],
+  governance: [
+    {
+      title: "Tags & Metadata",
+      url: "/tags",
+      icon: TagsIcon,
+    },
+    {
+      title: "Quality Issues",
+      url: "/quality-issues",
+      icon: ShieldCheckIcon,
+    },
+    {
+      title: "Evaluation Cases",
+      url: "/evaluation-cases",
+      icon: SlidersHorizontalIcon,
+    },
+  ],
   system: [
     {
-      title: "设置",
+      title: "Parser Engine",
+      url: "/system/parser-engine",
+      icon: SlidersHorizontalIcon,
+    },
+    {
+      title: "Storage Engine",
+      url: "/system/storage-engine",
+      icon: HardDriveIcon,
+    },
+    {
+      title: "Vector Store",
+      url: "/system/vector-store",
+      icon: DatabaseIcon,
+    },
+    {
+      title: "Settings",
       url: "/settings",
       icon: SettingsIcon,
+    },
+    {
+      title: "Admin",
+      url: "/admin/users",
+      icon: UserCogIcon,
     },
   ],
 }
@@ -99,9 +159,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.platform} />
-        <NavKnowledge title="知识管理" items={data.knowledge} />
-        <NavKnowledge title="系统" items={data.system} />
+        <NavMain title="Platform" items={data.platform} />
+        <NavKnowledge title="Knowledge" items={data.knowledge} />
+        <NavKnowledge title="Governance" items={data.governance} />
+        <NavKnowledge title="System" items={data.system} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

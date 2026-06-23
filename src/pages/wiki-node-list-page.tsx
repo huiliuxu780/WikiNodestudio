@@ -47,7 +47,7 @@ export function WikiNodeListPage() {
   return (
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
-        title="知识节点"
+        title="WikiNodes 知识节点"
         description="管理标准知识节点、元数据、双向链接和索引状态。"
         actions={
           <Button asChild>

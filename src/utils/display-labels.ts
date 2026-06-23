@@ -36,6 +36,9 @@ export const nodeTypeLabels: Record<WikiNodeType, string> = {
   guide: "指南",
   troubleshooting: "故障处理",
   term: "术语",
+  fee_rule: "收费规则",
+  regulation: "合规制度",
+  notice: "通知",
 }
 
 export const statusLabels: Record<WikiNodeStatus, string> = {
@@ -46,9 +49,11 @@ export const statusLabels: Record<WikiNodeStatus, string> = {
 
 export const indexStatusLabels: Record<WikiIndexStatus, string> = {
   not_indexed: "未索引",
+  indexing: "索引中",
   indexed: "已索引",
   failed: "失败",
   outdated: "需更新",
+  deleted: "已删除",
 }
 
 export const sourceTypeLabels: Record<string, string> = {
@@ -58,6 +63,9 @@ export const sourceTypeLabels: Record<string, string> = {
   excel: "Excel",
   web: "网页",
   manual: "手工录入",
+  api: "API",
+  database: "数据库",
+  legacy_kb: "历史知识库",
 }
 
 export const syncStatusLabels: Record<string, string> = {

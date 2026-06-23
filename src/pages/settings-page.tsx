@@ -12,7 +12,7 @@ const settings = [
 export function SettingsPage() {
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader title="设置" />
+      <PageHeader title="Settings 设置" description="System settings are mock-only; this system configures external vector stores and does not implement a vector database." />
       <Card>
         <CardHeader>
           <CardTitle className="text-base">默认设置</CardTitle>

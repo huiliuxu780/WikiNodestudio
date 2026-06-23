@@ -14,7 +14,7 @@ export function IndexStatusPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader title="索引状态" description="查看知识节点发布状态与索引状态是否可被验收。" />
+      <PageHeader title="Index Status 索引状态" description="查看知识节点发布状态与索引状态是否可被验收。" />
       <ApiErrorNotice error={error} onRetry={reload} />
       <div className="grid gap-4 lg:grid-cols-4">
         {groups.map((status) => (

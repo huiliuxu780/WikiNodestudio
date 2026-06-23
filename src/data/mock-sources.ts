@@ -37,5 +37,22 @@ export const mockSources: SourceItem[] = [
     lastSyncedAt: "2026-06-12 18:20",
     generatedNodes: 1,
   },
+  {
+    sourceId: "src-web-faq",
+    sourceType: "web",
+    title: "官网售后 FAQ",
+    owner: "Service Content",
+    syncStatus: "synced",
+    lastSyncedAt: "2026-06-21 11:45",
+    generatedNodes: 2,
+  },
+  {
+    sourceId: "src-legacy-kb",
+    sourceType: "legacy_kb",
+    title: "历史客服知识库",
+    owner: "Knowledge Ops",
+    syncStatus: "synced",
+    lastSyncedAt: "2026-06-19 17:25",
+    generatedNodes: 3,
+  },
 ]
-

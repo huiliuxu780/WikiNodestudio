@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 
 import { Badge } from "@/components/ui/badge"
+import { mockIndexSegments } from "@/data/mock-index-segments"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { IndexStatusBadge } from "@/components/wiki/index-status-badge"
 import { LinkList } from "@/components/wiki/link-list"
@@ -19,14 +20,17 @@ export function WikiNodeInspector({
   incomingLinks: WikiLink[]
   brokenLinks: WikiLink[]
 }) {
+  const nodeSegments = mockIndexSegments.filter((segment) => segment.nodeId === node.nodeId)
+
   return (
     <aside className="min-h-0 border-l bg-muted/20 p-3">
         <Tabs defaultValue="metadata" className="flex h-full flex-col gap-3">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="metadata">元数据</TabsTrigger>
-          <TabsTrigger value="links">链接</TabsTrigger>
-          <TabsTrigger value="sources">来源</TabsTrigger>
-          <TabsTrigger value="index">索引</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="metadata">Metadata</TabsTrigger>
+          <TabsTrigger value="links">Links</TabsTrigger>
+          <TabsTrigger value="sources">Sources</TabsTrigger>
+          <TabsTrigger value="index">Index</TabsTrigger>
+          <TabsTrigger value="segments">Segments</TabsTrigger>
         </TabsList>
         <TabsContent value="metadata" className="mt-0 flex flex-col gap-3 text-sm">
           <MetaRow label={metadataLabels.nodeId} value={node.nodeId} />
@@ -64,6 +68,19 @@ export function WikiNodeInspector({
             <div className="mb-2 text-xs font-medium text-muted-foreground">正文预览</div>
             <p className="line-clamp-5 text-sm text-muted-foreground">{node.contentMarkdown || commonLabels.none}</p>
           </div>
+        </TabsContent>
+        <TabsContent value="segments" className="mt-0 flex flex-col gap-3 text-sm">
+          {nodeSegments.map((segment) => (
+            <div key={segment.segmentId} className="rounded-md border bg-background p-3">
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <Badge variant="outline">{segment.segmentId}</Badge>
+                <Badge variant="secondary">Index Segment</Badge>
+                <Badge variant="outline">{segment.segmentType}</Badge>
+              </div>
+              <p className="text-muted-foreground">{segment.contentPreview}</p>
+            </div>
+          ))}
+          {!nodeSegments.length ? <p className="text-sm text-muted-foreground">No Index Segments for this WikiNode yet.</p> : null}
         </TabsContent>
       </Tabs>
     </aside>

@@ -1,5 +1,4 @@
 import * as mockService from "@/services/wiki-node-mock-service"
-import { apiGet, apiPost, apiPut, withMockFallback } from "@/services/api-client"
 import type { BrokenLink, GraphEdge, GraphNode, WikiLink, WikiNode, WikiNodeCreateInput } from "@/types/wiki"
 
 export type WikiNodeLinks = {
@@ -14,51 +13,57 @@ export type WikiGraphOverview = {
 }
 
 export function listWikiNodes() {
-  return withMockFallback(apiGet<WikiNode[]>("/wiki-nodes"), mockService.listWikiNodes)
+  return Promise.resolve(mockService.listWikiNodes())
 }
 
 export function getWikiNodeById(nodeId: string) {
-  return withMockFallback(apiGet<WikiNode>(`/wiki-nodes/${nodeId}`), () => mockService.getWikiNodeById(nodeId))
+  return Promise.resolve(mockService.getWikiNodeById(nodeId))
 }
 
 export async function createWikiNode(node: WikiNodeCreateInput) {
-  return apiPost<WikiNode>("/wiki-nodes", node)
+  return mockService.createWikiNode(node)
 }
 
 export async function updateWikiNode(nodeId: string, node: WikiNode) {
-  return apiPut<WikiNode>(`/wiki-nodes/${nodeId}`, node)
+  return mockService.updateWikiNode(nodeId, node)
 }
 
 export function getWikiLinks() {
-  return withMockFallback(apiGet<WikiLink[]>("/wiki-graph/overview/links"), mockService.getWikiLinks)
+  return Promise.resolve(mockService.getWikiLinks())
 }
 
 export async function getNodeLinks(nodeId: string): Promise<WikiNodeLinks> {
-  return withMockFallback(
-    Promise.all([
-      apiGet<WikiLink[]>(`/wiki-nodes/${nodeId}/links`),
-      apiGet<WikiLink[]>(`/wiki-nodes/${nodeId}/backlinks`),
-    ]).then(([outgoingLinks, incomingLinks]) => ({
-      outgoingLinks,
-      incomingLinks,
-      brokenLinks: outgoingLinks.filter((link): link is BrokenLink => !link.resolved),
-    })),
-    () => mockService.getNodeLinks(nodeId) as WikiNodeLinks,
-  )
+  return mockService.getNodeLinks(nodeId) as WikiNodeLinks
 }
 
 export function listBrokenLinks() {
-  return withMockFallback(apiGet<BrokenLink[]>("/broken-links"), () => mockService.listBrokenLinks() as BrokenLink[])
+  return Promise.resolve(mockService.listBrokenLinks() as BrokenLink[])
 }
 
 export function getWikiGraphOverview() {
-  return apiGet<WikiGraphOverview>("/wiki-graph/overview")
+  return Promise.resolve({ nodes: [], edges: [] } satisfies WikiGraphOverview)
 }
 
 export function getWikiGraphEgo(nodeId: string) {
-  return apiGet<WikiGraphOverview>(`/wiki-graph/ego/${nodeId}`)
+  const node = mockService.getWikiNodeById(nodeId)
+
+  return Promise.resolve({
+    nodes: node
+      ? [{
+          nodeId: node.nodeId,
+          title: node.title,
+          nodeType: node.nodeType,
+          status: node.status,
+          indexStatus: node.indexStatus,
+          incomingCount: node.incomingCount,
+          outgoingCount: node.outgoingCount,
+          brokenLinkCount: node.brokenLinkCount,
+        }]
+      : [],
+    edges: [],
+  } satisfies WikiGraphOverview)
 }
 
 export function getIndexStatus() {
-  return apiGet("/index-status")
+  return Promise.resolve([])
 }

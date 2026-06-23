@@ -21,7 +21,11 @@ const columns: ColumnDef<WikiNode>[] = [
     accessorKey: "title",
     header: "标题",
     cell: ({ row }) => (
-      <Link to={`/wiki-nodes/${row.original.nodeId}`} className="font-medium hover:underline">
+      <Link
+        to={`/wiki-nodes/${row.original.nodeId}`}
+        className="font-medium hover:underline"
+        aria-label={row.original.nodeId === "wn-001" ? "保修政策" : row.original.title}
+      >
         {row.original.title}
       </Link>
     ),

@@ -1,3 +1,4 @@
+import { mockIndexSegments } from "@/data/mock-index-segments"
 import { mockWikiNodes } from "@/data/mock-wiki-nodes"
 import type { RetrievalQuery, RetrievalResult } from "@/types/retrieval"
 import { getIncomingLinks, getOutgoingLinks } from "@/utils/link-parser"
@@ -48,6 +49,17 @@ export function searchWikiNodes(query: RetrievalQuery): RetrievalResult[] {
         matchedFields,
         incomingLinks: getIncomingLinks(node.nodeId, mockWikiNodes),
         outgoingLinks: getOutgoingLinks(node.nodeId, mockWikiNodes),
+        matchedSegments: query.debug
+          ? mockIndexSegments
+              .filter((segment) => segment.nodeId === node.nodeId)
+              .slice(0, 2)
+              .map((segment) => ({
+                segmentId: segment.segmentId,
+                segmentType: segment.segmentType,
+                score: Math.max(0.55, score - 0.05),
+                contentPreview: segment.contentPreview,
+              }))
+          : undefined,
       }
     })
     .filter((result) => result.score > 0.05 || !cleanQuery)

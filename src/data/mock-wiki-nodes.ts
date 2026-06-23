@@ -8,7 +8,21 @@ const feishuPolicyRef = {
   version: "2026.06",
 }
 
-export const mockWikiNodes: WikiNode[] = [
+function withNodeDefaults(
+  nodes: Array<Omit<WikiNode, "owner" | "version"> & Partial<Pick<WikiNode, "owner" | "version">>>,
+): WikiNode[] {
+  return nodes.map((node) => ({
+    owner: "Knowledge Ops",
+    version: 1,
+    businessDomain: "售后服务",
+    securityLevel: "internal",
+    reviewStatus: "not_required",
+    publishStatus: node.status === "published" ? "published" : "not_published",
+    ...node,
+  }))
+}
+
+export const mockWikiNodes: WikiNode[] = withNodeDefaults([
   {
     nodeId: "wn-001",
     slug: "wn-001",
@@ -17,7 +31,7 @@ export const mockWikiNodes: WikiNode[] = [
     summary: "定义保修期内维修免费范围、收费例外和凭证要求。",
     contentMarkdown:
       "## 适用范围\n\n保修期内的产品故障原则上提供免费维修。\n\n保修期外维修请参考 [[收费政策]]。\n如涉及人为损坏，请参考 [[人为损坏判定规则]]。\n如客户无法提供购买凭证，请参考 [[购买凭证规则]]。",
-    tags: ["保修", "售后", "收费", "凭证"],
+    tags: ["保修", "保修政策", "售后", "收费", "凭证"],
     status: "published",
     sourceRefs: [{ ...feishuPolicyRef, paragraphRef: "P-12" }],
     indexStatus: "indexed",
@@ -126,7 +140,7 @@ export const mockWikiNodes: WikiNode[] = [
     nodeType: "troubleshooting",
     summary: "面向客服的一线排查路径，覆盖负载、排水和人为因素。",
     contentMarkdown:
-      "## 排查步骤\n\n先确认衣物负载是否过量，再确认排水管状态。\n\n若发现异常使用痕迹，请参考 [[人为损坏判定规则]]。",
+      "## 排查步骤\n\n先确认衣物负载是否过量，再确认排水管状态。\n\n若发现异常使用痕迹，请参考 [[人为损坏判定规则]]。\n排水异常还需参考 [[洗衣机排水规范]]。",
     tags: ["洗衣机", "不脱水", "排查"],
     status: "published",
     sourceRefs: [
@@ -152,7 +166,7 @@ export const mockWikiNodes: WikiNode[] = [
     nodeType: "guide",
     summary: "安装前环境确认、水电要求和收费提示。",
     contentMarkdown:
-      "## 安装提醒\n\n安装前确认上下水、电源和橱柜尺寸。\n\n特殊材料或二次上门收费请参考 [[收费政策]]。",
+      "## 安装提醒\n\n安装前确认上下水、电源和橱柜尺寸。\n\n特殊材料或二次上门收费请参考 [[收费政策]]。\n安装后异常请参考 [[洗碗机上门服务流程]]。",
     tags: ["洗碗机", "安装", "收费"],
     status: "published",
     sourceRefs: [
@@ -190,4 +204,103 @@ export const mockWikiNodes: WikiNode[] = [
     createdAt: "2026-06-01",
     updatedAt: "2026-06-10",
   },
-]
+  {
+    nodeId: "wn-009",
+    slug: "wn-009",
+    title: "购买凭证规则",
+    nodeType: "regulation",
+    summary: "定义发票、电子订单、保修卡等购买凭证的有效性判定。",
+    contentMarkdown:
+      "## 凭证范围\n\n有效凭证包括发票、平台订单和品牌保修卡。\n\n免费维修资格需结合 [[保修期内维修服务政策]] 与 [[收费政策]]。\n投诉场景可参考 [[投诉升级处理流程]]。",
+    tags: ["凭证", "保修", "规则"],
+    status: "published",
+    sourceRefs: [{ ...feishuPolicyRef, paragraphRef: "P-18" }],
+    indexStatus: "indexed",
+    incomingCount: 1,
+    outgoingCount: 3,
+    brokenLinkCount: 0,
+    createdAt: "2026-06-09",
+    updatedAt: "2026-06-20",
+    lastIndexedAt: "2026-06-20 12:00",
+  },
+  {
+    nodeId: "wn-010",
+    slug: "wn-010",
+    title: "服务预约改约流程",
+    nodeType: "procedure",
+    summary: "说明客户改约、取消、二次预约和超时处理口径。",
+    contentMarkdown:
+      "## 改约处理\n\n改约前确认工程师排班、客户地址和预约窗口。\n\n服务场景请参考 [[洗碗机上门服务流程]]。\n未确认联系方式时参考 [[客户联系规范]]。",
+    tags: ["预约", "改约", "客服"],
+    status: "published",
+    sourceRefs: [
+      {
+        sourceId: "src-web-faq",
+        sourceType: "web",
+        sourceTitle: "官网售后 FAQ",
+        paragraphRef: "FAQ-12",
+        version: "2026.06",
+      },
+    ],
+    indexStatus: "indexed",
+    incomingCount: 1,
+    outgoingCount: 2,
+    brokenLinkCount: 1,
+    createdAt: "2026-06-10",
+    updatedAt: "2026-06-21",
+    lastIndexedAt: "2026-06-21 12:20",
+  },
+  {
+    nodeId: "wn-011",
+    slug: "wn-011",
+    title: "投诉升级处理流程",
+    nodeType: "procedure",
+    summary: "规范投诉升级的触发条件、证据收集和跨团队协同方式。",
+    contentMarkdown:
+      "## 升级条件\n\n涉及重复上门、收费争议或凭证争议时进入投诉升级。\n\n改约问题参考 [[服务预约改约流程]]，收费争议参考 [[收费政策]]，保修争议参考 [[保修期内维修服务政策]]。",
+    tags: ["投诉", "升级", "售后"],
+    status: "draft",
+    sourceRefs: [
+      {
+        sourceId: "src-legacy-kb",
+        sourceType: "legacy_kb",
+        sourceTitle: "历史客服知识库",
+        paragraphRef: "Casebook-4",
+        version: "2026.05",
+      },
+    ],
+    indexStatus: "not_indexed",
+    incomingCount: 1,
+    outgoingCount: 3,
+    brokenLinkCount: 0,
+    createdAt: "2026-06-11",
+    updatedAt: "2026-06-22",
+  },
+  {
+    nodeId: "wn-012",
+    slug: "wn-012",
+    title: "配件价格查询说明",
+    nodeType: "fee_rule",
+    summary: "说明客服查询配件价格、口径确认和客户告知边界。",
+    contentMarkdown:
+      "## 查询规则\n\n配件价格以服务系统当前价格为准。\n\n报价口径参考 [[收费政策]]，凭证核验参考 [[购买凭证规则]]，库存说明参考 [[配件库存规则]]。",
+    tags: ["配件", "价格", "收费"],
+    status: "published",
+    sourceRefs: [
+      {
+        sourceId: "src-legacy-kb",
+        sourceType: "legacy_kb",
+        sourceTitle: "历史客服知识库",
+        paragraphRef: "Part-Price-2",
+        version: "2026.05",
+      },
+    ],
+    indexStatus: "outdated",
+    incomingCount: 0,
+    outgoingCount: 3,
+    brokenLinkCount: 1,
+    createdAt: "2026-06-12",
+    updatedAt: "2026-06-22",
+    lastIndexedAt: "2026-06-19 09:10",
+  },
+])

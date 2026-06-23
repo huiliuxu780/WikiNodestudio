@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 import {
   Select,
   SelectContent,
@@ -83,6 +84,14 @@ export function RetrievalQueryPanel({
           {isSearching ? actionLabels.searching : actionLabels.search}
         </Button>
         <Button variant="outline" onClick={onReset} disabled={isSearching}>{actionLabels.reset}</Button>
+        <div className="ml-auto flex items-center gap-2 rounded-md border px-3 py-2">
+          <Switch
+            id="retrieval-debug-mode"
+            checked={Boolean(value.debug)}
+            onCheckedChange={(debug) => onChange({ ...value, debug })}
+          />
+          <Label htmlFor="retrieval-debug-mode" className="text-sm">Debug mode</Label>
+        </div>
       </div>
       <div className="flex flex-wrap gap-2">
         {sampleQueries.map((sample) => (

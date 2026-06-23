@@ -1,7 +1,5 @@
 import { expect, test } from "@playwright/test"
 
-const apiBaseUrl = process.env.PLAYWRIGHT_API_URL ?? "http://127.0.0.1:8080"
-
 test.describe.serial("MVP browser smoke", () => {
   test("WikiNodes page uses product-ready Chinese labels without API errors", async ({ page }) => {
     await page.goto("/wiki-nodes")
@@ -25,7 +23,7 @@ test.describe.serial("MVP browser smoke", () => {
     await page.getByLabel("标签").fill("ux-smoke,验收")
     await page.getByRole("button", { name: "创建知识节点" }).click()
 
-    await expect(page.getByText("创建成功")).toBeVisible()
+    await expect(page.getByRole("alert").getByText("创建成功")).toBeVisible()
     await expect(page).toHaveURL(new RegExp(`/wiki-nodes/${slug}$`))
 
     await page.goto("/wiki-nodes/create")
@@ -39,21 +37,16 @@ test.describe.serial("MVP browser smoke", () => {
     await expect(page.getByText("Slug 已存在，请更换后重试")).toBeVisible()
   })
 
-  test("WikiNode edit flow shows save success feedback", async ({ page, request }) => {
+  test("WikiNode edit flow shows save success feedback", async ({ page }) => {
     const slug = `ux-edit-${Date.now()}`
-    await request.post(`${apiBaseUrl}/api/wiki-nodes`, {
-      data: {
-        slug,
-        title: "UX Edit Smoke",
-        nodeType: "term",
-        summary: "用于前端编辑保存 smoke 的临时知识节点。",
-        contentMarkdown: "编辑保存前的内容。",
-        tags: ["ux-smoke"],
-        status: "draft",
-        sourceRefs: [],
-        indexStatus: "not_indexed",
-      },
-    })
+
+    await page.goto("/wiki-nodes/create")
+    await page.getByLabel("标题").fill("UX Edit Smoke")
+    await page.getByLabel("Slug").fill(slug)
+    await page.getByLabel("摘要").fill("用于前端编辑保存 smoke 的临时知识节点。")
+    await page.getByLabel("正文内容").fill("编辑保存前的内容。")
+    await page.getByLabel("标签").fill("ux-smoke")
+    await page.getByRole("button", { name: "创建知识节点" }).click()
 
     await page.goto(`/wiki-nodes/${slug}`)
 

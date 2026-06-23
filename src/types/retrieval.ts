@@ -8,6 +8,7 @@ export type RetrievalQuery = {
     tags?: string[]
   }
   topK: number
+  debug?: boolean
 }
 
 export type RetrievalResult = {
@@ -17,5 +18,19 @@ export type RetrievalResult = {
   matchedFields: string[]
   incomingLinks: WikiLink[]
   outgoingLinks: WikiLink[]
+  matchedSegments?: {
+    segmentId: string
+    segmentType: string
+    score: number
+    contentPreview: string
+  }[]
 }
 
+export type RetrievalLog = {
+  logId: string
+  query: string
+  topNodeTitle: string
+  resultCount: number
+  latencyMs: number
+  createdAt: string
+}
