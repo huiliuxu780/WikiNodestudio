@@ -18,14 +18,22 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip"
 
 const routeLabels: Record<string, string> = {
-  "": "总览",
-  "wiki-nodes": "知识节点",
-  "wiki-graph": "知识图谱",
-  "retrieval-test": "检索测试",
-  sources: "来源",
-  "index-status": "索引状态",
-  "broken-links": "断链检查",
-  settings: "设置",
+  "": "Overview",
+  "knowledge-bases": "Knowledge Bases",
+  "wiki-nodes": "WikiNodes",
+  "wiki-graph": "Wiki Graph",
+  "retrieval-test": "Retrieval Test",
+  sources: "Sources",
+  "raw-materials": "Raw Materials",
+  "index-segments": "Index Segments",
+  publishing: "Publishing & Index",
+  "index-status": "Index Status",
+  "broken-links": "Broken Links",
+  backlinks: "Backlinks",
+  "impact-analysis": "Impact Analysis",
+  settings: "Settings",
+  admin: "Admin",
+  system: "System",
 }
 
 function AppBreadcrumb() {

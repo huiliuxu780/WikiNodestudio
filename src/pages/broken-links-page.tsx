@@ -10,7 +10,7 @@ export function BrokenLinksPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader title="断链检查" description="查看 Markdown 双链语法中尚未解析的 WikiLink 引用。" />
+      <PageHeader title="Broken Links 断链检查" description="查看 Markdown 双链语法中尚未解析的 WikiLink 引用。" />
       <ApiErrorNotice error={error} onRetry={reload} />
       <Card>
         <CardHeader>

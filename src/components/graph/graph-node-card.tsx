@@ -4,9 +4,9 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { NodeTypeBadge } from "@/components/wiki/node-type-badge"
 import { StatusBadge } from "@/components/wiki/status-badge"
-import type { WikiNode } from "@/types/wiki"
+import type { WikiNode, WikiNodeType } from "@/types/wiki"
 
-const iconByType = {
+const iconByType: Record<WikiNodeType, typeof FileTextIcon> = {
   policy: FileTextIcon,
   procedure: GitBranchIcon,
   faq: FileTextIcon,
@@ -14,6 +14,9 @@ const iconByType = {
   guide: FileTextIcon,
   troubleshooting: WrenchIcon,
   term: FileTextIcon,
+  fee_rule: FileTextIcon,
+  regulation: FileTextIcon,
+  notice: FileTextIcon,
 }
 
 export function GraphNodeCard({
@@ -48,4 +51,3 @@ export function GraphNodeCard({
     </button>
   )
 }
-

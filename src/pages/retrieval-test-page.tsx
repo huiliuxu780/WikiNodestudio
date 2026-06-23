@@ -14,6 +14,7 @@ const defaultQuery: RetrievalQuery = {
   query: "洗碗机保修期内维修收费吗？",
   filters: {},
   topK: 5,
+  debug: false,
 }
 
 export function RetrievalTestPage() {
@@ -28,7 +29,10 @@ export function RetrievalTestPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader title="检索测试" description="验证知识节点检索结果、匹配原因和链接上下文。" />
+      <PageHeader
+        title="Retrieval Test 检索测试"
+        description="Retrieval API returns WikiNode objects by default. Matched Index Segments are shown only in debug mode."
+      />
       <RetrievalQueryPanel
         value={query}
         onChange={setQuery}

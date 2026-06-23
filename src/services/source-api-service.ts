@@ -1,10 +1,9 @@
 import { listWikiNodes } from "@/services/wiki-node-api-service"
 import { listSources as listMockSources } from "@/services/wiki-node-mock-service"
-import { apiGet, withMockFallback } from "@/services/api-client"
 import type { SourceItem } from "@/types/source"
 
 export function listSources() {
-  return withMockFallback(apiGet<SourceItem[]>("/sources"), listMockSources)
+  return Promise.resolve(listMockSources() as SourceItem[])
 }
 
 export async function getNodesBySourceId(sourceId: string) {

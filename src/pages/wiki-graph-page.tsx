@@ -9,7 +9,7 @@ export function WikiGraphPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader title="知识图谱" />
+      <PageHeader title="Wiki Graph 知识图谱" />
       <ApiErrorNotice error={error} onRetry={reload} />
       <WikiGraphView nodes={nodes} />
     </div>

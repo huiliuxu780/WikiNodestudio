@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { IndexStatusBadge } from "@/components/wiki/index-status-badge"
+import { MatchedSegmentList } from "@/components/retrieval/matched-segment-list"
 import { NodeTypeBadge } from "@/components/wiki/node-type-badge"
 import { StatusBadge } from "@/components/wiki/status-badge"
 import type { RetrievalResult } from "@/types/retrieval"
@@ -39,6 +40,7 @@ export function RetrievalResultCard({ result }: { result: RetrievalResult }) {
         <InfoRow label="来源" value={result.node.sourceRefs.map((source) => source.sourceTitle).join("、") || commonLabels.none} />
         <InfoRow label="出链" value={result.outgoingLinks.map((link) => link.targetTitle).join("、") || commonLabels.none} />
         <InfoRow label="入链" value={result.incomingLinks.map((link) => link.fromTitle).join("、") || commonLabels.none} />
+        {result.matchedSegments ? <MatchedSegmentList segments={result.matchedSegments} /> : null}
         <div className="rounded-md border bg-muted/30 p-3">
           <div className="mb-1 text-xs font-medium text-muted-foreground">正文摘录</div>
           <p className="line-clamp-3 text-muted-foreground">{result.node.contentMarkdown}</p>
