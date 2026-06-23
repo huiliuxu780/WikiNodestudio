@@ -19,7 +19,7 @@ export default defineConfig({
     backendUrl,
   },
   webServer: {
-    command: "pnpm run dev -- --host 127.0.0.1 --port 3001",
+    command: "pnpm run dev --host 127.0.0.1 --port 3001",
     url: frontendUrl,
     reuseExistingServer: true,
     timeout: 60_000,

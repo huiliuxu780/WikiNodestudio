@@ -83,7 +83,7 @@ Backend runs on `http://127.0.0.1:8080`.
 
 ```bash
 pnpm install
-pnpm run dev -- --host 127.0.0.1 --port 3001
+pnpm run dev --host 127.0.0.1 --port 3001
 ```
 
 Frontend runs on `http://127.0.0.1:3001` and proxies `/api` to `http://localhost:8080`.
