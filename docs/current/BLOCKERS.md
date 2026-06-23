@@ -6,9 +6,12 @@ None.
 
 ## Active Scope Constraints
 
-- Next task may modify GitHub Actions only after staying inside the Integration CI Gate.
-- Playwright CI scope is limited to `/wiki-nodes` and `/retrieval-test`.
+- `IM001` may modify GitHub Actions only after staying inside the Integration CI Gate.
+- `IM004` may read Tencent/WeKnora source outside this repository, but may only write the analysis report and Harness state files in this repository.
+- `IM005` may implement frontend shell/mock skeleton files only and must not change backend, database, API, package, or lock files.
+- Playwright CI scope should use the current frontend UX smoke coverage without expanding product behavior.
 - PostgreSQL CI scope is limited to service startup, Flyway-backed Spring Boot startup, and API availability checks.
+- Future frontend work must follow `docs/quality/frontend-ux-guidelines.md`.
 
 ## Standing Constraints
 

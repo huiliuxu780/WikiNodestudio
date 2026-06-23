@@ -55,7 +55,7 @@ export function TeamSwitcher({
             sideOffset={4}
           >
             <DropdownMenuLabel className="text-xs text-muted-foreground">
-              Workspaces
+              工作区
             </DropdownMenuLabel>
             {teams.map((team) => {
               const Logo = team.logo
@@ -78,4 +78,3 @@ export function TeamSwitcher({
     </SidebarMenu>
   )
 }
-

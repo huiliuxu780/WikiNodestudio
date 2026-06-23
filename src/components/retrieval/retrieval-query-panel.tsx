@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import type { RetrievalQuery } from "@/types/retrieval"
+import { actionLabels, commonLabels, labelFromMap, nodeTypeLabels, statusLabels } from "@/utils/display-labels"
 
 const sampleQueries = [
   "洗碗机保修期内维修收费吗？",
@@ -24,42 +25,46 @@ export function RetrievalQueryPanel({
   onChange,
   onSearch,
   onReset,
+  isSearching = false,
 }: {
   value: RetrievalQuery
   onChange: (value: RetrievalQuery) => void
   onSearch: () => void
   onReset: () => void
+  isSearching?: boolean
 }) {
   return (
     <div className="flex flex-col gap-4 rounded-lg border bg-card p-4">
       <div className="flex flex-col gap-2">
-        <Label htmlFor="retrieval-query">Query</Label>
+        <Label htmlFor="retrieval-query">检索问题</Label>
         <Input
           id="retrieval-query"
           value={value.query}
           onChange={(event) => onChange({ ...value, query: event.target.value })}
-          placeholder="Ask a retrieval question"
+          placeholder="输入要验证的知识问题"
         />
       </div>
       <div className="grid gap-3 md:grid-cols-4">
         <FilterSelect
-          label="nodeType"
+          label="节点类型"
           value={value.filters.nodeType ?? "all"}
+          labels={nodeTypeLabels}
           items={["policy", "procedure", "guide", "troubleshooting", "term"]}
           onChange={(nodeType) =>
             onChange({ ...value, filters: { ...value.filters, nodeType: nodeType === "all" ? undefined : nodeType } })
           }
         />
         <FilterSelect
-          label="status"
+          label="发布状态"
           value={value.filters.status ?? "all"}
+          labels={statusLabels}
           items={["published", "draft", "archived"]}
           onChange={(status) =>
             onChange({ ...value, filters: { ...value.filters, status: status === "all" ? undefined : status } })
           }
         />
         <FilterSelect
-          label="tag"
+          label="标签"
           value={value.filters.tags?.[0] ?? "all"}
           items={["保修", "收费", "洗碗机", "人为损坏", "洗衣机"]}
           onChange={(tag) =>
@@ -67,15 +72,17 @@ export function RetrievalQueryPanel({
           }
         />
         <FilterSelect
-          label="topK"
+          label="返回数量"
           value={String(value.topK)}
           items={["3", "5", "8"]}
           onChange={(topK) => onChange({ ...value, topK: Number(topK) })}
         />
       </div>
       <div className="flex flex-wrap gap-2">
-        <Button onClick={onSearch}>Search</Button>
-        <Button variant="outline" onClick={onReset}>Reset</Button>
+        <Button onClick={onSearch} disabled={isSearching || !value.query.trim()}>
+          {isSearching ? actionLabels.searching : actionLabels.search}
+        </Button>
+        <Button variant="outline" onClick={onReset} disabled={isSearching}>{actionLabels.reset}</Button>
       </div>
       <div className="flex flex-wrap gap-2">
         {sampleQueries.map((sample) => (
@@ -96,11 +103,13 @@ export function RetrievalQueryPanel({
 function FilterSelect({
   label,
   value,
+  labels = {},
   items,
   onChange,
 }: {
   label: string
   value: string
+  labels?: Record<string, string>
   items: string[]
   onChange: (value: string) => void
 }) {
@@ -113,9 +122,9 @@ function FilterSelect({
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            {label !== "topK" ? <SelectItem value="all">All</SelectItem> : null}
+            {label !== "返回数量" ? <SelectItem value="all">{commonLabels.all}</SelectItem> : null}
             {items.map((item) => (
-              <SelectItem key={item} value={item}>{item}</SelectItem>
+              <SelectItem key={item} value={item}>{labelFromMap(labels, item)}</SelectItem>
             ))}
           </SelectGroup>
         </SelectContent>
@@ -123,4 +132,3 @@ function FilterSelect({
     </div>
   )
 }
-

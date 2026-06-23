@@ -19,10 +19,10 @@ export function LinkList({
         <div key={link.linkId} className="flex items-center justify-between gap-3 rounded-md border p-2 text-sm">
           <div className="min-w-0">
             <div className="truncate font-medium">{link.resolved ? link.toTitle : link.targetTitle}</div>
-            <div className="truncate text-xs text-muted-foreground">from {link.fromTitle}</div>
+            <div className="truncate text-xs text-muted-foreground">引用自 {link.fromTitle}</div>
           </div>
           <Badge variant={link.resolved ? "secondary" : "destructive"}>
-            {link.resolved ? "resolved" : "broken"}
+            {link.resolved ? "已解析" : "断链"}
           </Badge>
         </div>
       ))}
@@ -31,7 +31,7 @@ export function LinkList({
 }
 
 export function BrokenLinkActionList({ links }: { links: WikiLink[] }) {
-  if (!links.length) return <p className="text-sm text-muted-foreground">No unresolved links.</p>
+  if (!links.length) return <p className="text-sm text-muted-foreground">暂无未解析链接。</p>
 
   return (
     <div className="flex flex-col gap-2">
@@ -40,18 +40,17 @@ export function BrokenLinkActionList({ links }: { links: WikiLink[] }) {
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className="font-medium">{link.targetTitle}</div>
-              <div className="text-xs text-muted-foreground">Referenced by {link.fromTitle}</div>
+              <div className="text-xs text-muted-foreground">引用自 {link.fromTitle}</div>
             </div>
-            <Badge variant="destructive">unresolved</Badge>
+            <Badge variant="destructive">未解析</Badge>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Button variant="outline" size="sm">Create WikiNode</Button>
-            <Button variant="outline" size="sm">Link to existing node</Button>
-            <Button variant="ghost" size="sm">Ignore for now</Button>
+            <Button variant="outline" size="sm">创建知识节点</Button>
+            <Button variant="outline" size="sm">关联已有节点</Button>
+            <Button variant="ghost" size="sm">暂时忽略</Button>
           </div>
         </div>
       ))}
     </div>
   )
 }
-

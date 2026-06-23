@@ -8,6 +8,7 @@ import { RetrievalResultCard } from "@/components/retrieval/retrieval-result-car
 import { useAsyncData } from "@/hooks/use-async-data"
 import { searchWikiNodes } from "@/services/retrieval-api-service"
 import type { RetrievalQuery } from "@/types/retrieval"
+import { commonLabels } from "@/utils/display-labels"
 
 const defaultQuery: RetrievalQuery = {
   query: "洗碗机保修期内维修收费吗？",
@@ -23,11 +24,11 @@ export function RetrievalTestPage() {
     query: queryFromRoute ?? defaultQuery.query,
   })
   const [submittedQuery, setSubmittedQuery] = useState(query)
-  const { data: results, error } = useAsyncData(() => searchWikiNodes(submittedQuery), [], [submittedQuery])
+  const { data: results, isLoading, error, reload } = useAsyncData(() => searchWikiNodes(submittedQuery), [], [submittedQuery])
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader title="Knowledge Retrieval Test" />
+      <PageHeader title="检索测试" description="验证知识节点检索结果、匹配原因和链接上下文。" />
       <RetrievalQueryPanel
         value={query}
         onChange={setQuery}
@@ -36,12 +37,19 @@ export function RetrievalTestPage() {
           setQuery(defaultQuery)
           setSubmittedQuery(defaultQuery)
         }}
+        isSearching={isLoading}
       />
-      <ApiErrorNotice error={error} />
+      <ApiErrorNotice error={error} title={commonLabels.searchFailed} onRetry={reload} />
       <div className="flex flex-col gap-4">
-        {results.map((result) => (
-          <RetrievalResultCard key={result.node.nodeId} result={result} />
-        ))}
+        {isLoading ? <p className="text-sm text-muted-foreground">检索中...</p> : null}
+        {!isLoading && !error && results.length === 0 ? (
+          <p className="rounded-md border bg-muted/20 p-4 text-sm text-muted-foreground">{commonLabels.noMatchedNodes}</p>
+        ) : null}
+        {!isLoading
+          ? results.map((result) => (
+              <RetrievalResultCard key={result.node.nodeId} result={result} />
+            ))
+          : null}
       </div>
     </div>
   )

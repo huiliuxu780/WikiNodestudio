@@ -1,6 +1,7 @@
 import { useState } from "react"
 
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { MarkdownPreview } from "@/components/wiki/markdown-preview"
@@ -31,29 +32,38 @@ export function WikiNodeEditor({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
-      <Input
-        value={title}
-        onChange={(event) => {
-          setTitle(event.target.value)
-          emitDraft({ title: event.target.value })
-        }}
-        className="h-10 text-base font-medium"
-      />
-      <Textarea
-        value={summary}
-        onChange={(event) => {
-          setSummary(event.target.value)
-          emitDraft({ summary: event.target.value })
-        }}
-        className="min-h-20 resize-none"
-      />
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="edit-node-title">标题</Label>
+        <Input
+          id="edit-node-title"
+          value={title}
+          onChange={(event) => {
+            setTitle(event.target.value)
+            emitDraft({ title: event.target.value })
+          }}
+          className="h-10 text-base font-medium"
+        />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="edit-node-summary">摘要</Label>
+        <Textarea
+          id="edit-node-summary"
+          value={summary}
+          onChange={(event) => {
+            setSummary(event.target.value)
+            emitDraft({ summary: event.target.value })
+          }}
+          className="min-h-20 resize-none"
+        />
+      </div>
       <Tabs defaultValue="edit" className="flex min-h-0 flex-1 flex-col gap-3">
         <TabsList className="w-fit">
-          <TabsTrigger value="edit">Edit</TabsTrigger>
-          <TabsTrigger value="preview">Preview</TabsTrigger>
+          <TabsTrigger value="edit">编辑</TabsTrigger>
+          <TabsTrigger value="preview">预览</TabsTrigger>
         </TabsList>
         <TabsContent value="edit" className="mt-0 min-h-0 flex-1">
           <Textarea
+            aria-label="正文内容"
             value={contentMarkdown}
             onChange={(event) => {
               setContentMarkdown(event.target.value)

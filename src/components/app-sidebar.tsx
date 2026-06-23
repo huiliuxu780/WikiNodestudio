@@ -29,63 +29,63 @@ const data = {
   },
   teams: [
     {
-      name: "CC After-sales KB",
+      name: "售后知识库",
       logo: FileTextIcon,
       plan: "WikiNode Studio",
     },
     {
-      name: "Product Guide KB",
+      name: "产品指南库",
       logo: DatabaseIcon,
-      plan: "Workspace",
+      plan: "工作区",
     },
     {
-      name: "Policy Workspace",
+      name: "政策工作区",
       logo: GitBranchIcon,
-      plan: "Workspace",
+      plan: "工作区",
     },
   ],
   platform: [
     {
-      title: "Overview",
+      title: "总览",
       url: "/",
       icon: LayoutDashboardIcon,
     },
     {
-      title: "WikiNodes",
+      title: "知识节点",
       url: "/wiki-nodes",
       icon: FileTextIcon,
     },
     {
-      title: "Wiki Graph",
+      title: "知识图谱",
       url: "/wiki-graph",
       icon: GitBranchIcon,
     },
     {
-      title: "Retrieval Test",
+      title: "检索测试",
       url: "/retrieval-test",
       icon: SearchIcon,
     },
   ],
   knowledge: [
     {
-      title: "Sources",
+      title: "来源",
       url: "/sources",
       icon: DatabaseIcon,
     },
     {
-      title: "Index Status",
+      title: "索引状态",
       url: "/index-status",
       icon: ActivityIcon,
     },
     {
-      title: "Broken Links",
+      title: "断链检查",
       url: "/broken-links",
       icon: Link2OffIcon,
     },
   ],
   system: [
     {
-      title: "Settings",
+      title: "设置",
       url: "/settings",
       icon: SettingsIcon,
     },
@@ -100,8 +100,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.platform} />
-        <NavKnowledge title="Knowledge" items={data.knowledge} />
-        <NavKnowledge title="System" items={data.system} />
+        <NavKnowledge title="知识管理" items={data.knowledge} />
+        <NavKnowledge title="系统" items={data.system} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

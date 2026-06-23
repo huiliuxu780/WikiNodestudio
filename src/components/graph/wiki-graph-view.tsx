@@ -15,6 +15,7 @@ import {
 import { GraphInspector } from "@/components/graph/graph-inspector"
 import { GraphNodeCard } from "@/components/graph/graph-node-card"
 import type { WikiNode } from "@/types/wiki"
+import { commonLabels, labelFromMap, nodeTypeLabels, statusLabels } from "@/utils/display-labels"
 import { getBrokenLinks, getIncomingLinks, getOutgoingLinks } from "@/utils/link-parser"
 
 export function WikiGraphView({ nodes }: { nodes: WikiNode[] }) {
@@ -38,20 +39,20 @@ export function WikiGraphView({ nodes }: { nodes: WikiNode[] }) {
     <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)_300px]">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Filters</CardTitle>
+          <CardTitle className="text-base">筛选</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <FilterSelect label="nodeType" value={nodeType} items={["policy", "procedure", "guide", "troubleshooting", "term"]} onChange={setNodeType} />
-          <FilterSelect label="status" value={status} items={["published", "draft", "archived"]} onChange={setStatus} />
+          <FilterSelect label="节点类型" value={nodeType} labels={nodeTypeLabels} items={["policy", "procedure", "guide", "troubleshooting", "term"]} onChange={setNodeType} />
+          <FilterSelect label="发布状态" value={status} labels={statusLabels} items={["published", "draft", "archived"]} onChange={setStatus} />
           <div className="flex items-center justify-between gap-3">
-            <Label htmlFor="show-broken">show broken links</Label>
+            <Label htmlFor="show-broken">显示断链</Label>
             <Switch id="show-broken" checked={showBroken} onCheckedChange={setShowBroken} />
           </div>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">WikiNode Relationship Graph</CardTitle>
+          <CardTitle className="text-base">知识节点关系图</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -65,7 +66,7 @@ export function WikiGraphView({ nodes }: { nodes: WikiNode[] }) {
             ))}
           </div>
           <div className="rounded-lg border bg-muted/20 p-3">
-            <div className="mb-2 text-sm font-medium">Edges</div>
+            <div className="mb-2 text-sm font-medium">关系</div>
             <div className="flex flex-col gap-2 text-sm">
               {outgoingLinks.map((link) => (
                 <div key={link.linkId} className="flex flex-wrap items-center gap-2">
@@ -73,7 +74,7 @@ export function WikiGraphView({ nodes }: { nodes: WikiNode[] }) {
                   <span className="text-muted-foreground">→</span>
                   <span>{link.targetTitle}</span>
                   <Badge variant={link.resolved ? "outline" : "destructive"}>
-                    {link.resolved ? "reference" : "broken"}
+                    {link.resolved ? "引用" : "断链"}
                   </Badge>
                 </div>
               ))}
@@ -83,7 +84,7 @@ export function WikiGraphView({ nodes }: { nodes: WikiNode[] }) {
                       <span>{link.fromTitle}</span>
                       <span className="text-muted-foreground">→</span>
                       <span>{link.targetTitle}</span>
-                      <Badge variant="destructive">unresolved</Badge>
+                      <Badge variant="destructive">未解析</Badge>
                     </div>
                   ))
                 : null}
@@ -106,11 +107,13 @@ export function WikiGraphView({ nodes }: { nodes: WikiNode[] }) {
 function FilterSelect({
   label,
   value,
+  labels = {},
   items,
   onChange,
 }: {
   label: string
   value: string
+  labels?: Record<string, string>
   items: string[]
   onChange: (value: string) => void
 }) {
@@ -123,9 +126,9 @@ function FilterSelect({
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="all">{commonLabels.all}</SelectItem>
             {items.map((item) => (
-              <SelectItem key={item} value={item}>{item}</SelectItem>
+              <SelectItem key={item} value={item}>{labelFromMap(labels, item)}</SelectItem>
             ))}
           </SelectGroup>
         </SelectContent>
@@ -133,4 +136,3 @@ function FilterSelect({
     </div>
   )
 }
-

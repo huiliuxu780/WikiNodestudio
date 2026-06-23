@@ -19,9 +19,9 @@ export function GraphInspector({
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-sm">
         <p className="text-muted-foreground">{node.summary}</p>
-        <Metric label="incoming" value={incomingLinks.length} />
-        <Metric label="outgoing" value={outgoingLinks.length} />
-        <Metric label="broken" value={brokenLinks.length} />
+        <Metric label="入链" value={incomingLinks.length} />
+        <Metric label="出链" value={outgoingLinks.length} />
+        <Metric label="断链" value={brokenLinks.length} />
       </CardContent>
     </Card>
   )
@@ -35,4 +35,3 @@ function Metric({ label, value }: { label: string; value: number }) {
     </div>
   )
 }
-

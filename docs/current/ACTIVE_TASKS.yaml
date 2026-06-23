@@ -1,5 +1,5 @@
 version: 1
-updated_at: "2026-06-22"
+updated_at: "2026-06-23"
 source_of_truth: "current_active_tasks"
 notes:
   - "Only current executable tasks belong here."
@@ -36,3 +36,66 @@ tasks:
       - "Any new product feature."
       - "Any Playwright scope expansion beyond /wiki-nodes and /retrieval-test."
       - "Any CI service beyond PostgreSQL unless the user confirms scope expansion."
+  - id: IM004
+    title: "Analyze WeKnora WikiGraph source"
+    status: ready
+    story_ids: [US004]
+    allowed_files:
+      - "docs/current/WEKNORA_WIKI_GRAPH_ANALYSIS.md"
+      - "docs/current/**"
+      - "docs/quality/**"
+      - "docs/registry/**"
+    forbidden_files:
+      - ".github/workflows/**"
+      - "src/**"
+      - "pom.xml"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "src/main/resources/db/migration/**"
+    gates:
+      - "Source analysis gate: clone or read Tencent/WeKnora outside this repository as read-only evidence."
+      - "Report gate: every conclusion must cite concrete WeKnora paths, APIs, or data structures when found."
+      - "Scope gate: ignore Agent, Chatbot, Workflow, MCP, IM, and LLM answer-generation modules except direct graph/search coupling notes."
+      - "Harness gate: run bash scripts/check.sh after report and state updates."
+    stop_conditions:
+      - "Any WikiNode Studio source-code modification."
+      - "Any dependency, package, or lockfile change."
+      - "Any product implementation beyond the analysis document."
+      - "Unable to access Tencent/WeKnora source."
+  - id: IM005
+    title: "Build frontend shell and navigation skeleton"
+    status: ready
+    story_ids: [US005]
+    allowed_files:
+      - "src/app/**"
+      - "src/components/**"
+      - "src/data/**"
+      - "src/pages/**"
+      - "src/services/**"
+      - "src/types/**"
+      - "src/utils/**"
+      - "src/App.tsx"
+      - "src/main.tsx"
+      - "src/index.css"
+      - "tests/e2e/**"
+      - "README.md"
+      - "docs/current/**"
+      - "docs/quality/**"
+      - "docs/registry/**"
+    forbidden_files:
+      - ".github/workflows/**"
+      - "src/main/java/**"
+      - "src/main/resources/db/migration/**"
+      - "pom.xml"
+      - "package.json"
+      - "pnpm-lock.yaml"
+    gates:
+      - "Frontend skeleton gate: preserve sidebar-07 shell and implement only static/mock frontend IA."
+      - "Product language gate: use WikiNode, WikiLink, Index Segment, and Retrieval API naming; never expose Chunk Management as product copy."
+      - "Backend boundary gate: no API, DTO, repository, migration, or real integration changes."
+      - "Frontend quality gate: pnpm run lint, pnpm run build, and browser smoke for in-scope routes."
+      - "Harness gate: run bash scripts/check.sh after implementation and state updates."
+    stop_conditions:
+      - "Any package or lockfile change."
+      - "Any backend, database, API, DTO, or migration change."
+      - "Any real external integration, file upload/parser, auth, permission, approval, export, batch, vector DB, embedding, Agent, Chatbot, Workflow, MCP, IM, or LLM answer-generation scope."

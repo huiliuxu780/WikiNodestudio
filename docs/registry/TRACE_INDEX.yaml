@@ -1,20 +1,51 @@
 version: 1
 current_files:
   project_context: docs/current/PROJECT_CONTEXT.md
+  product_scope: docs/current/PRODUCT_SCOPE.md
+  feature_map: docs/current/FEATURE_MAP.md
+  design_reference: docs/current/DESIGN_REFERENCE.md
+  done_report_template: docs/current/DONE_REPORT_TEMPLATE.md
   story_queue: docs/current/STORY_QUEUE.yaml
   active_tasks: docs/current/ACTIVE_TASKS.yaml
   blockers: docs/current/BLOCKERS.md
 requirements: {}
+external_requirements:
+  WEKNORA_WIKIGRAPH_ANALYSIS:
+    source: /Users/mac/Desktop/开发任务.md
+    planned_output: docs/current/WEKNORA_WIKI_GRAPH_ANALYSIS.md
+  FRONTEND_SHELL_FULL_NAV:
+    source: /Users/mac/Desktop/开发任务.md
+product_docs:
+  PRODUCT_SCOPE:
+    file: docs/current/PRODUCT_SCOPE.md
+    source: /Users/mac/Desktop/任务 2 文档.md
+  FEATURE_MAP_V0_2:
+    file: docs/current/FEATURE_MAP.md
+    source: /Users/mac/Desktop/任务 1 文档.md
+  DESIGN_REFERENCE:
+    file: docs/current/DESIGN_REFERENCE.md
+    source: /Users/mac/Desktop/任务 2 文档.md
+  CURRENT_DONE_REPORT_TEMPLATE:
+    file: docs/current/DONE_REPORT_TEMPLATE.md
+    source: /Users/mac/Desktop/任务 2 文档.md
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
     acceptance: docs/release/mvp-acceptance-checklist.md
     rules: AGENTS.md
+quality_guidelines:
+  frontend_ux: docs/quality/frontend-ux-guidelines.md
 stories:
   US001:
     file: docs/current/STORY_QUEUE.yaml
     release: docs/release/mvp-baseline-v0.1.md
     acceptance: docs/release/mvp-acceptance-checklist.md
+  US004:
+    file: docs/current/STORY_QUEUE.yaml
+    requirement: WEKNORA_WIKIGRAPH_ANALYSIS
+  US005:
+    file: docs/current/STORY_QUEUE.yaml
+    requirement: FRONTEND_SHELL_FULL_NAV
 tasks:
   IM001:
     file: docs/current/ACTIVE_TASKS.yaml
@@ -23,3 +54,13 @@ tasks:
     playwright: tests/e2e/mvp-smoke.spec.ts
     reset_script: scripts/reset-db.sh
     api_smoke: scripts/api-smoke.sh
+  IM004:
+    file: docs/current/ACTIVE_TASKS.yaml
+    gate: docs/quality/GATE_REGISTRY.md
+    planned_output: docs/current/WEKNORA_WIKI_GRAPH_ANALYSIS.md
+  IM005:
+    file: docs/current/ACTIVE_TASKS.yaml
+    gate: docs/quality/GATE_REGISTRY.md
+    frontend_routes: src/app/router.tsx
+    app_shell: src/components/app-sidebar.tsx
+    smoke: tests/e2e/mvp-smoke.spec.ts

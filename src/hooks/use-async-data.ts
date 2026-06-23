@@ -7,6 +7,7 @@ type AsyncDataState<T> = {
 }
 
 export function useAsyncData<T>(load: () => Promise<T>, initialData: T, dependencies: DependencyList = []) {
+  const [reloadToken, setReloadToken] = useState(0)
   const [state, setState] = useState<AsyncDataState<T>>({
     data: initialData,
     isLoading: true,
@@ -38,7 +39,10 @@ export function useAsyncData<T>(load: () => Promise<T>, initialData: T, dependen
     }
     // The caller owns the dependency list so pages can keep API wiring minimal.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, dependencies)
+  }, [...dependencies, reloadToken])
 
-  return state
+  return {
+    ...state,
+    reload: () => setReloadToken((token) => token + 1),
+  }
 }

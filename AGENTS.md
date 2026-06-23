@@ -18,13 +18,27 @@ Before every non-trivial task, Codex must read the default current-state set:
 
 1. `AGENTS.md`
 2. `docs/current/PROJECT_CONTEXT.md`
-3. `docs/current/STORY_QUEUE.yaml`
-4. `docs/current/ACTIVE_TASKS.yaml`
-5. `docs/current/BLOCKERS.md`
-6. `docs/quality/GATE_REGISTRY.md`
-7. Current task files
+3. `docs/current/PRODUCT_SCOPE.md`
+4. `docs/current/DESIGN_REFERENCE.md`
+5. `docs/current/STORY_QUEUE.yaml`
+6. `docs/current/ACTIVE_TASKS.yaml`
+7. `docs/current/BLOCKERS.md`
+8. `docs/quality/GATE_REGISTRY.md`
+9. Current task files
+
+For product planning, frontend, API, data-model, or roadmap work, Codex must also read `docs/current/FEATURE_MAP.md`. For narrowly scoped governance or CI work, read the relevant `FEATURE_MAP.md` section when the task touches product scope.
 
 Legacy or archive files are not default startup context after the current layer exists.
+
+## Product Scope Source
+
+Long-term product direction lives in:
+
+1. `docs/current/PRODUCT_SCOPE.md`
+2. `docs/current/FEATURE_MAP.md`
+3. `docs/current/DESIGN_REFERENCE.md`
+
+These files define durable product boundaries and naming rules. They do not authorize broad implementation by themselves; every implementation still requires a current ready story/task or a direct user-confirmed scope.
 
 ## State Governance
 
@@ -54,6 +68,8 @@ Every non-trivial task must follow this order:
 9. Commit the verified completed scope locally.
 10. Output a Done Report.
 11. Ask before pushing.
+
+Use `docs/current/DONE_REPORT_TEMPLATE.md` for the product-facing Done Report shape and `docs/quality/DONE_REPORT_TEMPLATE.md` for the Harness traceability minimum.
 
 ## Stop Conditions
 

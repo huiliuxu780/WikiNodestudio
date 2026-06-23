@@ -18,21 +18,21 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip"
 
 const routeLabels: Record<string, string> = {
-  "": "Overview",
-  "wiki-nodes": "WikiNodes",
-  "wiki-graph": "Wiki Graph",
-  "retrieval-test": "Retrieval Test",
-  sources: "Sources",
-  "index-status": "Index Status",
-  "broken-links": "Broken Links",
-  settings: "Settings",
+  "": "总览",
+  "wiki-nodes": "知识节点",
+  "wiki-graph": "知识图谱",
+  "retrieval-test": "检索测试",
+  sources: "来源",
+  "index-status": "索引状态",
+  "broken-links": "断链检查",
+  settings: "设置",
 }
 
 function AppBreadcrumb() {
   const { pathname } = useLocation()
   const parts = pathname.split("/").filter(Boolean)
   const section = parts[0] ?? ""
-  const current = parts.length > 1 ? "Editor" : routeLabels[section]
+  const current = parts.length > 1 ? "编辑" : routeLabels[section]
 
   return (
     <Breadcrumb>
@@ -68,4 +68,3 @@ export function AppShell() {
     </TooltipProvider>
   )
 }
-

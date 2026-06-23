@@ -7,6 +7,7 @@ Use this gate for every non-trivial task.
 Checks:
 
 - Has Codex read the current Harness entry set from `AGENTS.md`: `docs/current/PROJECT_CONTEXT.md`, `docs/current/STORY_QUEUE.yaml`, `docs/current/ACTIVE_TASKS.yaml`, `docs/current/BLOCKERS.md`, this file, and any current task files?
+- Has Codex read the product direction set when relevant: `docs/current/PRODUCT_SCOPE.md`, `docs/current/DESIGN_REFERENCE.md`, and, for product planning/frontend/API/data-model/roadmap work, `docs/current/FEATURE_MAP.md`?
 - Is the requested task documented in the current queue or clearly specified by the user?
 - Are allowed files and forbidden files explicit?
 - Does the task require confirmation?
@@ -33,13 +34,17 @@ Stop conditions:
 | `state-hygiene` | State Hygiene Gate | Current/registry state model, state checks, default read set, archive boundary, trace indexes | Business implementation, dependency/package changes, database, real integrations, auth, permissions, approval, export, batch operations |
 | `state-repair` | State Repair Gate | Repair inconsistent current/registry/archive index state | Business code, package/lockfile changes, new dependencies, database, real integrations, product feature work |
 | `qa` | QA Acceptance Gate | Acceptance review, verification evidence, audit/report updates | Product behavior changes, implementation edits outside acceptance corrections, dependency/package changes |
+| `frontend-ux-polish` | Frontend UX Polish Gate | User-facing frontend copy, display labels, loading/success/failure/empty/error states, form validation, and browser smoke for existing MVP routes | Backend API/DTO/repository/schema changes, package/lockfile changes, new dependencies, Source import, vector DB, embedding, chunk exposure, auth, versioning, publishing flow |
 | `integration-ci` | Integration CI Gate | GitHub Actions orchestration for PostgreSQL, Spring Boot, Vite, and Playwright smoke | API/DTO/UI changes, product features, Source import, vector DB, embedding, chunk exposure, auth, permissions, publishing flow |
+| `source-analysis` | Source Analysis Gate | Read-only third-party source analysis and report writing | Product implementation, repo source edits, dependency/package changes, copying external code |
+| `frontend-skeleton` | Frontend Skeleton Gate | sidebar-07 app shell, full navigation, routes, mock data, static frontend pages, frontend-only tests | Backend/API/database changes, package/lockfile changes, real integrations, auth, vector DB, embedding, Agent/Chat/Workflow/MCP/IM scope |
 
 ## Harness Documentation Gate
 
 Allowed:
 
 - Update Harness rules and workflow documentation.
+- Update durable product-scope documentation that constrains future Harness execution.
 - Update branch/worktree/integration workflow documentation.
 - Update current Harness state, registry indexes, backlog, raw requirements, user stories, task log, decision log, audit report, branch log, and project state when the active Gate requires traceability.
 - Update check scripts only when the task explicitly concerns verification mechanics.
@@ -55,6 +60,35 @@ Required verification:
 
 - `git diff --check`
 - `bash scripts/check.sh`
+
+## Frontend UX Polish Gate
+
+Use this gate for Frontend UX Polish v0.1.
+
+Allowed:
+
+- Localize user-facing copy on the existing MVP frontend routes.
+- Add or update display label utilities for statuses, source types, index states, retrieval confidence, actions, empty states, loading states, and user-readable errors.
+- Standardize create, edit, retrieval, API-loading, empty, and error feedback using existing frontend components.
+- Tighten WikiNode create/edit form validation without changing DTOs or backend contracts.
+- Expand existing Playwright/browser smoke coverage for the requested acceptance paths.
+- Add frontend UX guidelines and link them from README.
+
+Required checks:
+
+- Backend unit/contract gate: `mvn test`.
+- Frontend lint gate: `pnpm run lint`.
+- Frontend build gate: `pnpm run build`.
+- API smoke gate: `./scripts/api-smoke.sh`.
+- Browser smoke gate: `pnpm run test:e2e`.
+- Harness gate: `bash scripts/check.sh`.
+
+Forbidden unless explicitly confirmed by the user:
+
+- Backend API, DTO, repository, or database migration changes.
+- Package or lockfile changes.
+- New dependencies or toast packages.
+- New business features, routes, real external integrations, Source import, vector database, embedding, chunk exposure, permissions, version management, or publishing approval flow.
 
 ## Integration CI Gate
 
@@ -89,3 +123,52 @@ Forbidden unless explicitly confirmed by the user:
 - Chunk exposure.
 - Permissions, version management, or publishing approval flow.
 - Expanding Playwright smoke beyond `/wiki-nodes` and `/retrieval-test`.
+
+## Source Analysis Gate
+
+Use this gate for read-only third-party source analysis tasks such as WeKnora WikiGraph analysis.
+
+Allowed:
+
+- Clone or read the target source repository outside this repository as read-only evidence.
+- Search source paths, API routes, models, and frontend components relevant to the confirmed analysis target.
+- Write the analysis report under `docs/current/**`.
+- Update Harness state, traceability, and Done Report files when required.
+
+Required checks:
+
+- Evidence gate: report conclusions cite concrete source paths, APIs, data structures, or state that no matching source path was found.
+- Scope gate: ignore unrelated Agent, Chatbot, Workflow, MCP, IM, and LLM answer-generation code unless directly coupled to the confirmed graph/search scope.
+- Harness gate: `bash scripts/check.sh`.
+
+Forbidden unless explicitly confirmed by the user:
+
+- Modify product source code.
+- Copy external implementation code into this repository.
+- Add dependencies or modify package/lockfiles.
+- Implement WikiNode Studio product behavior.
+
+## Frontend Skeleton Gate
+
+Use this gate for building the full WikiNode Studio frontend information architecture with mock-only behavior.
+
+Allowed:
+
+- Preserve the shadcn `new-york-v4` `sidebar-07` shell using `AppSidebar`, `SidebarInset`, `SidebarTrigger`, `Separator`, and `Breadcrumb`.
+- Add or update frontend routes, static pages, mock data, frontend-only services, type definitions, and frontend smoke coverage.
+- Implement WikiNode-centered mock flows for WikiNode, WikiLink, Wiki Graph, Index Segment, and Retrieval Test surfaces.
+- Update README and Harness docs for the frontend skeleton scope.
+
+Required checks:
+
+- Frontend lint gate: `pnpm run lint`.
+- Frontend build gate: `pnpm run build`.
+- Browser smoke gate: existing or updated Playwright smoke for in-scope routes.
+- Harness gate: `bash scripts/check.sh`.
+
+Forbidden unless explicitly confirmed by the user:
+
+- Backend API, DTO, repository, or database migration changes.
+- Package or lockfile changes.
+- Real backend API connections, real external integrations, file upload/parser, auth, permissions, approval, export, batch operations, vector database, embedding pipeline, Agent, Chatbot, Workflow, MCP, IM, or LLM answer-generation scope.
+- Product copy that presents external vector-store chunks as the primary managed object instead of Index Segments.
