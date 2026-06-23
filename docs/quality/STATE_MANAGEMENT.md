@@ -9,9 +9,15 @@ This project uses a current/registry/archive state model to reduce default conte
 Default execution state lives in:
 
 - `docs/current/PROJECT_CONTEXT.md`
+- `docs/current/PRODUCT_SCOPE.md`
+- `docs/current/DESIGN_REFERENCE.md`
 - `docs/current/STORY_QUEUE.yaml`
 - `docs/current/ACTIVE_TASKS.yaml`
 - `docs/current/BLOCKERS.md`
+
+Roadmap-level product scope lives in:
+
+- `docs/current/FEATURE_MAP.md`
 
 Only `ready`, `in_progress`, and `blocked` stories/tasks belong in current files. Done history must not accumulate here.
 
@@ -30,11 +36,15 @@ Before non-trivial execution, read:
 
 1. `AGENTS.md`
 2. `docs/current/PROJECT_CONTEXT.md`
-3. `docs/current/STORY_QUEUE.yaml`
-4. `docs/current/ACTIVE_TASKS.yaml`
-5. `docs/current/BLOCKERS.md`
-6. `docs/quality/GATE_REGISTRY.md`
-7. Current task files
+3. `docs/current/PRODUCT_SCOPE.md`
+4. `docs/current/DESIGN_REFERENCE.md`
+5. `docs/current/STORY_QUEUE.yaml`
+6. `docs/current/ACTIVE_TASKS.yaml`
+7. `docs/current/BLOCKERS.md`
+8. `docs/quality/GATE_REGISTRY.md`
+9. Current task files
+
+For product planning, frontend, API, data-model, or roadmap work, also read `docs/current/FEATURE_MAP.md`. For narrowly scoped governance or CI work, read the relevant section only when product scope is touched.
 
 Use legacy or archive files only when current state is missing, inconsistent, or the task is explicitly about migration, audit, repair, or historical lookup.
 

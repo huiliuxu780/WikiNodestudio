@@ -7,6 +7,7 @@ Use this gate for every non-trivial task.
 Checks:
 
 - Has Codex read the current Harness entry set from `AGENTS.md`: `docs/current/PROJECT_CONTEXT.md`, `docs/current/STORY_QUEUE.yaml`, `docs/current/ACTIVE_TASKS.yaml`, `docs/current/BLOCKERS.md`, this file, and any current task files?
+- Has Codex read the product direction set when relevant: `docs/current/PRODUCT_SCOPE.md`, `docs/current/DESIGN_REFERENCE.md`, and, for product planning/frontend/API/data-model/roadmap work, `docs/current/FEATURE_MAP.md`?
 - Is the requested task documented in the current queue or clearly specified by the user?
 - Are allowed files and forbidden files explicit?
 - Does the task require confirmation?
@@ -41,6 +42,7 @@ Stop conditions:
 Allowed:
 
 - Update Harness rules and workflow documentation.
+- Update durable product-scope documentation that constrains future Harness execution.
 - Update branch/worktree/integration workflow documentation.
 - Update current Harness state, registry indexes, backlog, raw requirements, user stories, task log, decision log, audit report, branch log, and project state when the active Gate requires traceability.
 - Update check scripts only when the task explicitly concerns verification mechanics.

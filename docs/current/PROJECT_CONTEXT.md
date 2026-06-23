@@ -4,6 +4,12 @@
 
 WikiNode Studio MVP Baseline v0.1 is fixed and verifiable.
 
+## Product Direction
+
+WikiNode Studio is an enterprise knowledge asset platform between multi-source enterprise knowledge and external vector knowledge bases. The durable product model is WikiNode-centered: business users manage WikiNodes, the system manages Index Segments, external vector stores manage embeddings and similarity retrieval, and Retrieval API returns WikiNodes by default.
+
+The full product scope is captured in `docs/current/PRODUCT_SCOPE.md`; the roadmap-level feature map is captured in `docs/current/FEATURE_MAP.md`; frontend shell and navigation rules are captured in `docs/current/DESIGN_REFERENCE.md`.
+
 ## Active Boundary
 
 The product baseline includes the React frontend MVP, Spring Boot API, PostgreSQL + Flyway persistence, reset/seed scripts, API smoke, GitHub Actions baseline CI, release documentation, and minimal Playwright browser smoke.
@@ -21,6 +27,8 @@ The next implementation pass should update GitHub Actions to orchestrate Postgre
 ## Current Execution Rules
 
 - Read current files by default, not historical archive files.
+- Read `docs/current/PRODUCT_SCOPE.md` and `docs/current/DESIGN_REFERENCE.md` before non-trivial work.
+- Read `docs/current/FEATURE_MAP.md` for product planning, frontend, API, data-model, or roadmap work.
 - Treat `docs/current/**` as the execution queue source.
 - Treat `docs/registry/**` as lookup indexes only.
 - Do not execute from archive files.

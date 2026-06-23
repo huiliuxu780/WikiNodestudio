@@ -1,5 +1,13 @@
 version: 1
 decisions:
+  - id: D003
+    date: "2026-06-23"
+    title: "Persist WikiNode Studio full product plan in current project docs"
+    rationale: "The user provided a full WikiNode Studio v0.2 product map and requested the project to remember it through repository documents instead of chat context. Current docs now distinguish durable product direction from executable task scope so future work stays WikiNode-centered without authorizing broad feature expansion."
+    related:
+      - PRODUCT_SCOPE
+      - FEATURE_MAP_V0_2
+      - DESIGN_REFERENCE
   - id: D002
     date: "2026-06-23"
     title: "Run Frontend UX Polish v0.1 before expanding product features"
