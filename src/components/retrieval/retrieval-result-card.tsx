@@ -13,7 +13,7 @@ import { actionLabels, commonLabels, formatMatchedFields, formatMatchedReason } 
 
 export function RetrievalResultCard({ result }: { result: RetrievalResult }) {
   return (
-    <Card>
+    <Card data-testid="retrieval-result-card">
       <CardHeader className="flex flex-row items-start justify-between gap-4">
         <div className="min-w-0">
           <CardTitle className="truncate text-base">{result.node.title}</CardTitle>
@@ -21,7 +21,7 @@ export function RetrievalResultCard({ result }: { result: RetrievalResult }) {
             <NodeTypeBadge type={result.node.nodeType} />
             <StatusBadge status={result.node.status} />
             <IndexStatusBadge status={result.node.indexStatus} />
-            <Badge variant="outline">置信度 {toPercent(result.score)}</Badge>
+            <Badge variant="outline">score {toPercent(result.score)}</Badge>
           </div>
         </div>
         <Button asChild size="sm" variant="outline">
@@ -37,7 +37,7 @@ export function RetrievalResultCard({ result }: { result: RetrievalResult }) {
         </div>
         <InfoRow label="匹配原因" value={formatMatchedReason(result.matchedReason)} />
         <InfoRow label="匹配字段" value={formatMatchedFields(result.matchedFields)} />
-        <InfoRow label="来源" value={result.node.sourceRefs.map((source) => source.sourceTitle).join("、") || commonLabels.none} />
+        <InfoRow label="sourceRefs" value={result.node.sourceRefs.map((source) => `${source.sourceTitle}${source.paragraphRef ? ` / ${source.paragraphRef}` : ""}`).join("、") || commonLabels.none} />
         <InfoRow label="出链" value={result.outgoingLinks.map((link) => link.targetTitle).join("、") || commonLabels.none} />
         <InfoRow label="入链" value={result.incomingLinks.map((link) => link.fromTitle).join("、") || commonLabels.none} />
         {result.matchedSegments ? <MatchedSegmentList segments={result.matchedSegments} /> : null}

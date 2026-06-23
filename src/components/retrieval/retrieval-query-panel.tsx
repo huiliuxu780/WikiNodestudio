@@ -35,7 +35,7 @@ export function RetrievalQueryPanel({
   isSearching?: boolean
 }) {
   return (
-    <div className="flex flex-col gap-4 rounded-lg border bg-card p-4">
+    <div className="flex flex-col gap-4 rounded-lg border bg-card p-4" data-testid="retrieval-query-panel">
       <div className="flex flex-col gap-2">
         <Label htmlFor="retrieval-query">检索问题</Label>
         <Input
@@ -45,7 +45,7 @@ export function RetrievalQueryPanel({
           placeholder="输入要验证的知识问题"
         />
       </div>
-      <div className="grid gap-3 md:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-6">
         <FilterSelect
           label="节点类型"
           value={value.filters.nodeType ?? "all"}
@@ -76,7 +76,21 @@ export function RetrievalQueryPanel({
           label="返回数量"
           value={String(value.topK)}
           items={["3", "5", "8"]}
+          includeAll={false}
           onChange={(topK) => onChange({ ...value, topK: Number(topK) })}
+        />
+        <FilterSelect
+          label="召回模式"
+          value={value.retrievalMode}
+          labels={{
+            vector: "Vector",
+            keyword: "Keyword",
+            hybrid: "Hybrid",
+            graph: "Graph",
+          }}
+          items={["vector", "keyword", "hybrid", "graph"]}
+          includeAll={false}
+          onChange={(retrievalMode) => onChange({ ...value, retrievalMode: retrievalMode as RetrievalQuery["retrievalMode"] })}
         />
       </div>
       <div className="flex flex-wrap gap-2">
@@ -100,6 +114,7 @@ export function RetrievalQueryPanel({
             variant="outline"
             size="sm"
             onClick={() => onChange({ ...value, query: sample })}
+            data-testid="sample-query"
           >
             {sample}
           </Button>
@@ -114,12 +129,14 @@ function FilterSelect({
   value,
   labels = {},
   items,
+  includeAll = true,
   onChange,
 }: {
   label: string
   value: string
   labels?: Record<string, string>
   items: string[]
+  includeAll?: boolean
   onChange: (value: string) => void
 }) {
   return (
@@ -131,7 +148,7 @@ function FilterSelect({
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            {label !== "返回数量" ? <SelectItem value="all">{commonLabels.all}</SelectItem> : null}
+            {includeAll ? <SelectItem value="all">{commonLabels.all}</SelectItem> : null}
             {items.map((item) => (
               <SelectItem key={item} value={item}>{labelFromMap(labels, item)}</SelectItem>
             ))}

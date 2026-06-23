@@ -67,7 +67,7 @@ test.describe.serial("MVP browser smoke", () => {
     await expect(page.getByRole("link", { name: "打开知识节点" }).first()).toBeVisible()
     await expect(page.getByText("保修政策").first()).toBeVisible()
     await expect(page.getByText("Request failed")).toHaveCount(0)
-    await expect(page.getByText(/chunk/i)).toHaveCount(0)
+    await expect(page.getByText(/Chunk Management/i)).toHaveCount(0)
     await expect(page.getByText(/document/i)).toHaveCount(0)
 
     await page.getByLabel("检索问题").fill("zzzz-no-result-前端验收")

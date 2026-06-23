@@ -1,5 +1,7 @@
 import type { WikiLink, WikiNode } from "@/types/wiki"
 
+export type RetrievalMode = "vector" | "keyword" | "hybrid" | "graph"
+
 export type RetrievalQuery = {
   query: string
   filters: {
@@ -8,7 +10,23 @@ export type RetrievalQuery = {
     tags?: string[]
   }
   topK: number
+  retrievalMode: RetrievalMode
   debug?: boolean
+}
+
+export type MatchedSegment = {
+  segmentId: string
+  segmentType: string
+  score: number
+  contentPreview: string
+  vectorDocId?: string
+  whyMatched: string
+  nodeId: string
+}
+
+export type RetrievalTraceStep = {
+  step: string
+  detail: string
 }
 
 export type RetrievalResult = {
@@ -18,12 +36,7 @@ export type RetrievalResult = {
   matchedFields: string[]
   incomingLinks: WikiLink[]
   outgoingLinks: WikiLink[]
-  matchedSegments?: {
-    segmentId: string
-    segmentType: string
-    score: number
-    contentPreview: string
-  }[]
+  matchedSegments?: MatchedSegment[]
 }
 
 export type RetrievalLog = {

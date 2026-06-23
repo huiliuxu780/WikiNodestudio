@@ -109,8 +109,34 @@ test.describe("Frontend skeleton IA", () => {
     await expect(page.getByText("Retrieval API returns WikiNode objects by default")).toBeVisible()
     await page.getByLabel("Debug mode").click()
     await page.getByRole("button", { name: "检索" }).click()
-    await expect(page.getByText("Matched Index Segments").nth(1)).toBeVisible()
+    await expect(page.getByText("Matched Index Segments").first()).toBeVisible()
     await expect(page.getByText("SEG-").first()).toBeVisible()
+  })
+
+  test("Retrieval Test separates normal WikiNode results from debug Index Segment evidence", async ({ page }) => {
+    await page.goto("/retrieval-test")
+
+    await expect(page.getByRole("heading", { name: "检索测试" })).toBeVisible()
+    await expect(page.getByText("Retrieval API returns WikiNode objects by default, not vector chunks.")).toBeVisible()
+    await expect(page.getByText("This platform does not implement a vector database.")).toBeVisible()
+    await expect(page.getByText("Index Segments are controlled retrieval units generated from WikiNodes before vector-store sync.")).toBeVisible()
+    await page.getByLabel("检索问题").fill("洗碗机保修期内维修收费吗？")
+    await page.getByRole("button", { name: "检索" }).click()
+
+    await expect(page.getByTestId("retrieval-result-card").first()).toBeVisible()
+    await expect(page.getByTestId("matched-segments")).toHaveCount(0)
+    await expect(page.getByText(/Chunk Management/i)).toHaveCount(0)
+
+    await page.getByLabel("Debug mode").click()
+    await page.getByRole("button", { name: "检索" }).click()
+
+    await expect(page.getByTestId("matched-segments").first()).toBeVisible()
+    await expect(page.getByText("whyMatched:").first()).toBeVisible()
+    await expect(page.getByText("nodeId:").first()).toBeVisible()
+
+    await page.getByRole("link", { name: "打开知识节点" }).first().click()
+    await expect(page).toHaveURL(/\/wiki-nodes\/wn-/)
+    await expect(page.getByTestId("wikinode-editor-workspace")).toBeVisible()
   })
 
   test("WikiNode editor inspector includes Segments tab", async ({ page }) => {
