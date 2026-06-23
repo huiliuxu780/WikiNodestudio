@@ -6,15 +6,15 @@ import { useAsyncData } from "@/hooks/use-async-data"
 import { listBrokenLinks } from "@/services/wiki-node-api-service"
 
 export function BrokenLinksPage() {
-  const { data: brokenLinks, error } = useAsyncData(listBrokenLinks, [])
+  const { data: brokenLinks, error, reload } = useAsyncData(listBrokenLinks, [])
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader title="Broken Links" description="Unresolved WikiLink references parsed from Markdown double-link syntax." />
-      <ApiErrorNotice error={error} />
+      <PageHeader title="断链检查" description="查看 Markdown 双链语法中尚未解析的 WikiLink 引用。" />
+      <ApiErrorNotice error={error} onRetry={reload} />
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Unresolved WikiLinks</CardTitle>
+          <CardTitle className="text-base">未解析的 WikiLink</CardTitle>
         </CardHeader>
         <CardContent>
           <BrokenLinkActionList links={brokenLinks} />

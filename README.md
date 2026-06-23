@@ -26,6 +26,7 @@ This repository includes a lightweight Codex Harness for development governance 
 - [AGENTS.md](AGENTS.md) is the Codex development rules entry point.
 - [docs/current/](docs/current/) stores current project state, story queue, active tasks, and blockers.
 - [docs/quality/](docs/quality/) stores quality gates, Done Report format, Gate Plan format, and workflow rules.
+- [Frontend UX Guidelines](docs/quality/frontend-ux-guidelines.md) defines user-facing copy, status labels, operation feedback, form validation, and loading/empty/error-state rules.
 - [docs/registry/](docs/registry/) stores lookup indexes for current state, decisions, and traceability.
 - [scripts/check.sh](scripts/check.sh) is the local Harness quality check entry point.
 - [scripts/check-state.sh](scripts/check-state.sh) validates current/registry state consistency.
@@ -172,7 +173,11 @@ pnpm run test:e2e
 `pnpm run test:e2e` starts or reuses the Vite dev server at `http://127.0.0.1:3001`, keeps `VITE_USE_MOCK_FALLBACK=false`, and covers:
 
 - `/wiki-nodes`
-- `/retrieval-test`
+- WikiNode create success and duplicate slug failure feedback
+- WikiNode edit save feedback
+- `/retrieval-test` success and no-result states
+- `/broken-links`
+- `/settings`
 
 Playwright smoke is not part of the basic GitHub Actions workflow yet because it depends on local PostgreSQL, a running backend, and the frontend dev server.
 

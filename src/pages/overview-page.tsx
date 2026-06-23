@@ -4,10 +4,11 @@ import { PageHeader } from "@/components/layout/page-header"
 import { ApiErrorNotice } from "@/components/api-error-notice"
 import { useAsyncData } from "@/hooks/use-async-data"
 import { listBrokenLinks, listWikiNodes } from "@/services/wiki-node-api-service"
+import { indexStatusLabels, labelFromMap, nodeTypeLabels } from "@/utils/display-labels"
 
 export function OverviewPage() {
-  const { data: nodes, error: nodesError } = useAsyncData(listWikiNodes, [])
-  const { data: brokenLinks, error: brokenLinksError } = useAsyncData(listBrokenLinks, [])
+  const { data: nodes, error: nodesError, reload: reloadNodes } = useAsyncData(listWikiNodes, [])
+  const { data: brokenLinks, error: brokenLinksError, reload: reloadBrokenLinks } = useAsyncData(listBrokenLinks, [])
   const published = nodes.filter((node) => node.status === "published")
   const indexed = nodes.filter((node) => node.indexStatus === "indexed")
   const recent = [...nodes].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)).slice(0, 5)
@@ -15,21 +16,22 @@ export function OverviewPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader title="Overview" />
-      <ApiErrorNotice error={nodesError ?? brokenLinksError} />
+      <PageHeader title="总览" />
+      <ApiErrorNotice error={nodesError} onRetry={reloadNodes} />
+      <ApiErrorNotice error={brokenLinksError} onRetry={reloadBrokenLinks} />
       <div className="grid gap-4 md:grid-cols-4">
-        <MetricCard label="Total WikiNodes" value={nodes.length} />
-        <MetricCard label="Published" value={published.length} />
-        <MetricCard label="Broken Links" value={brokenLinks.length} />
-        <MetricCard label="Indexed" value={indexed.length} />
+        <MetricCard label="知识节点总数" value={nodes.length} />
+        <MetricCard label="已发布" value={published.length} />
+        <MetricCard label="断链数" value={brokenLinks.length} />
+        <MetricCard label="已索引" value={indexed.length} />
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
-        <ListCard title="Recent Updated WikiNodes" items={recent.map((node) => `${node.title} · ${node.updatedAt}`)} />
-        <ListCard title="Top Referenced WikiNodes" items={topReferenced.map((node) => `${node.title} · ${node.incomingCount} refs`)} />
+        <ListCard title="最近更新的知识节点" items={recent.map((node) => `${node.title} · ${node.updatedAt}`)} />
+        <ListCard title="入链最多的知识节点" items={topReferenced.map((node) => `${node.title} · ${node.incomingCount} 条入链`)} />
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
-        <DistributionCard title="Node Type Distribution" items={groupBy(nodes.map((node) => node.nodeType))} />
-        <DistributionCard title="Index Status Distribution" items={groupBy(nodes.map((node) => node.indexStatus))} />
+        <DistributionCard title="节点类型分布" items={groupBy(nodes.map((node) => node.nodeType))} labels={nodeTypeLabels} />
+        <DistributionCard title="索引状态分布" items={groupBy(nodes.map((node) => node.indexStatus))} labels={indexStatusLabels} />
       </div>
     </div>
   )
@@ -63,7 +65,7 @@ function ListCard({ title, items }: { title: string; items: string[] }) {
   )
 }
 
-function DistributionCard({ title, items }: { title: string; items: Record<string, number> }) {
+function DistributionCard({ title, items, labels }: { title: string; items: Record<string, number>; labels: Record<string, string> }) {
   return (
     <Card>
       <CardHeader>
@@ -71,7 +73,7 @@ function DistributionCard({ title, items }: { title: string; items: Record<strin
       </CardHeader>
       <CardContent className="flex flex-wrap gap-2">
         {Object.entries(items).map(([label, count]) => (
-          <Badge key={label} variant="outline">{label}: {count}</Badge>
+          <Badge key={label} variant="outline">{labelFromMap(labels, label)}：{count}</Badge>
         ))}
       </CardContent>
     </Card>

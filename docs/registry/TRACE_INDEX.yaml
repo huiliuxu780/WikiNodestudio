@@ -10,6 +10,8 @@ baselines:
     release: docs/release/mvp-baseline-v0.1.md
     acceptance: docs/release/mvp-acceptance-checklist.md
     rules: AGENTS.md
+quality_guidelines:
+  frontend_ux: docs/quality/frontend-ux-guidelines.md
 stories:
   US001:
     file: docs/current/STORY_QUEUE.yaml

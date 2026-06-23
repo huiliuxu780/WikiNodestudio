@@ -35,14 +35,14 @@ export function WikiNodeExplorer({
   return (
     <aside className="flex min-h-0 flex-col gap-3 border-r bg-muted/20 p-3">
       <Input
-        placeholder="Search WikiNode"
+        placeholder="搜索知识节点"
         value={query}
         onChange={(event) => onQueryChange(event.target.value)}
       />
       <ScrollArea className="min-h-0 flex-1">
         <div className="flex flex-col gap-4 pr-3">
           <section className="flex flex-col gap-2">
-            <div className="text-xs font-medium uppercase text-muted-foreground">Recent Updated</div>
+            <div className="text-xs font-medium text-muted-foreground">最近更新</div>
             {recentNodes.map((node) => (
               <Link
                 key={node.nodeId}
@@ -77,4 +77,3 @@ export function WikiNodeExplorer({
     </aside>
   )
 }
-

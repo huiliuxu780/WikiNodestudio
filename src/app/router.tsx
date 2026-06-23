@@ -20,6 +20,7 @@ export const router = createBrowserRouter([
     children: [
       { path: "/", element: <OverviewPage /> },
       { path: "/wiki-nodes", element: <WikiNodeListPage /> },
+      { path: "/wiki-nodes/create", element: <WikiNodeCreatePage /> },
       { path: "/wiki-nodes/new", element: <WikiNodeCreatePage /> },
       { path: "/wiki-nodes/:nodeId", element: <WikiNodeEditPage /> },
       { path: "/wiki-graph", element: <WikiGraphPage /> },

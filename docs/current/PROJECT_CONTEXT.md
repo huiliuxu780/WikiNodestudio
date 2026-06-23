@@ -14,7 +14,9 @@ Current development must stay inside confirmed task scope. The standing MVP excl
 
 `docs/current/STORY_QUEUE.yaml` and `docs/current/ACTIVE_TASKS.yaml` now identify the next ready engineering hardening task: PostgreSQL integration CI plus Playwright smoke CI.
 
-The next implementation pass should update GitHub Actions to orchestrate PostgreSQL, Spring Boot, Vite, and the existing two-page Playwright smoke. It must keep the scope to CI integration only and must not expand product behavior.
+The frontend UX polish rules are now captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
+
+The next implementation pass should update GitHub Actions to orchestrate PostgreSQL, Spring Boot, Vite, and the existing Playwright smoke. It must keep the scope to CI integration only and must not expand product behavior.
 
 ## Current Execution Rules
 

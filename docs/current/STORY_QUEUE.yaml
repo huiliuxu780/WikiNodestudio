@@ -1,5 +1,5 @@
 version: 1
-updated_at: "2026-06-22"
+updated_at: "2026-06-23"
 source_of_truth: "current_story_queue"
 notes:
   - "Only ready, in_progress, and blocked stories belong here."

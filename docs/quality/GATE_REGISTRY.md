@@ -33,6 +33,7 @@ Stop conditions:
 | `state-hygiene` | State Hygiene Gate | Current/registry state model, state checks, default read set, archive boundary, trace indexes | Business implementation, dependency/package changes, database, real integrations, auth, permissions, approval, export, batch operations |
 | `state-repair` | State Repair Gate | Repair inconsistent current/registry/archive index state | Business code, package/lockfile changes, new dependencies, database, real integrations, product feature work |
 | `qa` | QA Acceptance Gate | Acceptance review, verification evidence, audit/report updates | Product behavior changes, implementation edits outside acceptance corrections, dependency/package changes |
+| `frontend-ux-polish` | Frontend UX Polish Gate | User-facing frontend copy, display labels, loading/success/failure/empty/error states, form validation, and browser smoke for existing MVP routes | Backend API/DTO/repository/schema changes, package/lockfile changes, new dependencies, Source import, vector DB, embedding, chunk exposure, auth, versioning, publishing flow |
 | `integration-ci` | Integration CI Gate | GitHub Actions orchestration for PostgreSQL, Spring Boot, Vite, and Playwright smoke | API/DTO/UI changes, product features, Source import, vector DB, embedding, chunk exposure, auth, permissions, publishing flow |
 
 ## Harness Documentation Gate
@@ -55,6 +56,35 @@ Required verification:
 
 - `git diff --check`
 - `bash scripts/check.sh`
+
+## Frontend UX Polish Gate
+
+Use this gate for Frontend UX Polish v0.1.
+
+Allowed:
+
+- Localize user-facing copy on the existing MVP frontend routes.
+- Add or update display label utilities for statuses, source types, index states, retrieval confidence, actions, empty states, loading states, and user-readable errors.
+- Standardize create, edit, retrieval, API-loading, empty, and error feedback using existing frontend components.
+- Tighten WikiNode create/edit form validation without changing DTOs or backend contracts.
+- Expand existing Playwright/browser smoke coverage for the requested acceptance paths.
+- Add frontend UX guidelines and link them from README.
+
+Required checks:
+
+- Backend unit/contract gate: `mvn test`.
+- Frontend lint gate: `pnpm run lint`.
+- Frontend build gate: `pnpm run build`.
+- API smoke gate: `./scripts/api-smoke.sh`.
+- Browser smoke gate: `pnpm run test:e2e`.
+- Harness gate: `bash scripts/check.sh`.
+
+Forbidden unless explicitly confirmed by the user:
+
+- Backend API, DTO, repository, or database migration changes.
+- Package or lockfile changes.
+- New dependencies or toast packages.
+- New business features, routes, real external integrations, Source import, vector database, embedding, chunk exposure, permissions, version management, or publishing approval flow.
 
 ## Integration CI Gate
 

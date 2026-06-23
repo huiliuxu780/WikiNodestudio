@@ -1,31 +1,29 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { ApiError } from "@/services/api-client"
+import { Button } from "@/components/ui/button"
+import { commonLabels, formatApiErrorMessage } from "@/utils/display-labels"
 
-export function ApiErrorNotice({ error }: { error: Error | null }) {
+export function ApiErrorNotice({
+  error,
+  title = commonLabels.loadFailed,
+  onRetry,
+}: {
+  error: Error | null
+  title?: string
+  onRetry?: () => void
+}) {
   if (!error) return null
 
   return (
     <Alert variant="destructive">
-      <AlertTitle>Request failed</AlertTitle>
-      <AlertDescription>{formatApiError(error)}</AlertDescription>
+      <AlertTitle>{title}</AlertTitle>
+      <AlertDescription className="flex flex-col gap-3">
+        <span>{formatApiErrorMessage(error)}</span>
+        {onRetry ? (
+          <Button type="button" size="sm" variant="outline" className="w-fit" onClick={onRetry}>
+            {commonLabels.retry}
+          </Button>
+        ) : null}
+      </AlertDescription>
     </Alert>
   )
-}
-
-function formatApiError(error: Error) {
-  if (error instanceof ApiError) {
-    const apiMessage = extractApiMessage(error.body)
-    return apiMessage ?? error.message
-  }
-
-  return error.message
-}
-
-function extractApiMessage(body: unknown) {
-  if (!body || typeof body !== "object" || !("message" in body)) {
-    return null
-  }
-
-  const message = body.message
-  return typeof message === "string" ? message : null
 }

@@ -1,5 +1,13 @@
 version: 1
 decisions:
+  - id: D002
+    date: "2026-06-23"
+    title: "Run Frontend UX Polish v0.1 before expanding product features"
+    rationale: "MVP v0.1 is technically usable, but user-facing English copy, scattered status labels, uneven operation feedback, and form interaction gaps make manual acceptance unreliable. The polish gate keeps the work frontend-only and preserves backend/API/schema boundaries."
+    related:
+      - US002
+      - IM002
+      - MVP_V0_1
   - id: D001
     date: "2026-06-22"
     title: "Plan PostgreSQL integration CI plus Playwright smoke CI as the next hardening task"

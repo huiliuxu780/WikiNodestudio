@@ -25,7 +25,7 @@ export function NavMain({ items }: { items: ProductNavItem[] }) {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>工作台</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
           const Icon = item.icon
@@ -45,4 +45,3 @@ export function NavMain({ items }: { items: ProductNavItem[] }) {
     </SidebarGroup>
   )
 }
-

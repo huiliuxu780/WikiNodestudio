@@ -8,13 +8,7 @@ import { NodeTypeBadge } from "@/components/wiki/node-type-badge"
 import { StatusBadge } from "@/components/wiki/status-badge"
 import type { RetrievalResult } from "@/types/retrieval"
 import { toPercent } from "@/utils/formatters"
-
-const fieldLabels: Record<string, string> = {
-  title: "Title",
-  summary: "Summary",
-  tags: "Tags",
-  contentMarkdown: "Content",
-}
+import { actionLabels, commonLabels, formatMatchedFields, formatMatchedReason } from "@/utils/display-labels"
 
 export function RetrievalResultCard({ result }: { result: RetrievalResult }) {
   return (
@@ -26,11 +20,11 @@ export function RetrievalResultCard({ result }: { result: RetrievalResult }) {
             <NodeTypeBadge type={result.node.nodeType} />
             <StatusBadge status={result.node.status} />
             <IndexStatusBadge status={result.node.indexStatus} />
-            <Badge variant="outline">score {toPercent(result.score)}</Badge>
+            <Badge variant="outline">置信度 {toPercent(result.score)}</Badge>
           </div>
         </div>
         <Button asChild size="sm" variant="outline">
-          <Link to={`/wiki-nodes/${result.node.nodeId}`}>Open WikiNode</Link>
+          <Link to={`/wiki-nodes/${result.node.nodeId}`}>{actionLabels.openWikiNode}</Link>
         </Button>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-sm">
@@ -40,22 +34,18 @@ export function RetrievalResultCard({ result }: { result: RetrievalResult }) {
             <Badge key={tag} variant="outline">{tag}</Badge>
           ))}
         </div>
-        <InfoRow label="Reason" value={result.matchedReason} />
-        <InfoRow label="Matched" value={formatMatchedFields(result.matchedFields)} />
-        <InfoRow label="Sources" value={result.node.sourceRefs.map((source) => source.sourceTitle).join(", ") || "none"} />
-        <InfoRow label="Outgoing" value={result.outgoingLinks.map((link) => link.targetTitle).join(", ") || "none"} />
-        <InfoRow label="Incoming" value={result.incomingLinks.map((link) => link.fromTitle).join(", ") || "none"} />
+        <InfoRow label="匹配原因" value={formatMatchedReason(result.matchedReason)} />
+        <InfoRow label="匹配字段" value={formatMatchedFields(result.matchedFields)} />
+        <InfoRow label="来源" value={result.node.sourceRefs.map((source) => source.sourceTitle).join("、") || commonLabels.none} />
+        <InfoRow label="出链" value={result.outgoingLinks.map((link) => link.targetTitle).join("、") || commonLabels.none} />
+        <InfoRow label="入链" value={result.incomingLinks.map((link) => link.fromTitle).join("、") || commonLabels.none} />
         <div className="rounded-md border bg-muted/30 p-3">
-          <div className="mb-1 text-xs font-medium text-muted-foreground">Content</div>
+          <div className="mb-1 text-xs font-medium text-muted-foreground">正文摘录</div>
           <p className="line-clamp-3 text-muted-foreground">{result.node.contentMarkdown}</p>
         </div>
       </CardContent>
     </Card>
   )
-}
-
-function formatMatchedFields(fields: string[]) {
-  return fields.map((field) => fieldLabels[field] ?? field).join(", ") || "none"
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {

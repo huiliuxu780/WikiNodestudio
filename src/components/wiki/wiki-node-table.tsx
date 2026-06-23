@@ -19,7 +19,7 @@ import { compactDate } from "@/utils/formatters"
 const columns: ColumnDef<WikiNode>[] = [
   {
     accessorKey: "title",
-    header: "title",
+    header: "标题",
     cell: ({ row }) => (
       <Link to={`/wiki-nodes/${row.original.nodeId}`} className="font-medium hover:underline">
         {row.original.title}
@@ -28,17 +28,17 @@ const columns: ColumnDef<WikiNode>[] = [
   },
   {
     accessorKey: "nodeType",
-    header: "nodeType",
+    header: "节点类型",
     cell: ({ row }) => <NodeTypeBadge type={row.original.nodeType} />,
   },
   {
     accessorKey: "status",
-    header: "status",
+    header: "发布状态",
     cell: ({ row }) => <StatusBadge status={row.original.status} />,
   },
   {
     accessorKey: "tags",
-    header: "tags",
+    header: "标签",
     cell: ({ row }) => (
       <div className="flex max-w-64 flex-wrap gap-1">
         {row.original.tags.map((tag) => (
@@ -49,14 +49,14 @@ const columns: ColumnDef<WikiNode>[] = [
   },
   {
     accessorKey: "indexStatus",
-    header: "indexStatus",
+    header: "索引状态",
     cell: ({ row }) => <IndexStatusBadge status={row.original.indexStatus} />,
   },
-  { accessorKey: "incomingCount", header: "incoming" },
-  { accessorKey: "outgoingCount", header: "outgoing" },
+  { accessorKey: "incomingCount", header: "入链" },
+  { accessorKey: "outgoingCount", header: "出链" },
   {
     accessorKey: "brokenLinkCount",
-    header: "broken",
+    header: "断链",
     cell: ({ row }) => (
       <Badge variant={row.original.brokenLinkCount > 0 ? "destructive" : "outline"}>
         {row.original.brokenLinkCount}
@@ -65,7 +65,7 @@ const columns: ColumnDef<WikiNode>[] = [
   },
   {
     accessorKey: "updatedAt",
-    header: "updatedAt",
+    header: "更新时间",
     cell: ({ row }) => compactDate(row.original.updatedAt),
   },
 ]
@@ -106,4 +106,3 @@ export function WikiNodeTable({ nodes }: { nodes: WikiNode[] }) {
     </div>
   )
 }
-
