@@ -3,10 +3,21 @@ import type { SourceRef } from "@/types/wiki"
 import { commonLabels, labelFromMap, metadataLabels, sourceTypeLabels } from "@/utils/display-labels"
 
 export function SourceRefList({ sourceRefs }: { sourceRefs: SourceRef[] }) {
+  if (!sourceRefs.length) {
+    return (
+      <div className="rounded-md border bg-background p-3 text-sm text-muted-foreground">
+        No source evidence is linked to this WikiNode yet.
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col gap-2">
+      <div className="rounded-md border bg-background p-3 text-sm text-muted-foreground">
+        Source evidence traces WikiNode content back to original Source and Raw Material records.
+      </div>
       {sourceRefs.map((source) => (
-        <div key={`${source.sourceId}-${source.paragraphRef}`} className="rounded-md border p-3 text-sm">
+        <div key={`${source.sourceId}-${source.paragraphRef}`} className="rounded-md border bg-background p-3 text-sm">
           <div className="flex items-center justify-between gap-2">
             <div className="font-medium">{source.sourceTitle}</div>
             <Badge variant="outline">{labelFromMap(sourceTypeLabels, source.sourceType)}</Badge>

@@ -31,7 +31,7 @@ export function WikiNodeEditor({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-3 p-4" data-testid="wikinode-markdown-editor">
       <div className="flex flex-col gap-2">
         <Label htmlFor="edit-node-title">标题</Label>
         <Input
@@ -73,7 +73,7 @@ export function WikiNodeEditor({
           />
         </TabsContent>
         <TabsContent value="preview" className="mt-0 min-h-0 flex-1 rounded-md border bg-background p-4">
-          <MarkdownPreview markdown={contentMarkdown} nodes={nodes} />
+          <MarkdownPreview title={title} summary={summary} markdown={contentMarkdown} nodes={nodes} />
         </TabsContent>
       </Tabs>
     </div>

@@ -33,6 +33,7 @@ export function WikiNodeEditPage() {
   const [saveError, setSaveError] = useState<Error | null>(null)
   const [feedback, setFeedback] = useState(location.state && typeof location.state === "object" && "feedback" in location.state && location.state.feedback === "created" ? commonLabels.createSuccess : "")
   const [validationError, setValidationError] = useState("")
+  const [mockActionState, setMockActionState] = useState("")
   const { data: nodes, error: nodesError, reload: reloadNodes } = useAsyncData(listWikiNodes, [], [reloadVersion])
   const { data: node, isLoading, error: nodeError, reload: reloadNode } = useAsyncData(
     () => nodeId ? getWikiNodeById(nodeId) : Promise.resolve(undefined),
@@ -74,6 +75,7 @@ export function WikiNodeEditPage() {
       const savedNode = await updateWikiNode(activeDraft.nodeId, activeDraft)
       setDraftNode(savedNode)
       setFeedback(commonLabels.saveSuccess)
+      setMockActionState("")
       setReloadVersion((version) => version + 1)
     } catch (error) {
       setSaveError(error instanceof Error ? error : new Error("保存失败，请稍后重试"))
@@ -82,26 +84,49 @@ export function WikiNodeEditPage() {
     }
   }
 
+  function handleMockPublish() {
+    setDraftNode({
+      ...activeDraft,
+      status: "published",
+      publishStatus: "published",
+      reviewStatus: "approved",
+      lastPublishedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
+    })
+    setMockActionState("Published state updated locally.")
+  }
+
+  function handleMockReindex() {
+    setDraftNode({
+      ...activeDraft,
+      indexStatus: "indexing",
+    })
+    setMockActionState("Re-index state updated locally.")
+  }
+
   return (
     <div className="flex h-[calc(100svh-3rem)] flex-col">
       <div className="border-b p-4">
         <PageHeader
-          title={node.title}
+          title={activeDraft.title}
           actions={
             <>
-              <NodeTypeBadge type={node.nodeType} />
-              <StatusBadge status={node.status} />
-              <IndexStatusBadge status={node.indexStatus} />
+              <NodeTypeBadge type={activeDraft.nodeType} />
+              <StatusBadge status={activeDraft.status} />
+              <IndexStatusBadge status={activeDraft.indexStatus} />
               <Button size="sm" variant="outline" onClick={handleSave} disabled={isSaving}>
                 <SaveIcon data-icon="inline-start" />{isSaving ? actionLabels.saving : actionLabels.save}
               </Button>
-              <Button size="sm" variant="outline"><SendIcon data-icon="inline-start" />发布</Button>
-              <Button size="sm" variant="outline"><UploadCloudIcon data-icon="inline-start" />重新索引</Button>
+              <Button size="sm" variant="outline" onClick={handleMockPublish}>
+                <SendIcon data-icon="inline-start" />发布
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleMockReindex}>
+                <UploadCloudIcon data-icon="inline-start" />重新索引
+              </Button>
               <Button
                 size="sm"
                 asChild
               >
-                <Link to={`/retrieval-test?q=${encodeURIComponent(node.title)}`}>
+                <Link to={`/retrieval-test?q=${encodeURIComponent(activeDraft.title)}`}>
                   <SearchIcon data-icon="inline-start" />{actionLabels.testRetrieval}
                 </Link>
               </Button>
@@ -109,17 +134,18 @@ export function WikiNodeEditPage() {
           }
         />
       </div>
-      <div className="grid min-h-0 flex-1 grid-cols-[260px_minmax(0,1fr)_340px]">
+      <div className="grid min-h-0 flex-1 grid-cols-[280px_minmax(0,1fr)_380px]" data-testid="wikinode-editor-workspace">
         <WikiNodeExplorer nodes={nodes} currentNodeId={node.nodeId} query={explorerQuery} onQueryChange={setExplorerQuery} />
         <div className="flex min-w-0 flex-col gap-3">
           {feedback ? <FeedbackNotice title={feedback} /> : null}
+          {mockActionState ? <FeedbackNotice title={mockActionState} description="This local editor state is for product validation; it does not call publishing or indexing services." /> : null}
           {validationError ? <p className="px-4 text-sm text-destructive">{validationError}</p> : null}
           <ApiErrorNotice error={saveError} title={commonLabels.saveFailed} />
           <ApiErrorNotice error={nodesError} onRetry={reloadNodes} />
           <ApiErrorNotice error={linksError} onRetry={reloadLinks} />
-          <WikiNodeEditor key={node.nodeId} node={node} nodes={nodes} onDraftChange={setDraftNode} />
+          <WikiNodeEditor key={node.nodeId} node={activeDraft} nodes={nodes} onDraftChange={setDraftNode} />
         </div>
-        <WikiNodeInspector node={node} outgoingLinks={outgoingLinks} incomingLinks={incomingLinks} brokenLinks={brokenLinks} />
+        <WikiNodeInspector node={activeDraft} outgoingLinks={outgoingLinks} incomingLinks={incomingLinks} brokenLinks={brokenLinks} />
       </div>
     </div>
   )
