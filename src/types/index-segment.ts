@@ -1,9 +1,11 @@
-import type { SourceRef, WikiIndexStatus } from "@/types/wiki"
+import type { KnowledgeMetadata, KnowledgeObjectType, SourceRef, WikiIndexStatus } from "@/types/wiki"
 
 export type IndexSegment = {
   segmentId: string
   nodeId: string
   nodeTitle: string
+  objectType?: KnowledgeObjectType
+  subtype?: string
   segmentType:
     | "title"
     | "summary"
@@ -16,6 +18,7 @@ export type IndexSegment = {
     | "procedure_step"
     | "troubleshooting_step"
   content: string
+  title?: string
   contentPreview: string
   tokenCount: number
   enabled: boolean
@@ -25,9 +28,17 @@ export type IndexSegment = {
   retrievalHits: number
   avgScore?: number
   sourceRefs: SourceRef[]
+  sourceRefIds?: string[]
+  processingProfile?: string
+  metadataSummary?: Array<{
+    label: string
+    value: string
+  }>
+  createdAt?: string
+  updatedAt?: string
   metadata: {
     nodeType: string
     status: string
     tags: string[]
-  }
+  } & KnowledgeMetadata
 }
