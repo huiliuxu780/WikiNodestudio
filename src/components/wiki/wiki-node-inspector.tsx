@@ -4,10 +4,11 @@ import { Link } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { mockIndexSegments } from "@/data/mock-index-segments"
+import { mockWikiNodes } from "@/data/mock-wiki-nodes"
 import { IndexStatusBadge } from "@/components/wiki/index-status-badge"
 import { LinkList } from "@/components/wiki/link-list"
 import { SourceRefList } from "@/components/wiki/source-ref-list"
-import type { WikiLink, WikiNode } from "@/types/wiki"
+import type { KnowledgeRelation, WikiLink, WikiNode } from "@/types/wiki"
 import {
   commonLabels,
   indexStatusLabels,
@@ -16,6 +17,7 @@ import {
   nodeTypeLabels,
   objectTypeLabels,
   publishStatusLabels,
+  relationTypeLabels,
   reviewStatusLabels,
   securityLevelLabels,
   statusLabels,
@@ -85,6 +87,14 @@ export function WikiNodeInspector({
               </div>
             </PanelSection>
           ) : null}
+          <PanelSection title="Knowledge Object 承载字段">
+            <div className="rounded-md border bg-background p-3 text-xs text-muted-foreground">
+              objectType / subtype / metadata / sourceRefs / relations / processingProfile
+            </div>
+          </PanelSection>
+          <PanelSection title="Knowledge Object 关系">
+            <KnowledgeRelationList relations={node.relations} />
+          </PanelSection>
           </div>
         </TabsContent>
         <TabsContent value="links" className="mt-0 min-h-0 overflow-y-auto">
@@ -184,6 +194,33 @@ function MetaRow({ label, value }: { label: string; value: ReactNode }) {
     <div className="flex items-center justify-between gap-3 rounded-md border bg-background px-3 py-2">
       <span className="text-muted-foreground">{label}</span>
       <span className="truncate font-medium">{value}</span>
+    </div>
+  )
+}
+
+function KnowledgeRelationList({ relations }: { relations: KnowledgeRelation[] | undefined }) {
+  if (!relations?.length) {
+    return <p className="rounded-md border bg-background p-3 text-sm text-muted-foreground">暂无 Knowledge Object 关系。</p>
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      {relations.map((relation) => {
+        const target = mockWikiNodes.find((node) => node.nodeId === relation.targetNodeId)
+        const relationLabel = labelFromMap(relationTypeLabels, relation.relationType)
+
+        return (
+          <div key={relation.id ?? `${relation.relationType}-${relation.targetNodeId}`} className="rounded-md border bg-background p-3 text-sm">
+            <div className="font-medium">{relationLabel} -&gt; {target?.title ?? relation.targetNodeId}</div>
+            <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
+              <span>方向：{relation.direction === "incoming" ? "入向" : "出向"}</span>
+              <span>置信度：{relation.confidence ?? commonLabels.none}</span>
+              <span>创建方式：{relation.createdBy === "user" ? "人工" : "系统"}</span>
+              <span>证据 {relation.evidence?.sourceRefId ?? commonLabels.none}</span>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }

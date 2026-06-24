@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom"
 import type { ReactNode } from "react"
+import type { KnowledgeMetadata, KnowledgeRelation } from "@/types/wiki"
 
 import { mockIndexSegments } from "@/data/mock-index-segments"
 import { mockKnowledgeBases } from "@/data/mock-knowledge-bases"
@@ -22,10 +23,13 @@ import {
   healthLabels,
   metadataLabels,
   nodeTypeLabels,
+  objectTypeLabels,
   parseStatusLabels,
+  relationTypeLabels,
   sourceTypeLabels,
   storageProviderLabels,
   statusLabels,
+  subtypeLabels,
   syncStatusLabels,
   userRoleLabels,
   userStatusLabels,
@@ -187,14 +191,29 @@ export function ParsedResultPreviewPage() {
 export function WikiNodeDetailPage() {
   const { nodeId } = useParams()
   const node = mockWikiNodes.find((item) => item.nodeId === nodeId || item.slug === nodeId) ?? mockWikiNodes[0]
+  const relationSummary = formatKnowledgeRelations(node.relations)
+  const sourceEvidence = node.sourceRefs
+    .map((sourceRef) => `${sourceRef.sourceName ?? sourceRef.sourceTitle} / ${sourceRef.id ?? sourceRef.sourceId}`)
+    .join("；") || "无"
 
   return (
-    <PageScaffold title="WikiNode 详情" description={node.title}>
+    <PageScaffold title="WikiNode 详情" description={`${node.title}。WikiNode 是 Knowledge Object carrier，当前页只读展示承载字段。`}>
       <SummaryGrid items={[
         ["WikiNode", node.title],
+        [metadataLabels.objectType, labelFromMap(objectTypeLabels, node.objectType ?? "Article")],
+        [metadataLabels.subtype, labelFromMap(subtypeLabels, node.subtype ?? node.nodeType)],
+        [metadataLabels.processingProfile, node.processingProfile ?? "无"],
         ["发布状态", statusLabels[node.status]],
         ["索引状态", indexStatusLabels[node.indexStatus]],
         ["负责人", node.owner],
+      ]} />
+      <SimpleList items={[
+        "Knowledge Object 承载字段",
+        "objectType / subtype / metadata / sourceRefs / relations / processingProfile",
+        `扩展元数据：${formatMetadataSummary(node.metadata)}`,
+        `来源证据：${sourceEvidence}`,
+        `语义关系：${relationSummary}`,
+        `兼容节点类型：${labelFromMap(nodeTypeLabels, node.nodeType)}`,
       ]} />
     </PageScaffold>
   )
@@ -294,4 +313,24 @@ function SimpleList({ items }: { items: string[] }) {
       </CardContent>
     </Card>
   )
+}
+
+function formatMetadataSummary(metadata: KnowledgeMetadata | undefined) {
+  if (!metadata) return "无"
+
+  return Object.entries(metadata)
+    .slice(0, 4)
+    .map(([key, value]) => `${key}=${String(value)}`)
+    .join("；")
+}
+
+function formatKnowledgeRelations(relations: KnowledgeRelation[] | undefined) {
+  if (!relations?.length) return "无"
+
+  return relations
+    .map((relation) => {
+      const target = mockWikiNodes.find((node) => node.nodeId === relation.targetNodeId)
+      return `${labelFromMap(relationTypeLabels, relation.relationType)} -> ${target?.title ?? relation.targetNodeId}`
+    })
+    .join("；")
 }
