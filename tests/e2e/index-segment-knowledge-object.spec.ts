@@ -1,6 +1,28 @@
 import { expect, test } from "@playwright/test"
 
 test.describe("Index Segment Knowledge Object experience", () => {
+  test("preview and debug explain controlled segment boundaries", async ({ page }) => {
+    await page.goto("/index-segments")
+
+    await expect(page.getByText("平台管理的是 WikiNode 发布前的 Index Segment，不管理外部向量库内部片段。")).toBeVisible()
+    await expect(page.getByTestId("index-segment-preview")).toContainText("Index Segment 来源 WikiNode")
+    await expect(page.getByTestId("index-segment-preview")).toContainText("内容证据")
+    await expect(page.getByTestId("index-segment-preview")).toContainText("来源证据范围")
+    await expect(page.getByTestId("index-segment-preview")).toContainText("当前只展示本地验收数据，不执行 embedding 或真实向量库同步。")
+    await expect(page.locator("main").last()).not.toContainText(/Chunk Management|Vector DB Management|raw chunk/i)
+
+    await page.goto("/index-segments/strategy")
+    await expect(page.getByText("生成链路：WikiNode / Knowledge Object -> Index Segment -> 外部向量库同步证据。")).toBeVisible()
+    await expect(page.getByText("本页只说明受控片段策略，不运行 embedding、不写入外部向量库。")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/Chunk Management|Vector DB Management|raw chunk/i)
+
+    await page.goto("/index-segments/debug")
+    await expect(page.getByText("调试只解释召回证据，不调用 embedding、不写入外部向量库。")).toBeVisible()
+    await expect(page.getByTestId("segment-debug-panel")).toContainText("当前调试对象来自本地样例 Index Segment")
+    await expect(page.getByTestId("segment-debug-panel")).toContainText("来源证据范围")
+    await expect(page.locator("main").last()).not.toContainText(/Chunk Management|Vector DB Management|raw chunk/i)
+  })
+
   test("list search and filters expose Knowledge Object context", async ({ page }) => {
     await page.goto("/index-segments")
 

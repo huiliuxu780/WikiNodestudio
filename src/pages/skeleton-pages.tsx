@@ -238,7 +238,7 @@ export function IndexSegmentListPage() {
   return (
     <PageScaffold
       title="Index Segment"
-      description="Index Segment 是从 WikiNode / Knowledge Object 生成的受控索引和召回单元，并始终关联父级 WikiNode。"
+      description="Index Segment 是从 WikiNode / Knowledge Object 生成的受控索引和召回单元，并始终关联父级 WikiNode。平台管理的是 WikiNode 发布前的 Index Segment，不管理外部向量库内部片段。"
     >
       <IndexSegmentTable segments={mockIndexSegments} />
     </PageScaffold>
