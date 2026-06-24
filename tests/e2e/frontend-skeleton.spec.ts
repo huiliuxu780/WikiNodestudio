@@ -114,7 +114,7 @@ test.describe("Frontend skeleton IA", () => {
     await page.goto("/raw-materials/rm-001")
     await expect(page.getByText("解析状态", { exact: true })).toBeVisible()
     await expect(page.getByText("解析完成")).toBeVisible()
-    await expect(page.locator("main").last()).not.toContainText(/\bparsed\b/i)
+    await expect(page.locator("main").last()).not.toContainText(/\bparseStatus\b|\bnot_parsed\b|\bparsing\b|\bfailed\b/i)
 
     await page.goto("/raw-materials/rm-002")
     await expect(page.getByText("存储位置")).toBeVisible()

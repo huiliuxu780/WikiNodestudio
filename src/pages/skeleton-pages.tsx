@@ -123,6 +123,7 @@ export function KnowledgeBaseSettingsPage() {
 export function SourceDetailPage() {
   const { sourceId } = useParams()
   const source = mockSources.find((item) => item.sourceId === sourceId) ?? mockSources[0]
+  const relatedRawMaterials = mockRawMaterials.filter((item) => item.sourceId === source.sourceId)
 
   return (
     <PageScaffold title="知识来源详情" description={`${source.title}。当前页面只展示来源配置和生成 WikiNode 的验收基线。`}>
@@ -132,6 +133,45 @@ export function SourceDetailPage() {
         ["同步状态", labelFromMap(syncStatusLabels, source.syncStatus)],
         ["生成 WikiNode", String(source.generatedNodes)],
       ]} />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">证据链位置</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2 text-sm">
+            <Badge variant="outline" className="w-fit">Source 阶段</Badge>
+            <p className="text-muted-foreground">Source 是原始知识来源，只负责说明来源类别、负责人、同步结果和后续快照入口。</p>
+            <p className="font-medium">{"Source -> Raw Material -> Parsed Document -> WikiNode"}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">下一步只读检查</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            <p>当前阶段不会启动同步、授权连接或后台任务。</p>
+            <p>真实 Source import、文件上传和解析留到后续阶段。</p>
+            <p>当前仅沿着已有样例数据查看 Raw Material 和 WikiNode 证据。</p>
+          </CardContent>
+        </Card>
+      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">关联 Raw Material</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-2 md:grid-cols-2">
+          {relatedRawMaterials.length === 0 ? (
+            <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+              当前 Source 暂无关联 Raw Material。真实同步和快照生成不在本轮范围内。
+            </div>
+          ) : relatedRawMaterials.map((raw) => (
+            <Link key={raw.rawMaterialId} to={`/raw-materials/${raw.rawMaterialId}`} className="rounded-md border p-3 text-sm hover:bg-muted/40">
+              <div className="font-medium">{raw.title}</div>
+              <div className="mt-1 text-muted-foreground">{raw.rawMaterialId} · {labelFromMap(parseStatusLabels, raw.parseStatus)}</div>
+            </Link>
+          ))}
+        </CardContent>
+      </Card>
       <SimpleList items={[
         "只读来源验收基线",
         "不执行真实同步、授权连接或后台任务。",
@@ -144,12 +184,36 @@ export function SourceDetailPage() {
 export function RawMaterialListPage() {
   return (
     <PageScaffold title="原始材料" description="查看 Source 进入 WikiNode 标准化之前保留的原始快照；当前不提供真实上传或解析执行。">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">快照清单</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3 text-sm md:grid-cols-[1fr_1.2fr]">
+          <div className="rounded-md border bg-muted/20 px-3 py-2">
+            <div className="font-medium">{"Source -> Raw Material -> Parsed Document"}</div>
+            <p className="mt-1 text-muted-foreground">Raw Material 是 Source 的快照证据，还不是 WikiNode。</p>
+          </div>
+          <div className="rounded-md border border-dashed px-3 py-2">
+            <div className="font-medium">当前只读：不会上传、下载、重新解析或访问真实存储。</div>
+            <p className="mt-1 text-muted-foreground">点击条目只进入本地样例详情页。</p>
+          </div>
+        </CardContent>
+      </Card>
       <SimpleList items={[
         "Raw Material 是 Source 同步或上传后的原始快照。",
         "当前不提供文件上传或重新解析。",
         "Parsed Document 仅作为标准化内容预览。",
       ]} />
-      <SimpleList items={mockRawMaterials.map((item) => `${item.rawMaterialId} ${item.title} ${labelFromMap(parseStatusLabels, item.parseStatus)}`)} />
+      <Card>
+        <CardContent className="grid gap-2 p-4 md:grid-cols-2 xl:grid-cols-3">
+          {mockRawMaterials.map((item) => (
+            <Link key={item.rawMaterialId} to={`/raw-materials/${item.rawMaterialId}`} className="rounded-md border bg-muted/20 px-3 py-2 text-sm hover:bg-muted/40">
+              <div className="font-medium">{item.title}</div>
+              <div className="mt-1 text-muted-foreground">{item.rawMaterialId} · {item.fileType} · {labelFromMap(parseStatusLabels, item.parseStatus)}</div>
+            </Link>
+          ))}
+        </CardContent>
+      </Card>
     </PageScaffold>
   )
 }
@@ -157,6 +221,7 @@ export function RawMaterialListPage() {
 export function RawMaterialDetailPage() {
   const { rawMaterialId } = useParams()
   const raw = mockRawMaterials.find((item) => item.rawMaterialId === rawMaterialId) ?? mockRawMaterials[0]
+  const source = mockSources.find((item) => item.sourceId === raw.sourceId)
 
   return (
     <PageScaffold title="原始材料详情" description={raw.title}>
@@ -166,9 +231,44 @@ export function RawMaterialDetailPage() {
         ["解析状态", labelFromMap(parseStatusLabels, raw.parseStatus)],
         ["解析文档", raw.parsedDocumentId ?? "尚未生成"],
       ]} />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">证据链位置</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2 text-sm">
+            <Badge variant="outline" className="w-fit">Raw Material 阶段</Badge>
+            <p className="text-muted-foreground">Raw Material 是从 Source 捕获的原始快照，只作为 Parsed Document 和 WikiNode 的来源证据。</p>
+            <p className="font-medium">{"Source -> Raw Material -> Parsed Document -> WikiNode"}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">关联 Source</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            {source ? (
+              <Link to={`/sources/${source.sourceId}`} className="block rounded-md border p-3 hover:bg-muted/40">
+                <div className="font-medium">{source.title}</div>
+                <div className="mt-1 text-muted-foreground">{labelFromMap(sourceTypeLabels, source.sourceType)} · {labelFromMap(syncStatusLabels, source.syncStatus)}</div>
+              </Link>
+            ) : (
+              <div className="rounded-md border border-dashed p-3 text-muted-foreground">未找到关联 Source。</div>
+            )}
+            {raw.parsedDocumentId ? (
+              <Link to={`/raw-materials/${raw.rawMaterialId}/parsed-result`} className="inline-flex text-sm font-medium text-primary hover:underline">
+                查看解析结果
+              </Link>
+            ) : (
+              <div className="text-muted-foreground">尚未生成 Parsed Document，本页不会触发解析任务。</div>
+            )}
+            <p className="text-muted-foreground">当前不提供下载、重新解析或真实存储访问。</p>
+          </CardContent>
+        </Card>
+      </div>
       <SimpleList items={[
         "仅展示原始材料元数据和解析状态。",
-        "不提供下载、重新解析或真实存储访问。",
+        "下载、重新解析和真实存储访问均未开放。",
         "真实文件存储、解析任务和访问控制留到后续阶段。",
       ]} />
     </PageScaffold>
@@ -176,8 +276,41 @@ export function RawMaterialDetailPage() {
 }
 
 export function ParsedResultPreviewPage() {
+  const { rawMaterialId } = useParams()
+  const raw = mockRawMaterials.find((item) => item.rawMaterialId === rawMaterialId) ?? mockRawMaterials[0]
+  const source = mockSources.find((item) => item.sourceId === raw.sourceId)
+
   return (
     <PageScaffold title="解析结果预览" description="查看进入 WikiNode 标准化之前的内容形态和来源证据；当前不运行真实解析器。">
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Parsed Document 阶段</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            <Badge variant="outline">标准化预览</Badge>
+            <p>Parsed Document 是 Raw Material 解析后的标准化内容，还不是最终 WikiNode。</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">标准化内容结构</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            <p>标题层级、段落、表格、图片引用和抽取元数据会在这里预览。</p>
+            <p>后续转换为 WikiNode 前仍需人工治理。</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">可回溯证据</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            <p>{source?.title ?? "未知 Source"} / {raw.title}</p>
+            <p>当前只展示样例来源证据，不访问真实存储。</p>
+          </CardContent>
+        </Card>
+      </div>
       <SimpleList items={[
         "Parsed Document 是解析后的标准化内容预览。",
         "当前不运行 PDF / Word / 网页 / 数据库 / API 解析。",
