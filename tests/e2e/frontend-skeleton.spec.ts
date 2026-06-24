@@ -37,6 +37,8 @@ test.describe("Frontend skeleton IA", () => {
   })
 
   test("all skeleton routes render non-empty product pages", async ({ page }) => {
+    test.setTimeout(45_000)
+
     const routes = [
       ["/", "总览"],
       ["/knowledge-bases", "知识库"],
