@@ -33,8 +33,8 @@ import {
 import { getIncomingLinks } from "@/utils/link-parser"
 
 const routeCards = {
-  同步任务: ["飞书同步", "PDF 解析", "历史知识库导入"],
-  同步日志: ["6 个已同步来源", "1 个待解析任务", "1 个失败文档"],
+  同步任务: ["当前不执行真实同步任务", "展示 Source 到 Raw Material 的验收边界", "后台任务留到后续阶段"],
+  同步日志: ["当前不写入真实同步日志", "仅展示来源状态口径", "真实任务日志留到后续阶段"],
   Backlinks: ["保修期内维修服务政策", "收费政策", "人为损坏判定规则"],
   影响分析: ["发布影响", "断链影响", "Index Segment 影响"],
   外部向量库同步: ["阿里云配置", "火山引擎配置", "试运行同步状态"],
@@ -121,12 +121,17 @@ export function SourceDetailPage() {
   const source = mockSources.find((item) => item.sourceId === sourceId) ?? mockSources[0]
 
   return (
-    <PageScaffold title="知识来源详情" description={source.title}>
+    <PageScaffold title="知识来源详情" description={`${source.title}。当前页面只展示来源配置和生成 WikiNode 的验收基线。`}>
       <SummaryGrid items={[
         ["来源类型", labelFromMap(sourceTypeLabels, source.sourceType)],
         ["负责人", source.owner],
         ["同步状态", labelFromMap(syncStatusLabels, source.syncStatus)],
         ["生成 WikiNode", String(source.generatedNodes)],
+      ]} />
+      <SimpleList items={[
+        "只读来源验收基线",
+        "不执行真实同步、授权连接或后台任务。",
+        "真实 Source import、文件上传和解析留到后续阶段。",
       ]} />
     </PageScaffold>
   )
@@ -134,7 +139,12 @@ export function SourceDetailPage() {
 
 export function RawMaterialListPage() {
   return (
-    <PageScaffold title="原始材料" description="解析文档和 WikiNode 标准化之前的原始来源快照。">
+    <PageScaffold title="原始材料" description="查看 Source 进入 WikiNode 标准化之前保留的原始快照；当前不提供真实上传或解析执行。">
+      <SimpleList items={[
+        "Raw Material 是 Source 同步或上传后的原始快照。",
+        "当前不提供文件上传或重新解析。",
+        "Parsed Document 仅作为标准化内容预览。",
+      ]} />
       <SimpleList items={mockRawMaterials.map((item) => `${item.rawMaterialId} ${item.title} ${labelFromMap(parseStatusLabels, item.parseStatus)}`)} />
     </PageScaffold>
   )
@@ -152,13 +162,23 @@ export function RawMaterialDetailPage() {
         ["解析状态", labelFromMap(parseStatusLabels, raw.parseStatus)],
         ["解析文档", raw.parsedDocumentId ?? "尚未生成"],
       ]} />
+      <SimpleList items={[
+        "仅展示原始材料元数据和解析状态。",
+        "不提供下载、重新解析或真实存储访问。",
+        "真实文件存储、解析任务和访问控制留到后续阶段。",
+      ]} />
     </PageScaffold>
   )
 }
 
 export function ParsedResultPreviewPage() {
   return (
-    <PageScaffold title="解析结果预览" description="进入 WikiNode 标准化之前的 Markdown、表格、来源证据和章节层级。">
+    <PageScaffold title="解析结果预览" description="查看进入 WikiNode 标准化之前的内容形态和来源证据；当前不运行真实解析器。">
+      <SimpleList items={[
+        "Parsed Document 是解析后的标准化内容预览。",
+        "当前不运行 PDF / Word / 网页 / 数据库 / API 解析。",
+        "这里只说明进入 WikiNode 标准化之前的内容形态。",
+      ]} />
       <SimpleList items={["标题层级", "段落来源证据", "表格抽取预览", "图片引用"]} />
     </PageScaffold>
   )
