@@ -28,6 +28,11 @@ product_docs:
   CURRENT_DONE_REPORT_TEMPLATE:
     file: docs/current/DONE_REPORT_TEMPLATE.md
     source: /Users/mac/Desktop/任务 2 文档.md
+phase2_plans:
+  SOURCE_RAW_MATERIAL_PARSED_DOCUMENT:
+    file: docs/current/SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_PHASE2_PLAN.md
+    release: docs/release/mvp-baseline-v0.2.md
+    inventory: docs/current/FULL_FEATURE_INVENTORY_AND_GAP_MATRIX.md
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md

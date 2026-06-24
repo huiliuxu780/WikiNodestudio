@@ -1,5 +1,13 @@
 version: 1
 decisions:
+  - id: D024
+    date: "2026-06-25"
+    title: "Start Phase 2 with Source / Raw Material / Parsed Document planning before implementation"
+    rationale: "The v0.2 release baseline identifies Source / Raw Material / Parsed Document as the first Phase 2 backlog item, but real import, parser, backend, database, API, and external integration work are stop-condition areas. IM024 therefore creates a docs-only execution plan that separates read-only UX deepening, model/API contract planning, and later implementation approvals."
+    related:
+      - MVP_V0_2
+      - IM024
+      - SOURCE_RAW_MATERIAL_PARSED_DOCUMENT
   - id: D023
     date: "2026-06-24"
     title: "Close MVP v0.2 release baseline after IM014 through IM022"
