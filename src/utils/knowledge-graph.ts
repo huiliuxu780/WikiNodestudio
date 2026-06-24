@@ -82,6 +82,10 @@ const supportedRelationTypes = new Set([
 
 const nodeWidth = 330
 const nodeHeight = 210
+const wikiNodeCardWidth = 270
+const wikiNodeCardHeight = 132
+const brokenLinkNodeWidth = 250
+const brokenLinkNodeHeight = 118
 const columns = 3
 
 export function matchesKnowledgeGraphFilters(node: WikiNode, filters: KnowledgeGraphFilters) {
@@ -189,6 +193,8 @@ function nodeToFlowNode(node: WikiNode, index: number, selectedNodeId?: string):
       x: (index % columns) * nodeWidth,
       y: Math.floor(index / columns) * nodeHeight,
     },
+    width: wikiNodeCardWidth,
+    height: wikiNodeCardHeight,
     selected: selectedNodeId === node.nodeId,
     data: {
       nodeId: node.nodeId,
@@ -216,6 +222,8 @@ function brokenNodeFromEdge(edge: KnowledgeGraphEdge, index: number, selectedNod
       x: (index % columns) * nodeWidth + 24,
       y: Math.floor(index / columns) * nodeHeight + 64,
     },
+    width: brokenLinkNodeWidth,
+    height: brokenLinkNodeHeight,
     selected: selectedNodeId === id,
     data: {
       nodeId: id,

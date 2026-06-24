@@ -13,8 +13,8 @@ test.describe("WikiGraph Knowledge Object workspace", () => {
     await expect(productNode).toBeVisible()
     await expect(productNode).toContainText("产品知识")
     await expect(productNode).toContainText("产品型号")
-    await expect(page.getByTestId("knowledge-graph-edge").filter({ hasText: "关联手册" })).toBeVisible()
-    await expect(page.getByTestId("knowledge-graph-edge").filter({ hasText: "关联配件目录" })).toBeVisible()
+    await expect(page.locator(".react-flow__edge").first()).toBeVisible()
+    await expect(page.getByTestId("knowledge-graph-edge")).toHaveCount(0)
 
     await page.getByLabel("搜索知识对象").fill("WM14U")
     await expect(page.getByTestId("knowledge-graph-node").filter({ hasText: "西门子 WM14U 洗衣机" })).toBeVisible()
