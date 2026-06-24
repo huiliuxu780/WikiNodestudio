@@ -107,10 +107,10 @@ test.describe("Frontend skeleton IA", () => {
     await page.goto("/raw-materials")
     await expect(page.getByText("解析完成").first()).toBeVisible()
     await expect(page.getByText("解析失败")).toBeVisible()
-    await expect(page.locator("main").last()).not.toContainText(/\bparsed\b|\bfailed\b|\bparsing\b|\bnot_parsed\b/i)
+    await expect(page.locator("main").last()).not.toContainText(/\bfailed\b|\bparsing\b|\bnot_parsed\b/i)
 
     await page.goto("/raw-materials/rm-001")
-    await expect(page.getByText("解析状态")).toBeVisible()
+    await expect(page.getByText("解析状态", { exact: true })).toBeVisible()
     await expect(page.getByText("解析完成")).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(/\bparsed\b/i)
 
@@ -151,6 +151,35 @@ test.describe("Frontend skeleton IA", () => {
     await expect(page.getByText("审核员")).toBeVisible()
     await expect(page.getByText("查看者")).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(/\bOwner\b|\bEditor\b|\bReviewer\b|\bViewer\b/)
+  })
+
+  test("Sources and Raw Materials explain current MVP boundaries", async ({ page }) => {
+    await page.goto("/sources")
+    await expect(page.getByText("Source 是原始知识的来源。")).toBeVisible()
+    await expect(page.getByText("当前仅展示本地样例数据，不执行真实同步、上传或解析。")).toBeVisible()
+    await expect(page.getByText("真实 Source import、文件上传和解析任务留到后续阶段。")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+    await expect(page.locator("main").last()).not.toContainText(/mock fallback|DTO|repository/i)
+
+    await page.goto("/sources/src-feishu-cc")
+    await expect(page.getByText("只读来源验收基线")).toBeVisible()
+    await expect(page.getByText("不执行真实同步、授权连接或后台任务。")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+
+    await page.goto("/raw-materials")
+    await expect(page.getByText("Raw Material 是 Source 同步或上传后的原始快照。", { exact: true })).toBeVisible()
+    await expect(page.getByText("当前不提供文件上传或重新解析。", { exact: true })).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+
+    await page.goto("/raw-materials/rm-001")
+    await expect(page.getByText("仅展示原始材料元数据和解析状态。")).toBeVisible()
+    await expect(page.getByText("不提供下载、重新解析或真实存储访问。")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+
+    await page.goto("/raw-materials/rm-001/parsed-result")
+    await expect(page.getByText("Parsed Document 是解析后的标准化内容预览。", { exact: true })).toBeVisible()
+    await expect(page.getByText("当前不运行 PDF / Word / 网页 / 数据库 / API 解析。", { exact: true })).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
   })
 
   test("index status shows Chinese empty state for groups without nodes", async ({ page }) => {
