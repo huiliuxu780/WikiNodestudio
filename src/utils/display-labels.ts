@@ -250,6 +250,7 @@ export const relationTypeLabels: Record<string, string> = {
   has_policy: "关联政策",
   has_asset: "关联素材",
   related_to: "相关",
+  broken_wikilink: "异常 WikiLink",
 }
 
 export function labelFromMap(labels: Record<string, string>, value: string) {
