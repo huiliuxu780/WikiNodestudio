@@ -77,7 +77,7 @@ export const router = createBrowserRouter([
       { path: "/system/parser-engine", element: <GenericSkeletonPage title="解析引擎" /> },
       { path: "/system/storage-engine", element: <GenericSkeletonPage title="存储引擎" /> },
       { path: "/system/vector-store", element: <SystemVectorStorePage /> },
-      { path: "/system/embedding-config", element: <GenericSkeletonPage title="Embedding 配置" /> },
+      { path: "/system/embedding-config", element: <GenericSkeletonPage title="向量模型配置" /> },
       { path: "/system/health", element: <GenericSkeletonPage title="系统健康" /> },
       { path: "/broken-links", element: <BrokenLinksPage /> },
       { path: "/settings", element: <SettingsPage /> },

@@ -136,6 +136,27 @@ export const syncStatusLabels: Record<string, string> = {
   failed: "同步失败",
 }
 
+export const parseStatusLabels: Record<string, string> = {
+  not_parsed: "未解析",
+  parsing: "解析中",
+  parsed: "解析完成",
+  failed: "解析失败",
+}
+
+export const userRoleLabels: Record<string, string> = {
+  owner: "知识负责人",
+  editor: "编辑者",
+  reviewer: "审核员",
+  viewer: "查看者",
+  admin: "管理员",
+}
+
+export const userStatusLabels: Record<string, string> = {
+  active: "已启用",
+  invited: "已邀请",
+  disabled: "已停用",
+}
+
 export const retrievalStatusLabels: Record<string, string> = {
   success: "检索完成",
   empty: "没有检索结果",

@@ -7,7 +7,7 @@ import { listWikiNodes } from "@/services/wiki-node-api-service"
 import type { WikiIndexStatus } from "@/types/wiki"
 import { indexStatusLabels } from "@/utils/display-labels"
 
-const groups: WikiIndexStatus[] = ["indexed", "outdated", "failed", "not_indexed"]
+const groups: WikiIndexStatus[] = ["indexed", "indexing", "outdated", "failed", "not_indexed"]
 
 export function IndexStatusPage() {
   const { data: nodes, error, reload } = useAsyncData(listWikiNodes, [])
@@ -17,24 +17,32 @@ export function IndexStatusPage() {
       <PageHeader title="索引状态" description="查看知识节点发布状态与索引状态是否可被验收。" />
       <ApiErrorNotice error={error} onRetry={reload} />
       <div className="grid gap-4 lg:grid-cols-4">
-        {groups.map((status) => (
-          <Card key={status}>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between text-base">
-                <span>{indexStatusLabels[status]}</span>
-                <IndexStatusBadge status={status} />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-2">
-              {nodes.filter((node) => node.indexStatus === status).map((node) => (
-                <div key={node.nodeId} className="rounded-md border p-3 text-sm">
-                  <div className="font-medium">{node.title}</div>
-                  <div className="text-xs text-muted-foreground">{node.lastIndexedAt ?? "尚未索引"}</div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        ))}
+        {groups.map((status) => {
+          const groupNodes = nodes.filter((node) => node.indexStatus === status)
+
+          return (
+            <Card key={status}>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between text-base">
+                  <span>{indexStatusLabels[status]}</span>
+                  <IndexStatusBadge status={status} />
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-2">
+                {groupNodes.length === 0 ? (
+                  <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">暂无该状态的知识节点。</div>
+                ) : (
+                  groupNodes.map((node) => (
+                    <div key={node.nodeId} className="rounded-md border p-3 text-sm">
+                      <div className="font-medium">{node.title}</div>
+                      <div className="text-xs text-muted-foreground">{node.lastIndexedAt ?? "尚未索引"}</div>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          )
+        })}
       </div>
     </div>
   )

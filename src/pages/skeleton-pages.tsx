@@ -16,6 +16,16 @@ import { IndexSegmentTable } from "@/components/segments/index-segment-table"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LinkList } from "@/components/wiki/link-list"
+import {
+  indexStatusLabels,
+  labelFromMap,
+  parseStatusLabels,
+  sourceTypeLabels,
+  statusLabels,
+  syncStatusLabels,
+  userRoleLabels,
+  userStatusLabels,
+} from "@/utils/display-labels"
 import { getIncomingLinks } from "@/utils/link-parser"
 
 const routeCards = {
@@ -39,10 +49,10 @@ const routeCards = {
   召回评测: ["TopK 一致性", "WikiNode 命中精度", "片段证据质量"],
   解析引擎: ["Markdown 解析器", "表格解析器", "图片引用"],
   存储引擎: ["原始材料快照", "解析文档存储", "来源证据"],
-  "Embedding 配置": ["仅配置外部向量库", "MVP 不实现本地 embedding 流程"],
+  向量模型配置: ["仅配置外部向量库", "MVP 不实现本地向量化流程"],
   系统健康: ["前端基线可用", "当前页不依赖真实后端", "需要 Harness 检查"],
-  用户: mockUsers.map((user) => `${user.name} ${user.email}`),
-  角色: ["Owner", "Editor", "Reviewer", "Viewer"],
+  用户: mockUsers.map((user) => `${user.name} ${labelFromMap(userRoleLabels, user.role)} ${labelFromMap(userStatusLabels, user.status)}`),
+  角色: ["知识负责人", "编辑者", "审核员", "查看者"],
   权限: ["读取", "编辑", "审核", "管理"],
   审计日志: ["WikiNode 已更新", "Index Segment 已生成", "召回已测试"],
 }
@@ -109,9 +119,9 @@ export function SourceDetailPage() {
   return (
     <PageScaffold title="知识来源详情" description={source.title}>
       <SummaryGrid items={[
-        ["来源类型", source.sourceType],
+        ["来源类型", labelFromMap(sourceTypeLabels, source.sourceType)],
         ["负责人", source.owner],
-        ["同步状态", source.syncStatus],
+        ["同步状态", labelFromMap(syncStatusLabels, source.syncStatus)],
         ["生成 WikiNode", String(source.generatedNodes)],
       ]} />
     </PageScaffold>
@@ -121,7 +131,7 @@ export function SourceDetailPage() {
 export function RawMaterialListPage() {
   return (
     <PageScaffold title="原始材料" description="解析文档和 WikiNode 标准化之前的原始来源快照。">
-      <SimpleList items={mockRawMaterials.map((item) => `${item.rawMaterialId} ${item.title} ${item.parseStatus}`)} />
+      <SimpleList items={mockRawMaterials.map((item) => `${item.rawMaterialId} ${item.title} ${labelFromMap(parseStatusLabels, item.parseStatus)}`)} />
     </PageScaffold>
   )
 }
@@ -135,7 +145,7 @@ export function RawMaterialDetailPage() {
       <SummaryGrid items={[
         ["文件类型", raw.fileType],
         ["存储位置", raw.storageProvider],
-        ["解析状态", raw.parseStatus],
+        ["解析状态", labelFromMap(parseStatusLabels, raw.parseStatus)],
         ["解析文档", raw.parsedDocumentId ?? "尚未生成"],
       ]} />
     </PageScaffold>
@@ -158,8 +168,8 @@ export function WikiNodeDetailPage() {
     <PageScaffold title="WikiNode 详情" description={node.title}>
       <SummaryGrid items={[
         ["WikiNode", node.title],
-        ["发布状态", node.status],
-        ["索引状态", node.indexStatus],
+        ["发布状态", statusLabels[node.status]],
+        ["索引状态", indexStatusLabels[node.indexStatus]],
         ["负责人", node.owner],
       ]} />
     </PageScaffold>

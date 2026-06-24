@@ -79,7 +79,7 @@ test.describe("Frontend skeleton IA", () => {
       ["/system/parser-engine", "解析引擎"],
       ["/system/storage-engine", "存储引擎"],
       ["/system/vector-store", "外部向量库配置"],
-      ["/system/embedding-config", "Embedding 配置"],
+      ["/system/embedding-config", "向量模型配置"],
       ["/system/health", "系统健康"],
       ["/settings", "设置"],
       ["/admin/users", "用户"],
@@ -94,6 +94,46 @@ test.describe("Frontend skeleton IA", () => {
       await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
       await expect(page.getByText("Request failed")).toHaveCount(0)
     }
+  })
+
+  test("detail and admin skeleton pages render mapped Chinese statuses", async ({ page }) => {
+    await page.goto("/sources/src-feishu-cc")
+    await expect(page.getByText("来源类型")).toBeVisible()
+    await expect(page.getByText("飞书文档")).toBeVisible()
+    await expect(page.getByText("同步状态")).toBeVisible()
+    await expect(page.getByText("已同步")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/\bsynced\b|\bfeishu\b/i)
+
+    await page.goto("/raw-materials")
+    await expect(page.getByText("解析完成").first()).toBeVisible()
+    await expect(page.getByText("解析失败")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/\bparsed\b|\bfailed\b|\bparsing\b|\bnot_parsed\b/i)
+
+    await page.goto("/raw-materials/rm-001")
+    await expect(page.getByText("解析状态")).toBeVisible()
+    await expect(page.getByText("解析完成")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/\bparsed\b/i)
+
+    await page.goto("/wiki-nodes/wn-001/detail")
+    await expect(page.getByText("发布状态")).toBeVisible()
+    await expect(page.getByText("已发布")).toBeVisible()
+    await expect(page.getByText("索引状态")).toBeVisible()
+    await expect(page.getByText("已索引")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/\bpublished\b|\bindexed\b/i)
+
+    await page.goto("/admin/roles")
+    await expect(page.getByText("知识负责人")).toBeVisible()
+    await expect(page.getByText("编辑者")).toBeVisible()
+    await expect(page.getByText("审核员")).toBeVisible()
+    await expect(page.getByText("查看者")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/\bOwner\b|\bEditor\b|\bReviewer\b|\bViewer\b/)
+  })
+
+  test("index status shows Chinese empty state for groups without nodes", async ({ page }) => {
+    await page.goto("/index-status")
+
+    await expect(page.getByText("暂无该状态的知识节点。").first()).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
   })
 
   test("Index Segments and Retrieval Test keep WikiNode-centered language", async ({ page }) => {
