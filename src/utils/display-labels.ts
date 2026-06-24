@@ -157,6 +157,17 @@ export const userStatusLabels: Record<string, string> = {
   disabled: "已停用",
 }
 
+export const healthLabels: Record<string, string> = {
+  healthy: "健康",
+  warning: "需关注",
+  failed: "异常",
+}
+
+export const storageProviderLabels: Record<string, string> = {
+  workspace: "工作区快照",
+  "object-storage": "对象存储",
+}
+
 export const retrievalStatusLabels: Record<string, string> = {
   success: "检索完成",
   empty: "没有检索结果",
