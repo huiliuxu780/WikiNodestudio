@@ -19,8 +19,12 @@ import { LinkList } from "@/components/wiki/link-list"
 import {
   indexStatusLabels,
   labelFromMap,
+  healthLabels,
+  metadataLabels,
+  nodeTypeLabels,
   parseStatusLabels,
   sourceTypeLabels,
+  storageProviderLabels,
   statusLabels,
   syncStatusLabels,
   userRoleLabels,
@@ -40,8 +44,8 @@ const routeCards = {
   查询日志: mockRetrievalLogs.map((log) => `${log.query} -> ${log.topNodeTitle}`),
   评测用例: ["保修收费", "人为损坏", "预约改约"],
   标签与元数据: ["保修", "收费", "洗碗机", "人为损坏"],
-  节点类型: ["policy", "procedure", "guide", "fee_rule"],
-  元数据字段: ["businessDomain", "brand", "productCategory", "securityLevel"],
+  节点类型: ["policy", "procedure", "guide", "fee_rule"].map((value) => labelFromMap(nodeTypeLabels, value)),
+  元数据字段: ["businessDomain", "brand", "productCategory", "securityLevel"].map((value) => labelFromMap(metadataLabels, value)),
   质量问题: mockQualityIssues.map((issue) => `${issue.issueId} ${issue.nodeTitle}`),
   冲突检测: ["收费政策 vs 配件价格查询说明", "延保政策 vs 保修政策"],
   过期知识: ["售后政策术语表", "历史客服口径"],
@@ -93,7 +97,7 @@ export function KnowledgeBaseDetailPage() {
         ["业务域", kb.businessDomain],
         ["WikiNode 数", String(kb.wikiNodeCount)],
         ["知识来源数", String(kb.sourceCount)],
-        ["索引健康度", kb.indexHealth],
+        ["索引健康度", labelFromMap(healthLabels, kb.indexHealth)],
       ]} />
     </PageScaffold>
   )
@@ -144,7 +148,7 @@ export function RawMaterialDetailPage() {
     <PageScaffold title="原始材料详情" description={raw.title}>
       <SummaryGrid items={[
         ["文件类型", raw.fileType],
-        ["存储位置", raw.storageProvider],
+        ["存储位置", labelFromMap(storageProviderLabels, raw.storageProvider)],
         ["解析状态", labelFromMap(parseStatusLabels, raw.parseStatus)],
         ["解析文档", raw.parsedDocumentId ?? "尚未生成"],
       ]} />

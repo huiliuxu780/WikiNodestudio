@@ -114,12 +114,36 @@ test.describe("Frontend skeleton IA", () => {
     await expect(page.getByText("解析完成")).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(/\bparsed\b/i)
 
+    await page.goto("/raw-materials/rm-002")
+    await expect(page.getByText("存储位置")).toBeVisible()
+    await expect(page.getByText("对象存储")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/\bobject-storage\b|\bworkspace\b/i)
+
+    await page.goto("/knowledge-bases/kb-cc-after-sales")
+    await expect(page.getByText("索引健康度")).toBeVisible()
+    await expect(page.getByText("需关注")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/\bhealthy\b|\bwarning\b|\bfailed\b/i)
+
     await page.goto("/wiki-nodes/wn-001/detail")
     await expect(page.getByText("发布状态")).toBeVisible()
     await expect(page.getByText("已发布")).toBeVisible()
     await expect(page.getByText("索引状态")).toBeVisible()
     await expect(page.getByText("已索引")).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(/\bpublished\b|\bindexed\b/i)
+
+    await page.goto("/node-types")
+    await expect(page.getByText("政策")).toBeVisible()
+    await expect(page.getByText("流程")).toBeVisible()
+    await expect(page.getByText("指南")).toBeVisible()
+    await expect(page.getByText("收费规则")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/\bpolicy\b|\bprocedure\b|\bguide\b|\bfee_rule\b/i)
+
+    await page.goto("/metadata-fields")
+    await expect(page.getByText("业务域")).toBeVisible()
+    await expect(page.getByText("品牌")).toBeVisible()
+    await expect(page.getByText("产品品类")).toBeVisible()
+    await expect(page.getByText("密级")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/\bbusinessDomain\b|\bproductCategory\b|\bsecurityLevel\b/)
 
     await page.goto("/admin/roles")
     await expect(page.getByText("知识负责人")).toBeVisible()
