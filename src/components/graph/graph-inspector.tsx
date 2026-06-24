@@ -29,7 +29,7 @@ export function GraphInspector({
         <CardHeader>
           <CardTitle className="text-base">图谱详情</CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
+        <CardContent data-testid="wiki-graph-inspector" className="text-sm text-muted-foreground">
           请选择一个 WikiNode / Knowledge Object 查看关系和来源证据。
         </CardContent>
       </Card>
@@ -41,7 +41,7 @@ export function GraphInspector({
       <CardHeader>
         <CardTitle className="text-base">{node.title}</CardTitle>
       </CardHeader>
-      <CardContent className="flex max-h-[calc(100svh-13rem)] flex-col gap-4 overflow-y-auto text-sm">
+      <CardContent data-testid="wiki-graph-inspector" className="flex max-h-[calc(100svh-13rem)] flex-col gap-4 overflow-y-auto text-sm">
         <p className="text-muted-foreground">{node.summary}</p>
         <div className="flex flex-wrap gap-1">
           <Badge variant="secondary">{labelFromMap(objectTypeLabels, node.objectType ?? "Article")}</Badge>
