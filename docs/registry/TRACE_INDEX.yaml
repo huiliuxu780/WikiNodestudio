@@ -33,6 +33,11 @@ baselines:
     release: docs/release/mvp-baseline-v0.1.md
     acceptance: docs/release/mvp-acceptance-checklist.md
     rules: AGENTS.md
+  MVP_V0_2:
+    release: docs/release/mvp-baseline-v0.2.md
+    acceptance: docs/release/mvp-v0.2-acceptance-checklist.md
+    plan: docs/current/MVP_V0_2_EXECUTION_PLAN.md
+    rules: AGENTS.md
 quality_guidelines:
   frontend_ux: docs/quality/frontend-ux-guidelines.md
 stories:

@@ -2,7 +2,7 @@
 
 ## Current Stage
 
-WikiNode Studio MVP Baseline v0.1 is fixed and verifiable.
+WikiNode Studio MVP Baseline v0.2 is fixed and verifiable after IM014 through IM022.
 
 ## Product Direction
 
@@ -12,21 +12,22 @@ The full product scope is captured in `docs/current/PRODUCT_SCOPE.md`; the roadm
 
 ## Active Boundary
 
-The product baseline includes the React frontend MVP, Spring Boot API, PostgreSQL + Flyway persistence, reset/seed scripts, API smoke, GitHub Actions baseline CI, release documentation, and minimal Playwright browser smoke.
+The product baseline includes the React frontend MVP, Spring Boot API, PostgreSQL + Flyway persistence, reset/seed scripts, API smoke, GitHub Actions baseline CI, v0.2 release documentation, and Playwright browser coverage for the main MVP acceptance paths.
 
-Current development must stay inside confirmed task scope. The standing MVP exclusions remain: no Source import, no vector database, no embedding, no chunk exposure, no permissions, no version management, and no publishing approval flow unless explicitly approved by the user.
+Current development must stay inside confirmed task scope. The standing MVP exclusions remain: no real Source import, file upload, parser execution, vector database implementation, embedding invocation, product-facing Chunk Management, permissions, version management, audit implementation, or publishing approval flow unless explicitly approved by the user.
 
 ## Current Queue
 
-`docs/current/STORY_QUEUE.yaml` and `docs/current/ACTIVE_TASKS.yaml` identify three ready tasks that must run one branch/session at a time:
+MVP v0.2 acceptance work from IM014 through IM023 is now the current release baseline.
 
-- `US001/IM001`: PostgreSQL integration CI plus Playwright smoke CI.
-- `US004/IM004`: read-only Tencent/WeKnora WikiGraph source analysis.
-- `US005/IM005`: WikiNode Studio sidebar-07 frontend shell and full navigation skeleton.
+Use these release documents for manual acceptance and handoff:
 
-The frontend UX polish rules are now captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
+- `docs/release/mvp-baseline-v0.2.md`
+- `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-Do not combine the WeKnora analysis task and the frontend skeleton task in one branch. The analysis task may produce only the report document; the frontend skeleton task may not depend on the analysis being complete.
+The older queue files remain part of the Harness state history, but they do not authorize automatic continuation into a new implementation stream. Any post-v0.2 work must start from a new explicit user-confirmed task.
+
+The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
 ## Current Execution Rules
 

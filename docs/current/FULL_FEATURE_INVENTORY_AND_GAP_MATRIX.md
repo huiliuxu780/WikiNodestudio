@@ -8,6 +8,32 @@ Baseline: `origin/main` as checked out on branch `codex/im010-feature-inventory-
 
 Note: this review is documentation-only. It does not include the unmerged pushed branch `codex/im010-retrieval-debug-deepening`; therefore Retrieval Test is assessed from the current `origin/main` baseline.
 
+## 0. MVP v0.2 Release Update (IM023)
+
+This document was originally written against the IM010 baseline. The section below is the current v0.2 correction after IM014 through IM022 and supersedes older rows where they conflict.
+
+Current main evidence:
+
+- `948ad67 Merge IM014 frontend localization and UX feedback baseline`
+- `0c10698 Merge IM015 WikiGraph canvas recovery and visualization`
+- `3ce8e71 Merge IM016 WikiGraph canvas layout optimization`
+- `214202b Merge IM017 MVP v0.2 execution plan`
+- `4820ace Merge IM018 manual acceptance sweep`
+- `cfcd98e Merge IM019 Sources and Raw Materials boundary clarification`
+- `3d3cf4c Merge IM020 Retrieval Test debug experience`
+- `0527263 Merge IM021 WikiNode Knowledge Object metadata surface`
+- `dec1f45 Merge IM022 Index Segment preview and debug completion`
+
+| Area | v0.2 status | Evidence | Remaining gap |
+|---|---|---|---|
+| Frontend localization and UX feedback | Done | IM014 and IM018 completed Chinese UX, feedback, empty/error state, and drift-word checks. | Continue applying the same standard to future pages. |
+| WikiGraph React Flow canvas | Done for MVP frontend | IM015 restored `@xyflow/react` node-edge canvas; IM016 made the layout canvas-first with top filters and click-to-open Inspector. | Backend graph persistence, large-graph performance, and edit/repair workflows remain deferred. |
+| Sources and Raw Materials boundary | Functional Mock | IM019 clarified Source, Raw Material, and Parsed Document as read-only MVP boundaries. | Real import, upload, parser execution, and storage access remain deferred. |
+| Retrieval Test debug | Functional Mock | IM020 keeps results WikiNode-first and exposes `matchedSegments` only in debug mode. | Backend retrieval trace, persisted query logs, and evaluation runner remain deferred. |
+| WikiNode Knowledge Object metadata | Functional Mock | IM021 surfaces `objectType`, `subtype`, `metadata`, `sourceRefs`, `relations`, and `processingProfile` without model expansion. | Java/DB/API alignment remains deferred. |
+| Index Segment preview and debug | Functional Mock | IM022 adds segment preview/debug acceptance surfaces and keeps Index Segment distinct from external vector-store chunks. | Real segment generation, lifecycle, and vector sync evidence remain deferred. |
+| Release baseline and acceptance pack | Done | IM023 adds v0.2 release baseline and acceptance checklist. | Phase 2 backlog remains documented, not implemented. |
+
 ## 1. Purpose
 
 This review creates a full feature inventory for WikiNode Studio and separates product reality from navigation breadth.
@@ -96,9 +122,9 @@ Reviewed inputs:
 ### 3.8 Wiki Graph
 
 - `/wiki-graph` exists and uses `WikiGraphView`.
-- Current graph is a filterable card/list relationship view with node selection and inspector.
-- It is not yet an interactive graph canvas with pan, zoom, drag, search, ego expansion, or impact analysis.
-- WeKnora analysis documents stronger graph behavior, but it has not been implemented here.
+- Current graph uses a React Flow node-edge canvas with top filters, MiniMap, fit view, canvas-first layout, node selection, and click-to-open Inspector.
+- The MVP graph is a frontend relationship visualization over current WikiNode / Knowledge Object mock data.
+- Backend graph persistence, large-graph performance, graph edit/repair workflows, ego expansion, and impact analysis remain deferred.
 
 ### 3.9 Index Segment
 
@@ -189,10 +215,10 @@ Reviewed inputs:
 | WikiLink / Backlinks / Broken Links | Backlinks | Yes | Yes, `/backlinks` | Yes | Read-only grouped cards | Computed from nodes | `WikiLink` | Java backlinks API exists | Computed | Route smoke | Functional Mock | Frontend uses mock; no persisted links. | Combine with WikiGraph readable relationship task. |
 | WikiLink / Backlinks / Broken Links | Broken Links | Yes | Yes, `/broken-links` | Yes | Read-only broken-link review | Computed broken links | `BrokenLink` | Java `/api/broken-links` exists | Computed | Playwright smoke, API smoke | Functional Mock | No repair action. | P0 if graph/link repair is next. |
 | WikiLink / Backlinks / Broken Links | Impact Analysis | Yes | Yes | Generic page | Static list | Static route cards | No | No | No | Route smoke | Visual Skeleton | No impact algorithm. | Defer until persisted WikiLink. |
-| Wiki Graph | Graph Relationship View | Yes | Yes, `/wiki-graph` | Yes | Filter, select node, show relationships | WikiNode mock | `GraphNode`, `GraphEdge` | Java graph endpoints exist | Computed | Route smoke | Functional Mock | Card/list view, not a graph canvas. | Recommended immediate next if visual relationship is largest gap. |
+| Wiki Graph | Graph Relationship View | Yes | Yes, `/wiki-graph` | Yes | Filter, select node, show relationships on React Flow canvas | WikiNode mock | `GraphNode`, `GraphEdge` | Java graph endpoints exist | Computed | Route smoke and graph Playwright coverage | Functional Mock | Frontend graph is not API-backed end to end. | Keep as v0.2 baseline; deepen backend graph only in Phase 2. |
 | Wiki Graph | Graph Filters | Yes | Yes | Yes | nodeType/status/show broken toggles | WikiNode mock | Partial | No dedicated API filters | No | Route smoke | Functional Mock | Local-only filtering. | Keep; expand with graph deepening. |
 | Wiki Graph | Graph Inspector | Yes | Yes | Yes | Read-only incoming/outgoing/broken | Computed links | `WikiLink` | Java ego endpoint exists | Computed | Route smoke | Functional Mock | No edit or repair. | Combine with graph task. |
-| Wiki Graph | Interactive Canvas | Yes via WeKnora reference | No | No | None | No | No | No | No | No | Doc Only | Pan/zoom/drag/search/ego expansion absent. | Candidate A. |
+| Wiki Graph | Interactive Canvas | Yes via WeKnora reference | Yes, `/wiki-graph` | Yes | Pan, zoom, fit view, MiniMap, canvas node selection | WikiNode mock | `GraphNode`, `GraphEdge` | Java graph endpoints exist | Computed | Graph Playwright coverage | Functional Mock | Ego expansion, impact analysis, graph editing, and backend graph persistence are absent. | Keep v0.2 canvas; defer advanced graph work. |
 | Index Segment | Index Segment List | Yes | Yes | Yes | Table read-only | 36 generated mock segments | `IndexSegment` | No | No | Playwright naming test | Functional Mock | No backend or lifecycle. | Candidate C after graph or before backend alignment. |
 | Index Segment | Segment Preview | Yes | List/Inspector | Partial | Read-only previews | 36 segments | `IndexSegment` | No | No | Editor segment smoke | Functional Mock | No full preview/detail route. | Add detail only with Segment task. |
 | Index Segment | Segment Strategy | Yes | Yes | Yes | Static strategy card | Static | No strategy type | No | No | Route smoke | Visual Skeleton | No configurable strategy. | Defer until backend segment generator. |
@@ -260,8 +286,8 @@ Reviewed inputs:
 | Normalization Rules | Documented; no route/type/API. | Not represented in code. | Normalization cannot be validated. | Add after ParsedDocument model. |
 | WikiNode Version History and Diff | `version` field exists, but no route/page. | No history store. | No auditability of edits. | Defer until persistence alignment. |
 | WikiNode Batch Operations | Documented; no code. | Batch/publish/export actions are stop-condition scope. | No bulk workflow. | Defer until explicit approval. |
-| Interactive Wiki Graph Canvas | WeKnora analysis describes it; local code has no canvas. | Local graph is card/list relation view. | Product lacks graph-native relationship exploration. | Candidate immediate next task. |
-| Retrieval Trace | Generic `/retrieval-debug` only. | No trace panel on current main. | Cannot explain Query -> Segment -> WikiNode chain clearly. | Candidate Retrieval Debug task. |
+| Historical WikiGraph Canvas Gap | Superseded by IM015 and IM016. | React Flow canvas now exists with MiniMap, fit view, filters, and click-to-open Inspector. | Advanced graph operations are still deferred, but the MVP graph-native surface exists. | Keep v0.2 baseline; plan advanced graph work separately. |
+| Retrieval Trace | Retrieval Test debug now exposes `matchedSegments` only in debug mode; generic `/retrieval-debug` remains a skeleton route. | No persisted trace or backend trace model. | Query -> Segment -> WikiNode evidence is explainable in MVP mock mode, not persisted. | Defer backend trace and query logs to Phase 2. |
 | Retrieval Gateway Config | Documented; no route/type/API. | No gateway layer. | External API configuration absent. | Defer until backend/API planning. |
 | Operation Logs | Documented in feature tree; no route/type/API. | Not represented. | Auditability incomplete. | P2 governance. |
 
@@ -271,9 +297,9 @@ Reviewed inputs:
 |---|---|---|---|---|
 | WikiNode Editor | `WikiNodeEditPage`, `WikiNodeEditor`, `WikiNodeInspector`, localStorage service | Usable product workflow, but frontend does not call backend API. | Good product validation; not real persistence integration. | Preserve and later align frontend service with Java model. |
 | Markdown Preview with WikiLinks | `MarkdownPreview`, Playwright resolved/broken link checks | Frontend parser only. | Validates double-link UX. | Extend with graph/link repair task. |
-| WikiGraph relationship view | `WikiGraphView` | Filter/select/inspect are local frontend interactions. | Useful for relationship review but not graph visualization. | Candidate A. |
-| Index Segment pages and Inspector tab | `IndexSegmentTable`, `SegmentDebugPanel`, `WikiNodeInspector` | Stable mock segments, no backend. | Clarifies Index Segment concept. | Candidate C after graph/retrieval decision. |
-| Retrieval Test normal/debug result | `retrieval-test-page.tsx`, `retrieval-mock-service.ts` | Useful query experience, backend not wired and no real segments. | Validates WikiNode-centered retrieval boundary. | Candidate B. |
+| WikiGraph relationship view | `WikiGraphView` | Filter/select/inspect run on local frontend graph data. | Useful graph-native relationship review, but not API-backed end to end. | Keep as v0.2 baseline. |
+| Index Segment pages and Inspector tab | `IndexSegmentTable`, `SegmentDebugPanel`, `WikiNodeInspector` | Stable mock segments, no backend segment model. | Clarifies Index Segment concept without claiming vector-store chunk management. | Keep as v0.2 baseline; plan Java/DB/API alignment later. |
+| Retrieval Test normal/debug result | `retrieval-test-page.tsx`, `retrieval-mock-service.ts` | Useful query experience, backend not wired and no persisted trace. | Validates WikiNode-centered retrieval boundary. | Keep as v0.2 baseline; plan backend trace later. |
 | Broken Links | `BrokenLinksPage`, link parser, API smoke contract | Computed links, no persisted relationship table. | Real enough for validation, but no repair flow. | Combine with WikiGraph/WikiLink task. |
 
 ## 6. Real Functional Areas
@@ -312,12 +338,14 @@ Risk note: `src/services/wiki-node-api-service.ts`, `retrieval-api-service.ts`, 
 |---|---|---|---|---|
 | Source / Raw Material | Visual Skeleton to Functional Mock | `SourcesPage`, `mockSources`, `RawMaterialListPage`, `mockRawMaterials`, Java `SourceItem` | No real source import, raw material backend, parsed document model, parser execution, or snapshots. | P1 Source/Raw Material deepening after core retrieval/graph clarity. |
 | WikiNode | Functional Mock with backend contract | WikiNode list/create/editor, mock service, Java CRUD, DB schema, Playwright and API smoke | Frontend is not wired to backend; TS model richer than Java/DB. | Backend alignment task after key UI decisions settle. |
-| WikiLink / WikiGraph | Functional Mock | Link parser, broken links, backlinks, graph card view, Java graph endpoints | No persisted WikiLink table; graph is not an interactive canvas. | Recommended immediate task: WikiGraph Visualization. |
-| Index Segment | Functional Mock | `IndexSegment` type, 36 mock segments, segment pages, editor Segments tab | No Java model, DB table, API, generation job, or segment-node mapping. | P0/P1 Index Segment deepening after graph or as next alternative. |
-| Retrieval API / Test | Functional Mock plus Done API contract | Retrieval Test UI, mock retrieval, Java `/api/retrieval-test`, contract/API smoke | Frontend not API-wired; no retrievalMode/trace on main; backend lacks matchedSegments. | Retrieval Debug task after graph or segment decision. |
+| WikiLink / WikiGraph | Functional Mock | Link parser, broken links, backlinks, React Flow canvas, Java graph endpoints | No persisted WikiLink table, graph edit/repair workflow, ego expansion, or large-graph backend. | Keep v0.2 graph baseline; plan advanced graph backend only when needed. |
+| Index Segment | Functional Mock | `IndexSegment` type, segment pages, preview/debug, editor Segments tab | No Java model, DB table, API, generation job, or segment-node mapping. | Phase 2 Java/DB/API alignment candidate. |
+| Retrieval API / Test | Functional Mock plus Done API contract | Retrieval Test UI, mock retrieval, debug `matchedSegments`, Java `/api/retrieval-test`, contract/API smoke | Frontend not API-wired; backend lacks persisted trace and query logs. | Phase 2 retrieval trace and API alignment candidate. |
 | Quality / Evaluation | Visual Skeleton | quality routes, `QualityIssue`, mock issues, evaluation route | No detector, issue backend, saved evaluation cases, or evaluation runner. | P2 after core chain matures. |
 
 ## 9. Next Development Priority
+
+This section is retained as historical IM010 recommendation evidence. IM015 through IM022 have already completed the first-pass WikiGraph, Index Segment, and Retrieval Test frontend acceptance work described below. For post-v0.2 work, use the Phase 2 backlog in `docs/release/mvp-baseline-v0.2.md`.
 
 ### P0: Core Product Validation
 
@@ -345,24 +373,17 @@ Risk note: `src/services/wiki-node-api-service.ts`, `retrieval-api-service.ts`, 
 
 ## 10. Recommended Immediate Next Task
 
-Recommended task: **A. WikiGraph Visualization**.
+Historical recommendation: **A. WikiGraph Visualization**.
 
-Reason:
+Current v0.2 status: this recommendation has been executed by IM015 and IM016, then complemented by IM020, IM021, and IM022. There is no longer an immediate v0.2 frontend acceptance task hidden in this inventory.
 
-- The WikiNode Editor has already been deepened on current `origin/main`; the next core-chain gap is making WikiLinks and broken links readable as a graph workspace.
-- Current `/wiki-graph` is useful but still a card/list relationship view. It does not yet match the product expectation or the WeKnora reference evidence for a graph-first relationship surface.
-- Improving graph visualization stays inside the core product chain without touching external vector stores, Source import, parser execution, auth, permissions, or Java backend.
-- It prepares the product for later Index Segment and Retrieval Debug work because retrieval evidence is more understandable when WikiNode relationships are clear.
+Recommended post-v0.2 direction:
 
-Why not the other candidates now:
+- Close the v0.2 release baseline with `docs/release/mvp-baseline-v0.2.md` and `docs/release/mvp-v0.2-acceptance-checklist.md`.
+- Start Phase 2 only after a new explicit task is confirmed.
+- Likely Phase 2 candidates are Source / Raw Material / Parsed Document model planning, Java/DB/API alignment for Knowledge Object and Index Segment, real Index Segment generation, retrieval trace/query logs, or publishing/index job modeling.
 
-- B. Retrieval Test + Debug Deepening: important, but current `origin/main` already has a functional retrieval mock and strong WikiNode result contract. It should follow a clearer graph/link surface or be next if the team prioritizes retrieval loop demos over graph clarity.
-- C. Index Segment Page Deepening: important, but segment evidence depends on the user understanding the WikiNode and WikiLink structure it came from.
-- D. Java WikiNode / WikiLink / IndexSegment Model Alignment: needed soon, but doing backend modeling before graph/segment UX decisions may over-model fields.
-- E. Source / Raw Material Deepening: starts the upstream chain, but it is broader and can trigger parser/storage/source-import scope. It should wait until the core WikiNode relationship/retrieval loop is clearer.
-- F. Quality / Evaluation Skeleton Deepening: lower priority; it depends on stable retrieval/debug behavior.
-
-Draft prompt:
+Archived IM011 prompt:
 
 ```text
 You are working in WikiNode Studio.

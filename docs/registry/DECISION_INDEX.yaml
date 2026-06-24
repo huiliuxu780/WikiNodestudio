@@ -1,5 +1,18 @@
 version: 1
 decisions:
+  - id: D023
+    date: "2026-06-24"
+    title: "Close MVP v0.2 release baseline after IM014 through IM022"
+    rationale: "IM014 through IM022 merged frontend localization, WikiGraph canvas and layout, Sources and Raw Materials boundary copy, Retrieval Test debug UX, Knowledge Object metadata, and Index Segment preview/debug. IM023 packages the release baseline and acceptance checklist without product code, backend, DB, API, Java model, or dependency changes."
+    related:
+      - MVP_V0_2
+      - IM017
+      - IM018
+      - IM019
+      - IM020
+      - IM021
+      - IM022
+      - IM023
   - id: D014
     date: "2026-06-24"
     title: "Run IM014 as a frontend-only localization and UX feedback baseline"
