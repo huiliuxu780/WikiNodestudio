@@ -16,40 +16,50 @@ import { IndexSegmentTable } from "@/components/segments/index-segment-table"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LinkList } from "@/components/wiki/link-list"
+import {
+  indexStatusLabels,
+  labelFromMap,
+  parseStatusLabels,
+  sourceTypeLabels,
+  statusLabels,
+  syncStatusLabels,
+  userRoleLabels,
+  userStatusLabels,
+} from "@/utils/display-labels"
 import { getIncomingLinks } from "@/utils/link-parser"
 
 const routeCards = {
-  "Sync Jobs": ["Feishu sync", "PDF parser", "Legacy KB import"],
-  "Sync Logs": ["6 synced sources", "1 pending parse", "1 failed document"],
+  同步任务: ["飞书同步", "PDF 解析", "历史知识库导入"],
+  同步日志: ["6 个已同步来源", "1 个待解析任务", "1 个失败文档"],
   Backlinks: ["保修期内维修服务政策", "收费政策", "人为损坏判定规则"],
-  "Impact Analysis": ["Publishing impact", "Broken WikiLink impact", "Index Segment impact"],
-  "Vector Store Sync": ["Aliyun config", "Volcano config", "Dry-run sync status"],
-  "Index Jobs": ["indexed", "outdated", "failed"],
-  "Retrieval Debug": ["Query trace", "Matched Index Segments", "WikiNode result mapping"],
-  "Retrieval API Docs": ["POST /api/knowledge/retrieve", "WikiNode result", "Debug matchedSegments"],
-  "Query Logs": mockRetrievalLogs.map((log) => `${log.query} -> ${log.topNodeTitle}`),
-  "Evaluation Cases": ["保修收费", "人为损坏", "预约改约"],
-  "Tags & Metadata": ["保修", "收费", "洗碗机", "人为损坏"],
-  "Node Types": ["policy", "procedure", "guide", "fee_rule"],
-  "Metadata Fields": ["businessDomain", "brand", "productCategory", "securityLevel"],
-  "Quality Issues": mockQualityIssues.map((issue) => `${issue.issueId} ${issue.nodeTitle}`),
-  "Conflict Detection": ["收费政策 vs 配件价格查询说明", "延保政策 vs 保修政策"],
-  "Expired Knowledge": ["售后政策术语表", "历史客服口径"],
-  "Duplicate Knowledge": ["收费说明重复候选", "安装注意事项重复候选"],
-  "Retrieval Evaluation": ["topK consistency", "WikiNode precision", "segment evidence quality"],
-  "Parser Engine": ["Markdown parser", "Table parser", "Image refs"],
-  "Storage Engine": ["Raw material snapshots", "Parsed document store", "Source refs"],
-  "Embedding Config": ["External vector store only", "No local embedding pipeline in MVP"],
-  "System Health": ["Mock frontend healthy", "No backend dependency", "Harness checks required"],
-  Users: mockUsers.map((user) => `${user.name} ${user.email}`),
-  Roles: ["owner", "editor", "reviewer", "viewer"],
-  Permissions: ["read", "edit", "review", "admin"],
-  "Audit Logs": ["WikiNode updated", "Index Segment generated", "Retrieval tested"],
+  影响分析: ["发布影响", "断链影响", "Index Segment 影响"],
+  外部向量库同步: ["阿里云配置", "火山引擎配置", "试运行同步状态"],
+  索引任务: ["已索引", "待更新", "索引失败"],
+  召回调试: ["查询链路", "命中的 Index Segment", "WikiNode 结果映射"],
+  "Retrieval API 文档": ["POST /api/knowledge/retrieve", "WikiNode 结果", "调试模式 matchedSegments"],
+  查询日志: mockRetrievalLogs.map((log) => `${log.query} -> ${log.topNodeTitle}`),
+  评测用例: ["保修收费", "人为损坏", "预约改约"],
+  标签与元数据: ["保修", "收费", "洗碗机", "人为损坏"],
+  节点类型: ["policy", "procedure", "guide", "fee_rule"],
+  元数据字段: ["businessDomain", "brand", "productCategory", "securityLevel"],
+  质量问题: mockQualityIssues.map((issue) => `${issue.issueId} ${issue.nodeTitle}`),
+  冲突检测: ["收费政策 vs 配件价格查询说明", "延保政策 vs 保修政策"],
+  过期知识: ["售后政策术语表", "历史客服口径"],
+  重复知识: ["收费说明重复候选", "安装注意事项重复候选"],
+  召回评测: ["TopK 一致性", "WikiNode 命中精度", "片段证据质量"],
+  解析引擎: ["Markdown 解析器", "表格解析器", "图片引用"],
+  存储引擎: ["原始材料快照", "解析文档存储", "来源证据"],
+  向量模型配置: ["仅配置外部向量库", "MVP 不实现本地向量化流程"],
+  系统健康: ["前端基线可用", "当前页不依赖真实后端", "需要 Harness 检查"],
+  用户: mockUsers.map((user) => `${user.name} ${labelFromMap(userRoleLabels, user.role)} ${labelFromMap(userStatusLabels, user.status)}`),
+  角色: ["知识负责人", "编辑者", "审核员", "查看者"],
+  权限: ["读取", "编辑", "审核", "管理"],
+  审计日志: ["WikiNode 已更新", "Index Segment 已生成", "召回已测试"],
 }
 
 export function KnowledgeBaseListPage() {
   return (
-    <PageScaffold title="Knowledge Bases 知识库" description="Manage WikiNode-centered knowledge bases and retrieval health.">
+    <PageScaffold title="知识库" description="管理以 WikiNode 为中心的知识库和召回健康度。">
       <div className="grid gap-4 lg:grid-cols-3">
         {mockKnowledgeBases.map((kb) => (
           <Card key={kb.kbId}>
@@ -62,8 +72,8 @@ export function KnowledgeBaseListPage() {
               <p>{kb.description}</p>
               <div className="flex flex-wrap gap-2">
                 <Badge variant="outline">{kb.businessDomain}</Badge>
-                <Badge variant="outline">{kb.wikiNodeCount} WikiNodes</Badge>
-                <Badge variant="outline">{kb.sourceCount} Sources</Badge>
+                <Badge variant="outline">{kb.wikiNodeCount} 个 WikiNode</Badge>
+                <Badge variant="outline">{kb.sourceCount} 个知识来源</Badge>
               </div>
             </CardContent>
           </Card>
@@ -78,12 +88,12 @@ export function KnowledgeBaseDetailPage() {
   const kb = mockKnowledgeBases.find((item) => item.kbId === kbId) ?? mockKnowledgeBases[0]
 
   return (
-    <PageScaffold title={`${kb.name} Knowledge Base Detail`} description={kb.description}>
+    <PageScaffold title={`${kb.name} 知识库详情`} description={kb.description}>
       <SummaryGrid items={[
-        ["Business domain", kb.businessDomain],
-        ["WikiNodes", String(kb.wikiNodeCount)],
-        ["Sources", String(kb.sourceCount)],
-        ["Index health", kb.indexHealth],
+        ["业务域", kb.businessDomain],
+        ["WikiNode 数", String(kb.wikiNodeCount)],
+        ["知识来源数", String(kb.sourceCount)],
+        ["索引健康度", kb.indexHealth],
       ]} />
     </PageScaffold>
   )
@@ -91,12 +101,12 @@ export function KnowledgeBaseDetailPage() {
 
 export function KnowledgeBaseSettingsPage() {
   return (
-    <PageScaffold title="Knowledge Base Settings" description="Mock-only workspace settings for retrieval and indexing boundaries.">
+    <PageScaffold title="知识库设置" description="仅展示召回和索引边界的本地配置基线。">
       <SummaryGrid items={[
-        ["Default result object", "WikiNode"],
-        ["Debug evidence", "matchedSegments"],
-        ["Vector database ownership", "External vector stores only"],
-        ["Approval flow", "Out of scope for this skeleton"],
+        ["默认返回对象", "WikiNode"],
+        ["调试证据", "matchedSegments"],
+        ["向量存储边界", "仅配置外部向量库"],
+        ["审批流", "不在当前范围"],
       ]} />
     </PageScaffold>
   )
@@ -107,12 +117,12 @@ export function SourceDetailPage() {
   const source = mockSources.find((item) => item.sourceId === sourceId) ?? mockSources[0]
 
   return (
-    <PageScaffold title="Source Detail" description={source.title}>
+    <PageScaffold title="知识来源详情" description={source.title}>
       <SummaryGrid items={[
-        ["Source type", source.sourceType],
-        ["Owner", source.owner],
-        ["Sync status", source.syncStatus],
-        ["Generated WikiNodes", String(source.generatedNodes)],
+        ["来源类型", labelFromMap(sourceTypeLabels, source.sourceType)],
+        ["负责人", source.owner],
+        ["同步状态", labelFromMap(syncStatusLabels, source.syncStatus)],
+        ["生成 WikiNode", String(source.generatedNodes)],
       ]} />
     </PageScaffold>
   )
@@ -120,8 +130,8 @@ export function SourceDetailPage() {
 
 export function RawMaterialListPage() {
   return (
-    <PageScaffold title="Raw Materials" description="Original source snapshots before parsed documents and WikiNode normalization.">
-      <SimpleList items={mockRawMaterials.map((item) => `${item.rawMaterialId} ${item.title} ${item.parseStatus}`)} />
+    <PageScaffold title="原始材料" description="解析文档和 WikiNode 标准化之前的原始来源快照。">
+      <SimpleList items={mockRawMaterials.map((item) => `${item.rawMaterialId} ${item.title} ${labelFromMap(parseStatusLabels, item.parseStatus)}`)} />
     </PageScaffold>
   )
 }
@@ -131,12 +141,12 @@ export function RawMaterialDetailPage() {
   const raw = mockRawMaterials.find((item) => item.rawMaterialId === rawMaterialId) ?? mockRawMaterials[0]
 
   return (
-    <PageScaffold title="Raw Material Detail" description={raw.title}>
+    <PageScaffold title="原始材料详情" description={raw.title}>
       <SummaryGrid items={[
-        ["File type", raw.fileType],
-        ["Storage", raw.storageProvider],
-        ["Parse status", raw.parseStatus],
-        ["Parsed document", raw.parsedDocumentId ?? "Not generated"],
+        ["文件类型", raw.fileType],
+        ["存储位置", raw.storageProvider],
+        ["解析状态", labelFromMap(parseStatusLabels, raw.parseStatus)],
+        ["解析文档", raw.parsedDocumentId ?? "尚未生成"],
       ]} />
     </PageScaffold>
   )
@@ -144,8 +154,8 @@ export function RawMaterialDetailPage() {
 
 export function ParsedResultPreviewPage() {
   return (
-    <PageScaffold title="Parsed Result Preview" description="Markdown, tables, source_refs, and section hierarchy before WikiNode normalization.">
-      <SimpleList items={["Heading hierarchy", "Paragraph source refs", "Table extraction preview", "Image references"]} />
+    <PageScaffold title="解析结果预览" description="进入 WikiNode 标准化之前的 Markdown、表格、来源证据和章节层级。">
+      <SimpleList items={["标题层级", "段落来源证据", "表格抽取预览", "图片引用"]} />
     </PageScaffold>
   )
 }
@@ -155,12 +165,12 @@ export function WikiNodeDetailPage() {
   const node = mockWikiNodes.find((item) => item.nodeId === nodeId || item.slug === nodeId) ?? mockWikiNodes[0]
 
   return (
-    <PageScaffold title="WikiNode Detail" description={node.title}>
+    <PageScaffold title="WikiNode 详情" description={node.title}>
       <SummaryGrid items={[
         ["WikiNode", node.title],
-        ["Status", node.status],
-        ["Index status", node.indexStatus],
-        ["Owner", node.owner],
+        ["发布状态", statusLabels[node.status]],
+        ["索引状态", indexStatusLabels[node.indexStatus]],
+        ["负责人", node.owner],
       ]} />
     </PageScaffold>
   )
@@ -168,12 +178,12 @@ export function WikiNodeDetailPage() {
 
 export function BacklinksPage() {
   return (
-    <PageScaffold title="Backlinks" description="Incoming WikiLinks grouped by target WikiNode.">
+    <PageScaffold title="反向链接" description="按目标 WikiNode 分组查看入向 WikiLink。">
       <div className="grid gap-4 lg:grid-cols-2">
         {mockWikiNodes.slice(0, 6).map((node) => (
           <Card key={node.nodeId}>
             <CardHeader><CardTitle className="text-base">{node.title}</CardTitle></CardHeader>
-            <CardContent><LinkList links={getIncomingLinks(node.nodeId, mockWikiNodes)} emptyText="No backlinks yet." /></CardContent>
+            <CardContent><LinkList links={getIncomingLinks(node.nodeId, mockWikiNodes)} emptyText="暂无反向链接。" /></CardContent>
           </Card>
         ))}
       </div>
@@ -184,8 +194,8 @@ export function BacklinksPage() {
 export function IndexSegmentListPage() {
   return (
     <PageScaffold
-      title="Index Segments"
-      description="Index Segment is the controlled retrieval/indexing unit derived from a WikiNode / Knowledge Object. Index Segments are controlled retrieval units generated from WikiNodes before vector-store sync and remain attached to parent WikiNodes."
+      title="Index Segment"
+      description="Index Segment 是从 WikiNode / Knowledge Object 生成的受控索引和召回单元，并始终关联父级 WikiNode。"
     >
       <IndexSegmentTable segments={mockIndexSegments} />
     </PageScaffold>
@@ -194,7 +204,7 @@ export function IndexSegmentListPage() {
 
 export function SegmentStrategyPage() {
   return (
-    <PageScaffold title="Segment Strategy" description="ObjectType-aware mock rules for WikiNode / Knowledge Object to Index Segment generation.">
+    <PageScaffold title="片段策略" description="展示 WikiNode / Knowledge Object 生成 Index Segment 的本地策略基线。">
       <SegmentStrategyCard />
     </PageScaffold>
   )
@@ -202,7 +212,7 @@ export function SegmentStrategyPage() {
 
 export function SegmentDebugPage() {
   return (
-    <PageScaffold title="Segment Debug" description="Inspect mock Index Segment evidence without exposing it as the primary retrieval result.">
+    <PageScaffold title="片段调试" description="查看 Index Segment 证据，但不把片段作为主要召回结果。">
       <SegmentDebugPanel segment={mockIndexSegments[0]} />
     </PageScaffold>
   )
@@ -210,20 +220,20 @@ export function SegmentDebugPage() {
 
 export function GenericSkeletonPage({ title, description }: { title: keyof typeof routeCards | string; description?: string }) {
   return (
-    <PageScaffold title={title} description={description ?? "Static mock-only skeleton page for the WikiNode Studio product IA."}>
-      <SimpleList items={(routeCards as Record<string, string[]>)[title] ?? ["Mock module", "Navigation target", "No real backend connection"]} />
+    <PageScaffold title={title} description={description ?? "当前页是 WikiNode Studio 产品信息架构的本地占位基线。"}>
+      <SimpleList items={(routeCards as Record<string, string[]>)[title] ?? ["本地占位模块", "导航目标", "当前不连接真实后端"]} />
     </PageScaffold>
   )
 }
 
 export function PublishingPage() {
-  return <GenericSkeletonPage title="Publishing & Index" description="Mock publishing, index, and vector-store sync overview." />
+  return <GenericSkeletonPage title="发布与索引" description="展示发布、索引和外部向量库同步的本地占位基线。" />
 }
 
 export function SystemVectorStorePage() {
   return (
-    <PageScaffold title="Vector Store" description="This system configures external vector stores; it does not implement or own a vector database.">
-      <SimpleList items={["Aliyun vector store config", "Volcano vector store config", "External ownership boundary"]} />
+    <PageScaffold title="外部向量库配置" description="本系统只配置外部向量库，不建设或替代底层向量存储。">
+      <SimpleList items={["阿里云向量库配置", "火山引擎向量库配置", "外部存储边界"]} />
     </PageScaffold>
   )
 }

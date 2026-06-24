@@ -1,18 +1,28 @@
 import { ApiError } from "@/services/api-client"
-import type { WikiIndexStatus, WikiNodeStatus, WikiNodeType } from "@/types/wiki"
+import type { KnowledgeObjectType, WikiIndexStatus, WikiNode, WikiNodeStatus, WikiNodeType } from "@/types/wiki"
 
 export const commonLabels = {
   all: "全部",
   none: "无",
   retry: "重试",
   loading: "加载中...",
+  loadingWikiNodes: "正在加载知识节点...",
   loadFailed: "加载失败",
+  emptyWikiNodes: "暂无知识节点",
+  adjustFilters: "请调整搜索或筛选条件后重试。",
   createSuccess: "创建成功",
   createFailed: "创建失败",
   saveSuccess: "保存成功",
   saveFailed: "保存失败",
+  publishSuccess: "发布状态已在本地更新",
+  reindexSuccess: "重新索引状态已在本地更新",
+  localPublishOnly: "当前任务不调用真实发布服务。",
+  localReindexOnly: "当前任务不调用真实索引服务。",
   searchFailed: "检索失败",
+  searchComplete: "检索完成",
   noMatchedNodes: "暂无匹配的知识节点",
+  backendUnavailable: "后端服务不可用，请确认服务启动后重试",
+  unknownError: "未知错误，请稍后重试",
 }
 
 export const actionLabels = {
@@ -26,6 +36,9 @@ export const actionLabels = {
   backToWikiNodes: "返回知识节点",
   openWikiNode: "打开知识节点",
   testRetrieval: "测试检索",
+  publish: "发布",
+  reindex: "重新索引",
+  debugMode: "调试模式",
 }
 
 export const nodeTypeLabels: Record<WikiNodeType, string> = {
@@ -47,13 +60,54 @@ export const statusLabels: Record<WikiNodeStatus, string> = {
   archived: "已归档",
 }
 
+export const objectTypeLabels: Record<KnowledgeObjectType, string> = {
+  Article: "文章型知识",
+  Product: "产品知识",
+  Procedure: "流程知识",
+  DataRecord: "数据记录",
+  MediaAsset: "媒体资产",
+  Collection: "知识集合",
+  ExternalSource: "外部来源",
+  Rule: "规则知识",
+}
+
+export const subtypeLabels: Record<string, string> = {
+  service_fee_policy: "收费政策",
+  warranty_policy: "保修政策",
+  repair_policy: "维修政策",
+  service_script: "服务话术",
+  faq: "常见问题",
+  product_model: "产品型号",
+  product_category: "产品品类",
+  troubleshooting_flow: "故障处理流程",
+  installation_flow: "安装流程",
+  service_operation_process: "服务作业流程",
+  spare_part_catalog: "配件目录",
+  fee_table: "收费表",
+  bom_table: "BOM 表",
+  compatibility_table: "兼容性表",
+  user_manual_pdf: "用户手册 PDF",
+  product_material: "产品素材",
+  training_material: "培训素材",
+  model_knowledge_pack: "型号知识包",
+  category_knowledge_pack: "品类知识包",
+  fee_rule: "收费规则",
+  applicability_rule: "适用性规则",
+}
+
 export const indexStatusLabels: Record<WikiIndexStatus, string> = {
   not_indexed: "未索引",
   indexing: "索引中",
   indexed: "已索引",
-  failed: "失败",
-  outdated: "需更新",
+  failed: "索引失败",
+  outdated: "待更新",
   deleted: "已删除",
+}
+
+export const linkStatusLabels: Record<string, string> = {
+  resolved: "已解析",
+  broken: "异常",
+  unresolved: "未解析",
 }
 
 export const sourceTypeLabels: Record<string, string> = {
@@ -82,6 +136,53 @@ export const syncStatusLabels: Record<string, string> = {
   failed: "同步失败",
 }
 
+export const parseStatusLabels: Record<string, string> = {
+  not_parsed: "未解析",
+  parsing: "解析中",
+  parsed: "解析完成",
+  failed: "解析失败",
+}
+
+export const userRoleLabels: Record<string, string> = {
+  owner: "知识负责人",
+  editor: "编辑者",
+  reviewer: "审核员",
+  viewer: "查看者",
+  admin: "管理员",
+}
+
+export const userStatusLabels: Record<string, string> = {
+  active: "已启用",
+  invited: "已邀请",
+  disabled: "已停用",
+}
+
+export const retrievalStatusLabels: Record<string, string> = {
+  success: "检索完成",
+  empty: "没有检索结果",
+  failed: "检索失败",
+  loading: "检索中",
+}
+
+export const reviewStatusLabels: Record<NonNullable<WikiNode["reviewStatus"]>, string> = {
+  not_required: "无需审核",
+  pending: "待审核",
+  approved: "已通过",
+  rejected: "已驳回",
+}
+
+export const publishStatusLabels: Record<NonNullable<WikiNode["publishStatus"]>, string> = {
+  not_published: "未发布",
+  published: "已发布",
+  unpublished: "已取消发布",
+}
+
+export const securityLevelLabels: Record<NonNullable<WikiNode["securityLevel"]>, string> = {
+  public: "公开",
+  internal: "内部",
+  confidential: "机密",
+}
+
 export const retrievalFieldLabels: Record<string, string> = {
   title: "标题",
   summary: "摘要",
@@ -91,8 +192,22 @@ export const retrievalFieldLabels: Record<string, string> = {
 
 export const metadataLabels: Record<string, string> = {
   nodeId: "节点 ID",
+  slug: "Slug",
   nodeType: "节点类型",
+  objectType: "Knowledge Object 类型",
+  subtype: "业务子类型",
+  processingProfile: "处理策略",
   status: "发布状态",
+  reviewStatus: "审核状态",
+  publishStatus: "发布状态",
+  businessDomain: "业务域",
+  brand: "品牌",
+  productCategory: "产品品类",
+  scenario: "场景",
+  owner: "负责人",
+  securityLevel: "密级",
+  effectiveDate: "生效日期",
+  expiredDate: "失效日期",
   createdAt: "创建时间",
   updatedAt: "更新时间",
   indexStatus: "索引状态",
@@ -100,13 +215,41 @@ export const metadataLabels: Record<string, string> = {
   paragraphRef: "段落位置",
   version: "版本",
   sourceUrl: "来源链接",
-  sourceType: "sourceType",
+  sourceType: "来源类型",
   sourceRecordId: "来源记录",
   snapshotId: "快照 ID",
   snapshotTime: "快照时间",
   evidenceRange: "证据范围",
   syncJobId: "同步任务",
-  confidence: "confidence",
+  confidence: "可信度",
+  vectorDocId: "向量文档 ID",
+  tokenCount: "Token 数",
+  enabled: "是否启用",
+  retrievalHits: "召回次数",
+  avgScore: "平均分",
+}
+
+export const relationTypeLabels: Record<string, string> = {
+  references: "引用",
+  reference: "引用",
+  derived_from: "派生自",
+  applies_to: "适用于",
+  contains: "包含",
+  part_of: "属于",
+  replaces: "替代",
+  overrides: "覆盖",
+  conflicts_with: "冲突",
+  depends_on: "依赖",
+  excludes: "排除",
+  similar_to: "相似",
+  parent_of: "父级",
+  used_by: "被使用",
+  explains: "解释",
+  has_manual: "关联手册",
+  has_part_catalog: "关联配件目录",
+  has_policy: "关联政策",
+  has_asset: "关联素材",
+  related_to: "相关",
 }
 
 export function labelFromMap(labels: Record<string, string>, value: string) {
@@ -138,7 +281,7 @@ export function formatApiErrorMessage(error: Error) {
   }
 
   if (normalized.includes("failed to load api data") || normalized.includes("failed to fetch")) {
-    return "加载失败，请确认后端服务可用后重试"
+    return commonLabels.backendUnavailable
   }
 
   if (error instanceof ApiError && error.status === 404) {
@@ -149,7 +292,7 @@ export function formatApiErrorMessage(error: Error) {
     return "服务暂时不可用，请稍后重试"
   }
 
-  return rawMessage
+  return rawMessage || commonLabels.unknownError
 }
 
 export function formatOperationError(action: "create" | "save" | "search" | "load", error: Error) {

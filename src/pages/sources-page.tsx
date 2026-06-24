@@ -16,7 +16,7 @@ export function SourcesPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader title="Sources 来源" />
+      <PageHeader title="知识来源" />
       <ApiErrorNotice error={sourcesError} onRetry={reloadSources} />
       <ApiErrorNotice error={nodesError} onRetry={reloadNodes} />
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">

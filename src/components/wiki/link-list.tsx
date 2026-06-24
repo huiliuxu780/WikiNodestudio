@@ -1,20 +1,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import type { WikiLink } from "@/types/wiki"
-
-const relationLabels: Record<WikiLink["relationType"], string> = {
-  references: "References",
-  reference: "Reference",
-  derived_from: "Derived from",
-  overrides: "Overrides",
-  conflicts_with: "Conflicts with",
-  depends_on: "Depends on",
-  applies_to: "Applies to",
-  excludes: "Excludes",
-  similar_to: "Similar to",
-  parent_of: "Parent of",
-  used_by: "Used by",
-}
+import { labelFromMap, linkStatusLabels, relationTypeLabels } from "@/utils/display-labels"
 
 export function LinkList({
   links,
@@ -34,18 +21,18 @@ export function LinkList({
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="truncate font-medium">{link.resolved ? link.toTitle : link.targetTitle}</div>
-              <div className="truncate text-xs text-muted-foreground">fromTitle: {link.fromTitle}</div>
-              <div className="truncate text-xs text-muted-foreground">relationType: {relationLabels[link.relationType]}</div>
+              <div className="truncate text-xs text-muted-foreground">引用来源：{link.fromTitle}</div>
+              <div className="truncate text-xs text-muted-foreground">关系类型：{labelFromMap(relationTypeLabels, link.relationType)}</div>
             </div>
             <Badge variant={link.resolved ? "secondary" : "destructive"}>
-              {link.resolved ? "Resolved" : "Broken"}
+              {link.resolved ? linkStatusLabels.resolved : linkStatusLabels.broken}
             </Badge>
           </div>
           <div className="mt-2 flex flex-wrap gap-1">
-            <Button variant="ghost" size="sm">Open</Button>
-            <Button variant="ghost" size="sm">Resolve</Button>
-            {!link.resolved ? <Button variant="outline" size="sm">Create Node</Button> : null}
-            <Button variant="ghost" size="sm">Ignore</Button>
+            <Button variant="ghost" size="sm">打开</Button>
+            <Button variant="ghost" size="sm">关联</Button>
+            {!link.resolved ? <Button variant="outline" size="sm">创建知识节点</Button> : null}
+            <Button variant="ghost" size="sm">忽略</Button>
           </div>
         </div>
       ))}

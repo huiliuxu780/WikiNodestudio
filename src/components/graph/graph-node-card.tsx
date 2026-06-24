@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { IndexStatusBadge } from "@/components/wiki/index-status-badge"
 import { cn } from "@/lib/utils"
 import type { KnowledgeObjectType, WikiNode } from "@/types/wiki"
+import { labelFromMap, objectTypeLabels, subtypeLabels } from "@/utils/display-labels"
 
 const iconByObjectType: Record<KnowledgeObjectType, typeof FileTextIcon> = {
   Article: FileTextIcon,
@@ -55,10 +56,10 @@ export function GraphNodeCard({
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           <div className="flex flex-wrap gap-1">
-            <Badge variant="secondary">{objectType}</Badge>
-            <Badge variant="outline">{node.subtype ?? node.nodeType}</Badge>
+            <Badge variant="secondary">{labelFromMap(objectTypeLabels, objectType)}</Badge>
+            <Badge variant="outline">{labelFromMap(subtypeLabels, node.subtype ?? node.nodeType)}</Badge>
             <IndexStatusBadge status={node.indexStatus} />
-            {node.brokenLinkCount > 0 ? <Badge variant="destructive">broken {node.brokenLinkCount}</Badge> : null}
+            {node.brokenLinkCount > 0 ? <Badge variant="destructive">断链 {node.brokenLinkCount}</Badge> : null}
           </div>
           <p className="line-clamp-2 text-xs text-muted-foreground">{node.summary}</p>
         </CardContent>

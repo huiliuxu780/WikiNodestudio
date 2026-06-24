@@ -14,6 +14,7 @@ import { IndexStatusBadge } from "@/components/wiki/index-status-badge"
 import { NodeTypeBadge } from "@/components/wiki/node-type-badge"
 import { StatusBadge } from "@/components/wiki/status-badge"
 import type { WikiNode } from "@/types/wiki"
+import { commonLabels } from "@/utils/display-labels"
 import { compactDate } from "@/utils/formatters"
 
 const columns: ColumnDef<WikiNode>[] = [
@@ -96,15 +97,26 @@ export function WikiNodeTable({ nodes }: { nodes: WikiNode[] }) {
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows.map((row) => (
-            <TableRow key={row.id}>
-              {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
-              ))}
+          {table.getRowModel().rows.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow key={row.id}>
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-32 text-center">
+                <div className="flex flex-col gap-1">
+                  <span className="font-medium">{commonLabels.emptyWikiNodes}</span>
+                  <span className="text-sm text-muted-foreground">{commonLabels.adjustFilters}</span>
+                </div>
+              </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
     </div>

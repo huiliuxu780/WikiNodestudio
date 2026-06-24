@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table"
 import { IndexStatusBadge } from "@/components/wiki/index-status-badge"
 import type { IndexSegment } from "@/types/index-segment"
+import { commonLabels, indexStatusLabels, labelFromMap, metadataLabels, objectTypeLabels, sourceTypeLabels, subtypeLabels } from "@/utils/display-labels"
 
 export function IndexSegmentTable({ segments }: { segments: IndexSegment[] }) {
   const [query, setQuery] = useState("")
@@ -61,17 +62,17 @@ export function IndexSegmentTable({ segments }: { segments: IndexSegment[] }) {
       <div className="flex min-w-0 flex-col gap-3">
         <div className="grid gap-3 rounded-lg border bg-background p-3 md:grid-cols-[minmax(220px,1fr)_180px_180px_180px_auto]">
           <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-            Search Index Segments
+            搜索 Index Segment
             <Input
-              aria-label="Search Index Segments"
+              aria-label="搜索 Index Segment"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search title, content, WikiNode, objectType, subtype, metadata"
+              placeholder="标题、内容、WikiNode、objectType、subtype、元数据"
             />
           </label>
-          <FilterSelect label="Object Type" value={objectType} values={objectTypeOptions} onChange={setObjectType} />
-          <FilterSelect label="Index Status" value={indexStatus} values={indexStatusOptions} onChange={setIndexStatus} />
-          <FilterSelect label="Segment Type" value={segmentType} values={segmentTypeOptions} onChange={setSegmentType} />
+          <FilterSelect label="Knowledge Object 类型" value={objectType} values={objectTypeOptions} labels={objectTypeLabels} onChange={setObjectType} />
+          <FilterSelect label="索引状态" value={indexStatus} values={indexStatusOptions} labels={indexStatusLabels} onChange={setIndexStatus} />
+          <FilterSelect label="片段类型" value={segmentType} values={segmentTypeOptions} onChange={setSegmentType} />
           <div className="flex items-end">
             <Button
               type="button"
@@ -83,7 +84,7 @@ export function IndexSegmentTable({ segments }: { segments: IndexSegment[] }) {
                 setSegmentType("all")
               }}
             >
-              Reset
+              重置
             </Button>
           </div>
         </div>
@@ -92,15 +93,15 @@ export function IndexSegmentTable({ segments }: { segments: IndexSegment[] }) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>segmentId</TableHead>
-                <TableHead>nodeTitle</TableHead>
-                <TableHead>objectType</TableHead>
-                <TableHead>subtype</TableHead>
-                <TableHead>segmentType</TableHead>
-                <TableHead>contentPreview</TableHead>
-                <TableHead>indexStatus</TableHead>
-                <TableHead>vectorDocId</TableHead>
-                <TableHead>retrievalHits</TableHead>
+                <TableHead>片段 ID</TableHead>
+                <TableHead>父级 WikiNode</TableHead>
+                <TableHead>Knowledge Object 类型</TableHead>
+                <TableHead>业务子类型</TableHead>
+                <TableHead>片段类型</TableHead>
+                <TableHead>内容预览</TableHead>
+                <TableHead>索引状态</TableHead>
+                <TableHead>向量文档 ID</TableHead>
+                <TableHead>召回次数</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -113,14 +114,14 @@ export function IndexSegmentTable({ segments }: { segments: IndexSegment[] }) {
                 >
                   <TableCell className="font-medium">{segment.segmentId}</TableCell>
                   <TableCell>{segment.nodeTitle}</TableCell>
-                  <TableCell>{segment.objectType ?? "Article"}</TableCell>
-                  <TableCell>{segment.subtype ?? "-"}</TableCell>
+                  <TableCell>{labelFromMap(objectTypeLabels, segment.objectType ?? "Article")}</TableCell>
+                  <TableCell>{labelFromMap(subtypeLabels, segment.subtype ?? commonLabels.none)}</TableCell>
                   <TableCell><Badge variant="outline">{segment.segmentType}</Badge></TableCell>
                   <TableCell className="max-w-sm text-muted-foreground">{segment.contentPreview}</TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-1">
                       <IndexStatusBadge status={segment.indexStatus} />
-                      <span className="text-xs text-muted-foreground">{segment.indexStatus}</span>
+                      <span className="text-xs text-muted-foreground">{indexStatusLabels[segment.indexStatus]}</span>
                     </div>
                   </TableCell>
                   <TableCell>{segment.vectorDocId ?? "-"}</TableCell>
@@ -130,7 +131,7 @@ export function IndexSegmentTable({ segments }: { segments: IndexSegment[] }) {
               {!filteredSegments.length ? (
                 <TableRow>
                   <TableCell colSpan={9} className="py-8 text-center text-sm text-muted-foreground">
-                    No Index Segment matched the current filters.
+                    暂无符合当前筛选条件的 Index Segment。
                   </TableCell>
                 </TableRow>
               ) : null}
@@ -148,7 +149,7 @@ function SegmentPreview({ segment }: { segment?: IndexSegment }) {
   if (!segment) {
     return (
       <Card data-testid="index-segment-preview">
-        <CardContent className="p-4 text-sm text-muted-foreground">Select an Index Segment to inspect retrieval evidence.</CardContent>
+        <CardContent className="p-4 text-sm text-muted-foreground">请选择一个 Index Segment 查看召回证据。</CardContent>
       </Card>
     )
   }
@@ -156,46 +157,46 @@ function SegmentPreview({ segment }: { segment?: IndexSegment }) {
   return (
     <Card data-testid="index-segment-preview" className="h-fit">
       <CardHeader>
-        <CardTitle className="text-base">Segment Preview</CardTitle>
+        <CardTitle className="text-base">片段预览</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-sm">
         <div className="rounded-md border bg-muted/20 p-3 text-muted-foreground">
-          Parent WikiNode / Knowledge Object is the managed product object. This preview shows Index Segment evidence before vector-store sync.
+          父级 WikiNode / Knowledge Object 是业务可管理对象；这里展示进入同步前的 Index Segment 证据。
         </div>
-        <InfoRow label="Segment title" value={segment.title ?? segment.segmentId} />
-        <InfoRow label="Parent WikiNode / Knowledge Object" value={segment.nodeTitle} />
-        <InfoRow label="objectType" value={segment.objectType ?? "Article"} />
-        <InfoRow label="subtype" value={segment.subtype ?? "-"} />
-        <InfoRow label="segmentType" value={segment.segmentType} />
-        <InfoRow label="indexStatus" value={segment.indexStatus} />
-        <InfoRow label="vectorDocId" value={segment.vectorDocId ?? "-"} />
-        <InfoRow label="processingProfile" value={segment.processingProfile ?? "-"} />
-        <InfoRow label="createdAt" value={segment.createdAt ?? "-"} />
-        <InfoRow label="updatedAt" value={segment.updatedAt ?? "-"} />
+        <InfoRow label="片段标题" value={segment.title ?? segment.segmentId} />
+        <InfoRow label="父级 WikiNode / Knowledge Object" value={segment.nodeTitle} />
+        <InfoRow label={metadataLabels.objectType} value={labelFromMap(objectTypeLabels, segment.objectType ?? "Article")} />
+        <InfoRow label={metadataLabels.subtype} value={labelFromMap(subtypeLabels, segment.subtype ?? commonLabels.none)} />
+        <InfoRow label="片段类型" value={segment.segmentType} />
+        <InfoRow label={metadataLabels.indexStatus} value={indexStatusLabels[segment.indexStatus]} />
+        <InfoRow label={metadataLabels.vectorDocId} value={segment.vectorDocId ?? commonLabels.none} />
+        <InfoRow label={metadataLabels.processingProfile} value={segment.processingProfile ?? commonLabels.none} />
+        <InfoRow label={metadataLabels.createdAt} value={segment.createdAt ?? commonLabels.none} />
+        <InfoRow label={metadataLabels.updatedAt} value={segment.updatedAt ?? commonLabels.none} />
         <div className="rounded-md border bg-background p-3">
-          <div className="mb-1 text-xs font-medium text-muted-foreground">Content preview</div>
+          <div className="mb-1 text-xs font-medium text-muted-foreground">内容预览</div>
           <p className="text-muted-foreground">{segment.contentPreview}</p>
         </div>
         <div className="rounded-md border bg-background p-3">
-          <div className="mb-2 text-xs font-medium text-muted-foreground">Metadata summary</div>
+          <div className="mb-2 text-xs font-medium text-muted-foreground">元数据摘要</div>
           <div className="flex flex-wrap gap-1">
             {segment.metadataSummary?.map((item) => (
-              <Badge key={`${item.label}-${item.value}`} variant="outline">{item.label}: {item.value}</Badge>
+              <Badge key={`${item.label}-${item.value}`} variant="outline">{item.label}：{item.value}</Badge>
             ))}
           </div>
         </div>
         <div className="rounded-md border bg-background p-3">
-          <div className="mb-2 text-xs font-medium text-muted-foreground">sourceRef summary</div>
+          <div className="mb-2 text-xs font-medium text-muted-foreground">来源证据摘要</div>
           <div className="flex flex-col gap-1 text-xs text-muted-foreground">
             {segment.sourceRefs.map((sourceRef) => (
               <span key={sourceRef.id ?? sourceRef.sourceId}>
-                sourceType {sourceRef.sourceType} · {sourceRef.sourceName ?? sourceRef.sourceTitle} · {sourceRef.evidenceRange ?? sourceRef.paragraphRef ?? sourceRef.sourceRecordId ?? "evidence range pending"}
+                {metadataLabels.sourceType} {labelFromMap(sourceTypeLabels, sourceRef.sourceType)} · {sourceRef.sourceName ?? sourceRef.sourceTitle} · {sourceRef.evidenceRange ?? sourceRef.paragraphRef ?? sourceRef.sourceRecordId ?? "待补充证据范围"}
               </span>
             ))}
           </div>
         </div>
         <Button asChild variant="outline">
-          <Link to={`/wiki-nodes/${segment.nodeId}`}>Open WikiNode</Link>
+          <Link to={`/wiki-nodes/${segment.nodeId}`}>打开 WikiNode</Link>
         </Button>
       </CardContent>
     </Card>
@@ -206,11 +207,13 @@ function FilterSelect({
   label,
   value,
   values,
+  labels = {},
   onChange,
 }: {
   label: string
   value: string
   values: string[]
+  labels?: Record<string, string>
   onChange: (value: string) => void
 }) {
   return (
@@ -222,9 +225,9 @@ function FilterSelect({
         onChange={(event) => onChange(event.target.value)}
         className="h-8 rounded-lg border border-input bg-background px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
       >
-        <option value="all">All</option>
+        <option value="all">全部</option>
         {values.map((item) => (
-          <option key={item} value={item}>{item}</option>
+          <option key={item} value={item}>{labelFromMap(labels, item)}</option>
         ))}
       </select>
     </label>

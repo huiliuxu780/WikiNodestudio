@@ -1,36 +1,36 @@
 import { expect, test } from "@playwright/test"
 
-const forbiddenProductTerms = /Chunk Management|Agent|Chatbot|Workflow|MCP/i
+const forbiddenProductTerms = /Chunk Management|Chat API|Chatbot|Agent Platform|Workflow Builder|Vector DB Management/i
 
 test.describe("Frontend skeleton IA", () => {
   test("sidebar exposes the complete product navigation groups", async ({ page }) => {
     await page.goto("/")
 
     await expect(page.getByText("WikiNode Studio").first()).toBeVisible()
-    await expect(page.getByText("Platform", { exact: true })).toBeVisible()
-    await expect(page.getByText("Knowledge", { exact: true })).toBeVisible()
-    await expect(page.getByText("Governance", { exact: true })).toBeVisible()
-    await expect(page.getByText("System", { exact: true })).toBeVisible()
+    await expect(page.getByText("平台", { exact: true })).toBeVisible()
+    await expect(page.getByText("知识", { exact: true })).toBeVisible()
+    await expect(page.getByText("治理", { exact: true })).toBeVisible()
+    await expect(page.getByText("系统", { exact: true })).toBeVisible()
 
     for (const name of [
-      "Overview",
-      "Knowledge Bases",
-      "WikiNodes",
-      "Wiki Graph",
-      "Retrieval Test",
-      "Sources",
-      "Raw Materials",
-      "Index Segments",
-      "Publishing & Index",
-      "Broken Links",
-      "Tags & Metadata",
-      "Quality Issues",
-      "Evaluation Cases",
-      "Parser Engine",
-      "Storage Engine",
-      "Vector Store",
-      "Settings",
-      "Admin",
+      "总览",
+      "知识库",
+      "知识节点",
+      "知识图谱",
+      "检索测试",
+      "知识来源",
+      "原始材料",
+      "Index Segment",
+      "发布与索引",
+      "断链检查",
+      "标签与元数据",
+      "质量问题",
+      "评测用例",
+      "解析引擎",
+      "存储引擎",
+      "外部向量库配置",
+      "设置",
+      "管理",
     ]) {
       await expect(page.locator("a").filter({ hasText: name }).first()).toBeVisible()
     }
@@ -38,54 +38,54 @@ test.describe("Frontend skeleton IA", () => {
 
   test("all skeleton routes render non-empty product pages", async ({ page }) => {
     const routes = [
-      ["/", "Overview"],
-      ["/knowledge-bases", "Knowledge Bases"],
-      ["/knowledge-bases/kb-cc-after-sales", "CC After-sales KB"],
-      ["/knowledge-bases/kb-cc-after-sales/settings", "Knowledge Base Settings"],
-      ["/sources", "Sources"],
-      ["/sources/src-feishu-cc", "Source Detail"],
-      ["/sources/sync-jobs", "Sync Jobs"],
-      ["/sources/sync-logs", "Sync Logs"],
-      ["/raw-materials", "Raw Materials"],
-      ["/raw-materials/rm-001", "Raw Material Detail"],
-      ["/raw-materials/rm-001/parsed-result", "Parsed Result Preview"],
-      ["/wiki-nodes", "WikiNodes"],
+      ["/", "总览"],
+      ["/knowledge-bases", "知识库"],
+      ["/knowledge-bases/kb-cc-after-sales", "CC After-sales KB 知识库详情"],
+      ["/knowledge-bases/kb-cc-after-sales/settings", "知识库设置"],
+      ["/sources", "知识来源"],
+      ["/sources/src-feishu-cc", "知识来源详情"],
+      ["/sources/sync-jobs", "同步任务"],
+      ["/sources/sync-logs", "同步日志"],
+      ["/raw-materials", "原始材料"],
+      ["/raw-materials/rm-001", "原始材料详情"],
+      ["/raw-materials/rm-001/parsed-result", "解析结果预览"],
+      ["/wiki-nodes", "知识节点"],
       ["/wiki-nodes/wn-001", "保修期内维修服务政策"],
-      ["/wiki-nodes/wn-001/detail", "WikiNode Detail"],
-      ["/wiki-graph", "Wiki Graph"],
-      ["/broken-links", "Broken Links"],
-      ["/backlinks", "Backlinks"],
-      ["/impact-analysis", "Impact Analysis"],
-      ["/index-segments", "Index Segments"],
-      ["/index-segments/strategy", "Segment Strategy"],
-      ["/index-segments/debug", "Segment Debug"],
-      ["/publishing", "Publishing & Index"],
-      ["/index-status", "Index Status"],
-      ["/vector-sync", "Vector Store Sync"],
-      ["/index-jobs", "Index Jobs"],
-      ["/retrieval-test", "Retrieval Test"],
-      ["/retrieval-debug", "Retrieval Debug"],
-      ["/retrieval-api-docs", "Retrieval API Docs"],
-      ["/query-logs", "Query Logs"],
-      ["/evaluation-cases", "Evaluation Cases"],
-      ["/tags", "Tags & Metadata"],
-      ["/node-types", "Node Types"],
-      ["/metadata-fields", "Metadata Fields"],
-      ["/quality-issues", "Quality Issues"],
-      ["/conflicts", "Conflict Detection"],
-      ["/expired-knowledge", "Expired Knowledge"],
-      ["/duplicates", "Duplicate Knowledge"],
-      ["/retrieval-evaluation", "Retrieval Evaluation"],
-      ["/system/parser-engine", "Parser Engine"],
-      ["/system/storage-engine", "Storage Engine"],
-      ["/system/vector-store", "Vector Store"],
-      ["/system/embedding-config", "Embedding Config"],
-      ["/system/health", "System Health"],
-      ["/settings", "Settings"],
-      ["/admin/users", "Users"],
-      ["/admin/roles", "Roles"],
-      ["/admin/permissions", "Permissions"],
-      ["/admin/audit-logs", "Audit Logs"],
+      ["/wiki-nodes/wn-001/detail", "WikiNode 详情"],
+      ["/wiki-graph", "知识图谱"],
+      ["/broken-links", "断链检查"],
+      ["/backlinks", "反向链接"],
+      ["/impact-analysis", "影响分析"],
+      ["/index-segments", "Index Segment"],
+      ["/index-segments/strategy", "片段策略"],
+      ["/index-segments/debug", "片段调试"],
+      ["/publishing", "发布与索引"],
+      ["/index-status", "索引状态"],
+      ["/vector-sync", "外部向量库同步"],
+      ["/index-jobs", "索引任务"],
+      ["/retrieval-test", "检索测试"],
+      ["/retrieval-debug", "召回调试"],
+      ["/retrieval-api-docs", "Retrieval API 文档"],
+      ["/query-logs", "查询日志"],
+      ["/evaluation-cases", "评测用例"],
+      ["/tags", "标签与元数据"],
+      ["/node-types", "节点类型"],
+      ["/metadata-fields", "元数据字段"],
+      ["/quality-issues", "质量问题"],
+      ["/conflicts", "冲突检测"],
+      ["/expired-knowledge", "过期知识"],
+      ["/duplicates", "重复知识"],
+      ["/retrieval-evaluation", "召回评测"],
+      ["/system/parser-engine", "解析引擎"],
+      ["/system/storage-engine", "存储引擎"],
+      ["/system/vector-store", "外部向量库配置"],
+      ["/system/embedding-config", "向量模型配置"],
+      ["/system/health", "系统健康"],
+      ["/settings", "设置"],
+      ["/admin/users", "用户"],
+      ["/admin/roles", "角色"],
+      ["/admin/permissions", "权限"],
+      ["/admin/audit-logs", "审计日志"],
     ] as const
 
     for (const [route, heading] of routes) {
@@ -96,20 +96,60 @@ test.describe("Frontend skeleton IA", () => {
     }
   })
 
+  test("detail and admin skeleton pages render mapped Chinese statuses", async ({ page }) => {
+    await page.goto("/sources/src-feishu-cc")
+    await expect(page.getByText("来源类型")).toBeVisible()
+    await expect(page.getByText("飞书文档")).toBeVisible()
+    await expect(page.getByText("同步状态")).toBeVisible()
+    await expect(page.getByText("已同步")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/\bsynced\b|\bfeishu\b/i)
+
+    await page.goto("/raw-materials")
+    await expect(page.getByText("解析完成").first()).toBeVisible()
+    await expect(page.getByText("解析失败")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/\bparsed\b|\bfailed\b|\bparsing\b|\bnot_parsed\b/i)
+
+    await page.goto("/raw-materials/rm-001")
+    await expect(page.getByText("解析状态")).toBeVisible()
+    await expect(page.getByText("解析完成")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/\bparsed\b/i)
+
+    await page.goto("/wiki-nodes/wn-001/detail")
+    await expect(page.getByText("发布状态")).toBeVisible()
+    await expect(page.getByText("已发布")).toBeVisible()
+    await expect(page.getByText("索引状态")).toBeVisible()
+    await expect(page.getByText("已索引")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/\bpublished\b|\bindexed\b/i)
+
+    await page.goto("/admin/roles")
+    await expect(page.getByText("知识负责人")).toBeVisible()
+    await expect(page.getByText("编辑者")).toBeVisible()
+    await expect(page.getByText("审核员")).toBeVisible()
+    await expect(page.getByText("查看者")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/\bOwner\b|\bEditor\b|\bReviewer\b|\bViewer\b/)
+  })
+
+  test("index status shows Chinese empty state for groups without nodes", async ({ page }) => {
+    await page.goto("/index-status")
+
+    await expect(page.getByText("暂无该状态的知识节点。").first()).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+  })
+
   test("Index Segments and Retrieval Test keep WikiNode-centered language", async ({ page }) => {
     await page.goto("/index-segments")
 
-    await expect(page.getByRole("heading", { name: "Index Segments" })).toBeVisible()
-    await expect(page.getByText("controlled retrieval units generated from WikiNodes before vector-store sync")).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Index Segment" })).toBeVisible()
+    await expect(page.getByText("Index Segment 是从 WikiNode / Knowledge Object 生成的受控索引和召回单元")).toBeVisible()
     await expect(page.getByText("SEG-001")).toBeVisible()
     await expect(page.getByRole("cell", { name: "保修期内维修服务政策" }).first()).toBeVisible()
     await expect(page.getByText(/Chunk Management/i)).toHaveCount(0)
 
     await page.goto("/retrieval-test")
-    await expect(page.getByText("Retrieval API returns WikiNode objects by default")).toBeVisible()
-    await page.getByLabel("Debug mode").click()
+    await expect(page.getByText("Retrieval API 返回知识节点，调试模式仅展示命中的索引片段证据。")).toBeVisible()
+    await page.getByLabel("调试模式").click()
     await page.getByRole("button", { name: "检索" }).click()
-    await expect(page.getByText("Matched Index Segments").nth(1)).toBeVisible()
+    await expect(page.getByText("命中的 Index Segment").nth(1)).toBeVisible()
     await expect(page.getByText("SEG-").first()).toBeVisible()
   })
 
@@ -121,12 +161,12 @@ test.describe("Frontend skeleton IA", () => {
     await expect(page.getByTestId("wikinode-explorer")).toBeVisible()
     await expect(page.getByTestId("wikinode-markdown-editor")).toBeVisible()
     await expect(page.getByTestId("wikinode-inspector")).toBeVisible()
-    await expect(page.getByRole("tab", { name: "Metadata" })).toBeVisible()
-    await expect(page.getByRole("tab", { name: "Links" })).toBeVisible()
-    await expect(page.getByRole("tab", { name: "Sources" })).toBeVisible()
-    await expect(page.getByRole("tab", { name: "Index" })).toBeVisible()
-    await page.getByRole("tab", { name: "Segments" }).click()
-    await expect(page.getByText("Index Segments are controlled retrieval units generated from WikiNodes before vector-store sync")).toBeVisible()
+    await expect(page.getByRole("tab", { name: "元数据" })).toBeVisible()
+    await expect(page.getByRole("tab", { name: "双链" })).toBeVisible()
+    await expect(page.getByRole("tab", { name: "来源" })).toBeVisible()
+    await expect(page.getByRole("tab", { name: "索引" })).toBeVisible()
+    await page.getByRole("tab", { name: "片段" }).click()
+    await expect(page.getByText("Index Segment 是 WikiNode 发布前生成的受控召回片段")).toBeVisible()
     await expect(page.getByText("SEG-001")).toBeVisible()
     await expect(page.getByText("Index Segment").nth(1)).toBeVisible()
     await expect(page.getByText(/Chunk Management/i)).toHaveCount(0)
@@ -136,13 +176,13 @@ test.describe("Frontend skeleton IA", () => {
     await page.goto("/wiki-nodes/wn-001")
 
     await expect(page.getByTestId("wikinode-inspector")).toContainText("Knowledge Object")
-    await expect(page.getByTestId("wikinode-inspector")).toContainText("Article")
-    await expect(page.getByTestId("wikinode-inspector")).toContainText("service_fee_policy")
+    await expect(page.getByTestId("wikinode-inspector")).toContainText("文章型知识")
+    await expect(page.getByTestId("wikinode-inspector")).toContainText("收费政策")
     await expect(page.getByTestId("wikinode-inspector")).toContainText("web_article_policy_v1")
 
-    await page.getByRole("tab", { name: "Sources" }).click()
+    await page.getByRole("tab", { name: "来源" }).click()
     await expect(page.getByTestId("wikinode-inspector")).toContainText("web_page")
-    await expect(page.getByTestId("wikinode-inspector")).toContainText("confidence")
+    await expect(page.getByTestId("wikinode-inspector")).toContainText("可信度")
 
     await page.goto("/wiki-nodes")
     await expect(page.getByRole("link", { name: "西门子 WM14U 洗衣机" })).toBeVisible()

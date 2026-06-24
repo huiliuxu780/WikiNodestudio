@@ -54,98 +54,98 @@ const data = {
   ],
   platform: [
     {
-      title: "Overview",
+      title: "总览",
       url: "/",
       icon: LayoutDashboardIcon,
     },
     {
-      title: "Knowledge Bases",
+      title: "知识库",
       url: "/knowledge-bases",
       icon: LibraryIcon,
     },
     {
-      title: "WikiNodes",
+      title: "知识节点",
       url: "/wiki-nodes",
       icon: FileTextIcon,
     },
     {
-      title: "Wiki Graph",
+      title: "知识图谱",
       url: "/wiki-graph",
       icon: GitBranchIcon,
     },
     {
-      title: "Retrieval Test",
+      title: "检索测试",
       url: "/retrieval-test",
       icon: SearchIcon,
     },
   ],
   knowledge: [
     {
-      title: "Sources",
+      title: "知识来源",
       url: "/sources",
       icon: DatabaseIcon,
     },
     {
-      title: "Raw Materials",
+      title: "原始材料",
       url: "/raw-materials",
       icon: ArchiveIcon,
     },
     {
-      title: "Index Segments",
+      title: "Index Segment",
       url: "/index-segments",
       icon: PackageIcon,
     },
     {
-      title: "Publishing & Index",
+      title: "发布与索引",
       url: "/publishing",
       icon: ActivityIcon,
     },
     {
-      title: "Broken Links",
+      title: "断链检查",
       url: "/broken-links",
       icon: Link2OffIcon,
     },
   ],
   governance: [
     {
-      title: "Tags & Metadata",
+      title: "标签与元数据",
       url: "/tags",
       icon: TagsIcon,
     },
     {
-      title: "Quality Issues",
+      title: "质量问题",
       url: "/quality-issues",
       icon: ShieldCheckIcon,
     },
     {
-      title: "Evaluation Cases",
+      title: "评测用例",
       url: "/evaluation-cases",
       icon: SlidersHorizontalIcon,
     },
   ],
   system: [
     {
-      title: "Parser Engine",
+      title: "解析引擎",
       url: "/system/parser-engine",
       icon: SlidersHorizontalIcon,
     },
     {
-      title: "Storage Engine",
+      title: "存储引擎",
       url: "/system/storage-engine",
       icon: HardDriveIcon,
     },
     {
-      title: "Vector Store",
+      title: "外部向量库配置",
       url: "/system/vector-store",
       icon: DatabaseIcon,
     },
     {
-      title: "Settings",
+      title: "设置",
       url: "/settings",
       icon: SettingsIcon,
     },
     {
-      title: "Admin",
+      title: "管理",
       url: "/admin/users",
       icon: UserCogIcon,
     },
@@ -159,10 +159,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain title="Platform" items={data.platform} />
-        <NavKnowledge title="Knowledge" items={data.knowledge} />
-        <NavKnowledge title="Governance" items={data.governance} />
-        <NavKnowledge title="System" items={data.system} />
+        <NavMain title="平台" items={data.platform} />
+        <NavKnowledge title="知识" items={data.knowledge} />
+        <NavKnowledge title="治理" items={data.governance} />
+        <NavKnowledge title="系统" items={data.system} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

@@ -90,7 +90,7 @@ export function RetrievalQueryPanel({
             checked={Boolean(value.debug)}
             onCheckedChange={(debug) => onChange({ ...value, debug })}
           />
-          <Label htmlFor="retrieval-debug-mode" className="text-sm">Debug mode</Label>
+          <Label htmlFor="retrieval-debug-mode" className="text-sm">{actionLabels.debugMode}</Label>
         </div>
       </div>
       <div className="flex flex-wrap gap-2">

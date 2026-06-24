@@ -46,6 +46,9 @@ stories:
   US005:
     file: docs/current/STORY_QUEUE.yaml
     requirement: FRONTEND_SHELL_FULL_NAV
+  US014:
+    file: docs/current/STORY_QUEUE.yaml
+    guideline: docs/quality/frontend-ux-guidelines.md
 tasks:
   IM001:
     file: docs/current/ACTIVE_TASKS.yaml
@@ -63,4 +66,10 @@ tasks:
     gate: docs/quality/GATE_REGISTRY.md
     frontend_routes: src/app/router.tsx
     app_shell: src/components/app-sidebar.tsx
+    smoke: tests/e2e/mvp-smoke.spec.ts
+  IM014:
+    file: docs/current/ACTIVE_TASKS.yaml
+    gate: docs/quality/GATE_REGISTRY.md
+    guideline: docs/quality/frontend-ux-guidelines.md
+    labels: src/utils/display-labels.ts
     smoke: tests/e2e/mvp-smoke.spec.ts

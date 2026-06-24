@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { WikiLink, WikiNode } from "@/types/wiki"
 import type { KnowledgeGraphEdge } from "@/utils/knowledge-graph"
+import { commonLabels, indexStatusLabels, labelFromMap, metadataLabels, objectTypeLabels, relationTypeLabels, statusLabels, subtypeLabels } from "@/utils/display-labels"
 
 export function GraphInspector({
   node,
@@ -26,10 +27,10 @@ export function GraphInspector({
     return (
       <Card data-testid="knowledge-graph-inspector" className="min-h-0">
         <CardHeader>
-          <CardTitle className="text-base">Inspector</CardTitle>
+          <CardTitle className="text-base">图谱详情</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          Select a WikiNode / Knowledge Object to inspect its relations and evidence.
+          请选择一个 WikiNode / Knowledge Object 查看关系和来源证据。
         </CardContent>
       </Card>
     )
@@ -43,38 +44,38 @@ export function GraphInspector({
       <CardContent className="flex max-h-[calc(100svh-13rem)] flex-col gap-4 overflow-y-auto text-sm">
         <p className="text-muted-foreground">{node.summary}</p>
         <div className="flex flex-wrap gap-1">
-          <Badge variant="secondary">{node.objectType ?? "Article"}</Badge>
-          <Badge variant="outline">{node.subtype ?? node.nodeType}</Badge>
-          <Badge variant="outline">{node.indexStatus}</Badge>
+          <Badge variant="secondary">{labelFromMap(objectTypeLabels, node.objectType ?? "Article")}</Badge>
+          <Badge variant="outline">{labelFromMap(subtypeLabels, node.subtype ?? node.nodeType)}</Badge>
+          <Badge variant="outline">{indexStatusLabels[node.indexStatus]}</Badge>
         </div>
         <InfoGrid
           rows={[
-            ["objectType", node.objectType ?? "Article"],
-            ["subtype", node.subtype ?? node.nodeType],
-            ["nodeType", node.nodeType],
-            ["status", node.status],
-            ["indexStatus", node.indexStatus],
-            ["processingProfile", node.processingProfile ?? "none"],
+            [metadataLabels.objectType, labelFromMap(objectTypeLabels, node.objectType ?? "Article")],
+            [metadataLabels.subtype, labelFromMap(subtypeLabels, node.subtype ?? node.nodeType)],
+            [metadataLabels.nodeType, node.nodeType],
+            [metadataLabels.status, statusLabels[node.status]],
+            [metadataLabels.indexStatus, indexStatusLabels[node.indexStatus]],
+            [metadataLabels.processingProfile, node.processingProfile ?? commonLabels.none],
           ]}
         />
-        <PanelSection title="Key metadata">
+        <PanelSection title="关键元数据">
           <InfoGrid rows={metadataRows(node)} />
         </PanelSection>
-        <PanelSection title="Outgoing relations">
-          <RelationList edges={outgoingRelations} emptyText="No outgoing semantic relations." />
+        <PanelSection title="出向关系">
+          <RelationList edges={outgoingRelations} emptyText="暂无出向语义关系。" />
         </PanelSection>
-        <PanelSection title="Incoming relations">
-          <RelationList edges={incomingRelations} emptyText="No incoming semantic relations." />
+        <PanelSection title="入向关系">
+          <RelationList edges={incomingRelations} emptyText="暂无入向语义关系。" />
         </PanelSection>
-        <PanelSection title="Source evidence">
+        <PanelSection title="来源证据">
           <SourceEvidenceList node={node} />
         </PanelSection>
-        <PanelSection title="WikiLinks / backlinks / broken links">
+        <PanelSection title="WikiLink / 反向链接 / 断链">
           <InfoGrid
             rows={[
-              ["outgoing WikiLinks", outgoingWikiLinks.length],
-              ["backlinks", incomingWikiLinks.length],
-              ["broken links", brokenLinks.length],
+              ["出向 WikiLink", outgoingWikiLinks.length],
+              ["反向链接", incomingWikiLinks.length],
+              ["断链", brokenLinks.length],
             ]}
           />
           <WikiLinkList links={[...outgoingWikiLinks, ...brokenLinks]} />
@@ -82,7 +83,7 @@ export function GraphInspector({
         <Button asChild data-testid="knowledge-graph-open-node">
           <Link to={`/wiki-nodes/${node.nodeId}`}>
             <ExternalLinkIcon data-icon="inline-start" />
-            Open WikiNode
+            打开 WikiNode
           </Link>
         </Button>
       </CardContent>
@@ -101,7 +102,7 @@ function PanelSection({ title, children }: { title: string; children: React.Reac
 
 function InfoGrid({ rows }: { rows: Array<[string, string | number]> }) {
   if (!rows.length) {
-    return <p className="text-xs text-muted-foreground">No values.</p>
+    return <p className="text-xs text-muted-foreground">暂无字段值。</p>
   }
 
   return (
@@ -124,7 +125,7 @@ function RelationList({ edges, emptyText }: { edges: KnowledgeGraphEdge[]; empty
       {edges.map((edge) => (
         <div key={edge.edgeId} className="rounded-md border bg-background px-3 py-2">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={edge.resolved ? "outline" : "destructive"}>{edge.relationType}</Badge>
+            <Badge variant={edge.resolved ? "outline" : "destructive"}>{labelFromMap(relationTypeLabels, edge.relationType)}</Badge>
             <span className="truncate text-xs text-muted-foreground">
               {edge.sourceTitle} {"->"} {edge.targetTitle}
             </span>
@@ -136,7 +137,7 @@ function RelationList({ edges, emptyText }: { edges: KnowledgeGraphEdge[]; empty
 }
 
 function SourceEvidenceList({ node }: { node: WikiNode }) {
-  if (!node.sourceRefs.length) return <p className="text-xs text-muted-foreground">No sourceRefs.</p>
+  if (!node.sourceRefs.length) return <p className="text-xs text-muted-foreground">暂无来源证据。</p>
 
   return (
     <div className="flex flex-col gap-2">
@@ -144,9 +145,9 @@ function SourceEvidenceList({ node }: { node: WikiNode }) {
         <div key={`${source.sourceId}-${source.id ?? source.sourceRecordId ?? source.paragraphRef}`} className="rounded-md border bg-background px-3 py-2">
           <div className="font-medium">{source.sourceName ?? source.sourceTitle}</div>
           <div className="mt-1 grid gap-1 text-xs text-muted-foreground">
-            <span>sourceType: {source.sourceType}</span>
-            <span>confidence: {source.confidence ?? "none"}</span>
-            <span>sourceRecordId: {source.sourceRecordId ?? "none"}</span>
+            <span>{metadataLabels.sourceType}：{source.sourceType}</span>
+            <span>{metadataLabels.confidence}：{source.confidence ?? commonLabels.none}</span>
+            <span>{metadataLabels.sourceRecordId}：{source.sourceRecordId ?? commonLabels.none}</span>
           </div>
         </div>
       ))}
@@ -155,13 +156,13 @@ function SourceEvidenceList({ node }: { node: WikiNode }) {
 }
 
 function WikiLinkList({ links }: { links: WikiLink[] }) {
-  if (!links.length) return <p className="text-xs text-muted-foreground">No WikiLinks.</p>
+  if (!links.length) return <p className="text-xs text-muted-foreground">暂无 WikiLink。</p>
 
   return (
     <div className="flex flex-col gap-2">
       {links.slice(0, 6).map((link) => (
         <div key={link.linkId} className="flex flex-wrap items-center gap-2 rounded-md border bg-background px-3 py-2 text-xs">
-          <Badge variant={link.resolved ? "outline" : "destructive"}>{link.resolved ? "WikiLink" : "broken WikiLink"}</Badge>
+          <Badge variant={link.resolved ? "outline" : "destructive"}>{link.resolved ? "WikiLink" : "异常 WikiLink"}</Badge>
           <span className="truncate text-muted-foreground">{link.fromTitle} {"->"} {link.targetTitle}</span>
         </div>
       ))}
@@ -177,6 +178,6 @@ function metadataRows(node: WikiNode): Array<[string, string | number]> {
 
 function formatMetadataValue(value: unknown) {
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(value)
-  if (value == null) return "none"
+  if (value == null) return commonLabels.none
   return JSON.stringify(value)
 }

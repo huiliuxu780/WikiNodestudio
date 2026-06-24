@@ -10,8 +10,8 @@ export function WikiGraphPage() {
   return (
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
-        title="Wiki Graph 知识图谱"
-        description="Explore WikiNode / Knowledge Object relationships through objectType, subtype, source evidence, WikiLinks, backlinks, and broken links."
+        title="知识图谱"
+        description="查看 WikiNode / Knowledge Object 之间的关系、来源证据、WikiLink、反向链接和断链。"
       />
       <ApiErrorNotice error={error} onRetry={reload} />
       <WikiGraphView nodes={nodes} />
