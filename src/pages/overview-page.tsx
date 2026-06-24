@@ -20,7 +20,7 @@ export function OverviewPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader title="Overview 总览" />
+      <PageHeader title="总览" />
       <ApiErrorNotice error={nodesError} onRetry={reloadNodes} />
       <ApiErrorNotice error={brokenLinksError} onRetry={reloadBrokenLinks} />
       <div className="grid gap-4 md:grid-cols-4">
@@ -28,10 +28,10 @@ export function OverviewPage() {
         <MetricCard label="已发布" value={published.length} />
         <MetricCard label="断链数" value={brokenLinks.length} />
         <MetricCard label="已索引" value={indexed.length} />
-        <MetricCard label="Index Segments" value={mockIndexSegments.length} />
-        <MetricCard label="Failed Index Jobs" value={failedSegments.length} />
-        <MetricCard label="Quality Issues" value={openIssues.length} />
-        <MetricCard label="Retrieval Health" value={92} />
+        <MetricCard label="索引片段数" value={mockIndexSegments.length} />
+        <MetricCard label="索引失败任务" value={failedSegments.length} />
+        <MetricCard label="质量问题" value={openIssues.length} />
+        <MetricCard label="召回健康度" value={92} />
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
         <ListCard title="最近更新的知识节点" items={recent.map((node) => `${node.title} · ${node.updatedAt}`)} />

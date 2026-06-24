@@ -6,7 +6,7 @@ export function SourceRefList({ sourceRefs }: { sourceRefs: SourceRef[] }) {
   if (!sourceRefs.length) {
     return (
       <div className="rounded-md border bg-background p-3 text-sm text-muted-foreground">
-        No source evidence is linked to this WikiNode yet.
+        当前 WikiNode 暂无来源证据。
       </div>
     )
   }
@@ -14,7 +14,7 @@ export function SourceRefList({ sourceRefs }: { sourceRefs: SourceRef[] }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="rounded-md border bg-background p-3 text-sm text-muted-foreground">
-        Source evidence traces WikiNode content back to original Source and Raw Material records.
+        来源证据用于将 WikiNode 内容追溯到原始知识来源和原始材料记录。
       </div>
       {sourceRefs.map((source) => (
         <div key={`${source.sourceId}-${source.paragraphRef ?? source.id ?? source.sourceRecordId ?? source.sourceName}`} className="rounded-md border bg-background p-3 text-sm">

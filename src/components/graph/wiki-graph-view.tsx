@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import type { WikiNode } from "@/types/wiki"
-import { commonLabels, indexStatusLabels, labelFromMap } from "@/utils/display-labels"
+import { commonLabels, indexStatusLabels, labelFromMap, objectTypeLabels, relationTypeLabels } from "@/utils/display-labels"
 import {
   buildKnowledgeGraphEdges,
   getIncomingKnowledgeGraphEdges,
@@ -63,34 +63,35 @@ export function WikiGraphView({ nodes }: { nodes: WikiNode[] }) {
     <div data-testid="wiki-graph-page" className="grid min-h-[calc(100svh-11rem)] gap-4 lg:grid-cols-[280px_minmax(0,1fr)_340px]">
       <Card className="min-h-0">
         <CardHeader>
-          <CardTitle className="text-base">Graph Controls</CardTitle>
+          <CardTitle className="text-base">图谱筛选</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="knowledge-graph-search">Search Knowledge Objects</Label>
+            <Label htmlFor="knowledge-graph-search">搜索知识对象</Label>
             <Input
               id="knowledge-graph-search"
-              aria-label="Search Knowledge Objects"
+              aria-label="搜索知识对象"
               value={filters.search}
-              placeholder="title, slug, objectType, subtype, metadata"
+              placeholder="标题、Slug、objectType、subtype、元数据"
               onChange={(event) => setFilters({ ...filters, search: event.target.value })}
             />
           </div>
           <FilterSelect
-            label="Object Type"
+            label="Knowledge Object 类型"
             value={filters.objectType}
+            labels={objectTypeLabels}
             items={knowledgeObjectTypes}
             onChange={(objectType) => setFilters({ ...filters, objectType })}
           />
           <FilterSelect
-            label="Index Status"
+            label="索引状态"
             value={filters.indexStatus}
             labels={indexStatusLabels}
             items={["not_indexed", "indexing", "indexed", "failed", "outdated", "deleted"]}
             onChange={(indexStatus) => setFilters({ ...filters, indexStatus })}
           />
           <div className="flex items-center justify-between gap-3 rounded-md border px-3 py-2">
-            <Label htmlFor="knowledge-graph-show-broken">Show broken links</Label>
+            <Label htmlFor="knowledge-graph-show-broken">显示断链</Label>
             <Switch
               id="knowledge-graph-show-broken"
               checked={filters.showBrokenLinks}
@@ -99,26 +100,26 @@ export function WikiGraphView({ nodes }: { nodes: WikiNode[] }) {
           </div>
           <Button variant="outline" onClick={() => setFilters(defaultFilters)}>
             <RotateCcwIcon data-icon="inline-start" />
-            Reset filters
+            重置筛选
           </Button>
-          <GraphMetric label="Visible objects" value={visibleNodes.length} />
-          <GraphMetric label="Visible relations" value={graphEdges.length} />
-          <GraphMetric label="Selected" value={selectedNode?.title ?? commonLabels.none} />
+          <GraphMetric label="可见知识对象" value={visibleNodes.length} />
+          <GraphMetric label="可见关系" value={graphEdges.length} />
+          <GraphMetric label="当前选择" value={selectedNode?.title ?? commonLabels.none} />
         </CardContent>
       </Card>
 
       <Card className="min-h-[680px]">
         <CardHeader>
           <div className="flex flex-col gap-2">
-            <div className="text-base font-medium">Wiki Graph / Knowledge Object Relationships</div>
+            <div className="text-base font-medium">Wiki Graph / Knowledge Object 关系</div>
             <p className="text-sm text-muted-foreground">
-              Wiki Graph visualizes WikiNode / Knowledge Object relationships from semantic relations, WikiLinks, backlinks, and broken links.
+              Wiki Graph 展示 WikiNode / Knowledge Object 的语义关系、WikiLink、反向链接和断链。
             </p>
           </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="rounded-md border bg-background p-3 text-sm text-muted-foreground">
-            Index Segment remains the controlled retrieval and indexing unit.
+            Index Segment 是受控的索引和召回单元。
           </div>
           <div data-testid="knowledge-graph-workspace" className="flex flex-col gap-4">
             <div className="flex min-h-[500px] flex-col gap-4 rounded-md border bg-muted/20 p-4">
@@ -126,8 +127,8 @@ export function WikiGraphView({ nodes }: { nodes: WikiNode[] }) {
                 groupedNodes.map(([objectType, groupNodes]) => (
                   <section key={objectType} className="flex flex-col gap-3">
                     <div className="flex items-center gap-2">
-                      <Badge variant="secondary">{objectType}</Badge>
-                      <span className="text-xs text-muted-foreground">{groupNodes.length} objects</span>
+                      <Badge variant="secondary">{labelFromMap(objectTypeLabels, objectType)}</Badge>
+                      <span className="text-xs text-muted-foreground">{groupNodes.length} 个知识对象</span>
                     </div>
                     <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
                       {groupNodes.map((node) => (
@@ -143,7 +144,7 @@ export function WikiGraphView({ nodes }: { nodes: WikiNode[] }) {
                 ))
               ) : (
                 <div className="flex min-h-[360px] items-center justify-center text-center text-sm text-muted-foreground">
-                  No Knowledge Objects match the current graph filters.
+                  暂无符合当前筛选条件的知识对象。
                 </div>
               )}
             </div>
@@ -167,12 +168,12 @@ export function WikiGraphView({ nodes }: { nodes: WikiNode[] }) {
 function RelationLane({ edges }: { edges: ReturnType<typeof buildKnowledgeGraphEdges> }) {
   return (
     <div className="flex max-h-[540px] flex-col gap-2 overflow-y-auto rounded-md border bg-background p-3">
-      <div className="text-sm font-medium">Relationship lane</div>
+      <div className="text-sm font-medium">关系列表</div>
       {edges.length ? (
         edges.slice(0, 18).map((edge) => (
           <div key={edge.edgeId} data-testid="knowledge-graph-edge" className="rounded-md border px-3 py-2 text-xs">
             <div className="mb-1 flex flex-wrap items-center gap-2">
-              <Badge variant={edge.resolved ? "outline" : "destructive"}>{edge.relationType}</Badge>
+              <Badge variant={edge.resolved ? "outline" : "destructive"}>{labelFromMap(relationTypeLabels, edge.relationType)}</Badge>
               <Badge variant="secondary">{edge.source}</Badge>
             </div>
             <div className="truncate text-muted-foreground">
@@ -181,7 +182,7 @@ function RelationLane({ edges }: { edges: ReturnType<typeof buildKnowledgeGraphE
           </div>
         ))
       ) : (
-        <p data-testid="knowledge-graph-edge" className="text-xs text-muted-foreground">No visible relationships.</p>
+        <p data-testid="knowledge-graph-edge" className="text-xs text-muted-foreground">暂无可见关系。</p>
       )}
     </div>
   )

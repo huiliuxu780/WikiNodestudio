@@ -74,14 +74,14 @@ export function WikiNodeCreatePage() {
           </Button>
         }
       />
-      {validationError ? <p className="text-sm text-destructive">{validationError}</p> : null}
+      {validationError ? <p role="alert" className="text-sm text-destructive">{validationError}</p> : null}
       <ApiErrorNotice error={createError} title={commonLabels.createFailed} />
       <Card>
         <CardHeader>
           <CardTitle>知识节点字段</CardTitle>
         </CardHeader>
         <CardContent>
-          <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+          <form className="flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="wiki-node-title">标题</Label>
@@ -89,7 +89,6 @@ export function WikiNodeCreatePage() {
                   id="wiki-node-title"
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
-                  required
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -99,7 +98,6 @@ export function WikiNodeCreatePage() {
                   value={slug}
                   onChange={(event) => setSlug(event.target.value)}
                   placeholder="customer-warranty-policy"
-                  required
                 />
                 <p className="text-xs text-muted-foreground">仅支持小写字母、数字和连字符，例如：customer-warranty-policy。</p>
               </div>
@@ -111,7 +109,6 @@ export function WikiNodeCreatePage() {
                 value={summary}
                 onChange={(event) => setSummary(event.target.value)}
                 className="min-h-20 resize-none"
-                required
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -121,7 +118,6 @@ export function WikiNodeCreatePage() {
                 value={contentMarkdown}
                 onChange={(event) => setContentMarkdown(event.target.value)}
                 className="min-h-48 resize-y font-mono text-sm leading-6"
-                required
               />
             </div>
             <div className="flex flex-col gap-2">

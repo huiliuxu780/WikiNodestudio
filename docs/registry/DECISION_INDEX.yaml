@@ -1,5 +1,13 @@
 version: 1
 decisions:
+  - id: D014
+    date: "2026-06-24"
+    title: "Run IM014 as a frontend-only localization and UX feedback baseline"
+    rationale: "The user requested IM014 from latest main after IM010 through IM013. The task uses the existing frontend-ux-polish gate to make current MVP pages manually acceptable without changing backend, database, dependencies, or the Knowledge Object model."
+    related:
+      - US014
+      - IM014
+      - FRONTEND_UX_GUIDELINES
   - id: D004
     date: "2026-06-23"
     title: "Register WeKnora analysis and frontend shell skeleton as independent ready tasks"

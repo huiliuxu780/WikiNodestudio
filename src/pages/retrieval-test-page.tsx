@@ -30,8 +30,8 @@ export function RetrievalTestPage() {
   return (
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
-        title="Retrieval Test 检索测试"
-        description="Retrieval API returns WikiNode objects by default. Matched Index Segments are shown only in debug mode."
+        title="检索测试"
+        description="Retrieval API 返回知识节点，调试模式仅展示命中的索引片段证据。"
       />
       <RetrievalQueryPanel
         value={query}

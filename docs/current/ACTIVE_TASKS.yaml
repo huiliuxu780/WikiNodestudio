@@ -1,5 +1,5 @@
 version: 1
-updated_at: "2026-06-23"
+updated_at: "2026-06-24"
 source_of_truth: "current_active_tasks"
 notes:
   - "Only current executable tasks belong here."
@@ -99,3 +99,37 @@ tasks:
       - "Any package or lockfile change."
       - "Any backend, database, API, DTO, or migration change."
       - "Any real external integration, file upload/parser, auth, permission, approval, export, batch, vector DB, embedding, Agent, Chatbot, Workflow, MCP, IM, or LLM answer-generation scope."
+  - id: IM014
+    title: "Frontend Localization and UX Feedback Baseline"
+    status: ready
+    story_ids: [US014]
+    allowed_files:
+      - "src/app/**"
+      - "src/components/**"
+      - "src/pages/**"
+      - "src/services/**"
+      - "src/types/**"
+      - "src/utils/**"
+      - "tests/e2e/**"
+      - "README.md"
+      - "docs/current/**"
+      - "docs/quality/**"
+      - "docs/registry/**"
+    forbidden_files:
+      - ".github/workflows/**"
+      - "src/main/java/**"
+      - "src/main/resources/db/migration/**"
+      - "pom.xml"
+      - "package.json"
+      - "pnpm-lock.yaml"
+    gates:
+      - "Frontend UX polish gate: localize existing MVP routes and preserve current product scope."
+      - "Product language gate: use WikiNode, WikiLink, Index Segment, Retrieval API, and Knowledge Object naming; never expose Chunk Management, Chat API, Chatbot, Agent Platform, Workflow Builder, or Vector DB Management as product copy."
+      - "Feedback gate: create, edit, retrieval, loading, empty, error, validation, duplicate, and backend-unavailable states are user-readable in Chinese."
+      - "Backend boundary gate: no API, Java model, repository, database, migration, package, or lockfile changes."
+      - "Browser smoke gate: Playwright covers key Chinese feedback and forbidden product drift terms."
+      - "Harness gate: run bash scripts/check.sh after implementation and state updates."
+    stop_conditions:
+      - "Any package or lockfile change."
+      - "Any backend, database, API, DTO, or migration change."
+      - "Any new route, business module, real external integration, Source import, file upload/parser, auth, permission, approval, export, batch operation, vector DB, embedding, publishing flow, or Knowledge Object model expansion."

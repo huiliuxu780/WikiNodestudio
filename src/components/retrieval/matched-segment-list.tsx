@@ -4,12 +4,12 @@ import { toPercent } from "@/utils/formatters"
 
 export function MatchedSegmentList({ segments }: { segments: NonNullable<RetrievalResult["matchedSegments"]> }) {
   if (!segments.length) {
-    return <p className="text-sm text-muted-foreground">Debug mode 当前没有匹配的 Index Segment。</p>
+    return <p className="text-sm text-muted-foreground">调试模式当前没有匹配的 Index Segment。</p>
   }
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="text-xs font-medium text-muted-foreground">Matched Index Segments</div>
+      <div className="text-xs font-medium text-muted-foreground">命中的 Index Segment</div>
       {segments.map((segment) => (
         <div key={segment.segmentId} className="rounded-md border bg-background p-3 text-sm">
           <div className="mb-2 flex flex-wrap items-center gap-2">

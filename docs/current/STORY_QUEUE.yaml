@@ -1,5 +1,5 @@
 version: 1
-updated_at: "2026-06-23"
+updated_at: "2026-06-24"
 source_of_truth: "current_story_queue"
 notes:
   - "Only ready, in_progress, and blocked stories belong here."
@@ -52,3 +52,19 @@ stories:
       - "No real backend API connection."
       - "No real vector database, embedding pipeline, login, file upload, parser, Agent, Chatbot, Workflow, MCP, IM, or LLM answer-generation work."
       - "No package or lockfile changes unless the user separately confirms a dependency decision."
+  - id: US014
+    title: "Frontend localization and UX feedback baseline"
+    status: ready
+    goal: "Make the existing MVP frontend manually acceptable by standardizing Chinese copy, product terms, status labels, operation feedback, and browser smoke coverage without adding new product modules."
+    acceptance:
+      - "Existing MVP pages use understandable Chinese titles, actions, filters, fields, table labels, status labels, empty states, loading states, error states, and operation feedback."
+      - "Product terminology stays centered on WikiNode, WikiLink, Index Segment, Retrieval API, and Knowledge Object."
+      - "Visible product surfaces do not use Chunk Management, Chat API, Chatbot, Agent Platform, Workflow Builder, or Vector DB Management."
+      - "Shared display label utilities cover objectType, subtype, nodeType, status, indexStatus, linkStatus, sourceType, syncStatus, and retrieval result status where those values already exist."
+      - "Create, save, update, delete, publish, re-index, and retrieval actions return clear Chinese success, failure, validation, duplicate, empty, and backend-unavailable feedback where the existing MVP supports those actions."
+      - "Playwright smoke covers key Chinese feedback and forbidden product drift terms."
+    non_goals:
+      - "No new business modules or pages."
+      - "No backend API, Java model, database migration, or Knowledge Object model expansion."
+      - "No package or lockfile changes."
+      - "No Source import, file upload, parser execution, vector database sync, permissions, approval workflow, or real publishing center behavior."

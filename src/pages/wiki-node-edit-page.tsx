@@ -92,7 +92,7 @@ export function WikiNodeEditPage() {
       reviewStatus: "approved",
       lastPublishedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
     })
-    setMockActionState("Published state updated locally.")
+    setMockActionState("publish")
   }
 
   function handleMockReindex() {
@@ -100,7 +100,7 @@ export function WikiNodeEditPage() {
       ...activeDraft,
       indexStatus: "indexing",
     })
-    setMockActionState("Re-index state updated locally.")
+    setMockActionState("reindex")
   }
 
   return (
@@ -117,10 +117,10 @@ export function WikiNodeEditPage() {
                 <SaveIcon data-icon="inline-start" />{isSaving ? actionLabels.saving : actionLabels.save}
               </Button>
               <Button size="sm" variant="outline" onClick={handleMockPublish}>
-                <SendIcon data-icon="inline-start" />发布
+                <SendIcon data-icon="inline-start" />{actionLabels.publish}
               </Button>
               <Button size="sm" variant="outline" onClick={handleMockReindex}>
-                <UploadCloudIcon data-icon="inline-start" />重新索引
+                <UploadCloudIcon data-icon="inline-start" />{actionLabels.reindex}
               </Button>
               <Button
                 size="sm"
@@ -138,7 +138,8 @@ export function WikiNodeEditPage() {
         <WikiNodeExplorer nodes={nodes} currentNodeId={node.nodeId} query={explorerQuery} onQueryChange={setExplorerQuery} />
         <div className="flex min-w-0 flex-col gap-3">
           {feedback ? <FeedbackNotice title={feedback} /> : null}
-          {mockActionState ? <FeedbackNotice title={mockActionState} description="This local editor state is for product validation; it does not call publishing or indexing services." /> : null}
+          {mockActionState === "publish" ? <FeedbackNotice title={commonLabels.publishSuccess} description={commonLabels.localPublishOnly} /> : null}
+          {mockActionState === "reindex" ? <FeedbackNotice title={commonLabels.reindexSuccess} description={commonLabels.localReindexOnly} /> : null}
           {validationError ? <p className="px-4 text-sm text-destructive">{validationError}</p> : null}
           <ApiErrorNotice error={saveError} title={commonLabels.saveFailed} />
           <ApiErrorNotice error={nodesError} onRetry={reloadNodes} />
