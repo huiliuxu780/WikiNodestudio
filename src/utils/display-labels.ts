@@ -62,10 +62,18 @@ export const sourceTypeLabels: Record<string, string> = {
   word: "Word",
   excel: "Excel",
   web: "网页",
+  web_page: "网页",
   manual: "手工录入",
+  manual_input: "手工录入",
   api: "API",
   database: "数据库",
   legacy_kb: "历史知识库",
+  image: "图片",
+  video: "视频",
+  file: "文件",
+  pim: "PIM",
+  dam: "DAM",
+  crm: "CRM",
 }
 
 export const syncStatusLabels: Record<string, string> = {
@@ -92,6 +100,13 @@ export const metadataLabels: Record<string, string> = {
   paragraphRef: "段落位置",
   version: "版本",
   sourceUrl: "来源链接",
+  sourceType: "sourceType",
+  sourceRecordId: "来源记录",
+  snapshotId: "快照 ID",
+  snapshotTime: "快照时间",
+  evidenceRange: "证据范围",
+  syncJobId: "同步任务",
+  confidence: "confidence",
 }
 
 export function labelFromMap(labels: Record<string, string>, value: string) {

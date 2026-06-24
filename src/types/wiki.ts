@@ -14,22 +14,96 @@ export type WikiNodeStatus = "draft" | "published" | "archived"
 
 export type WikiIndexStatus = "not_indexed" | "indexing" | "indexed" | "failed" | "outdated" | "deleted"
 
-export type SourceType = "feishu" | "pdf" | "word" | "excel" | "web" | "manual" | "api" | "database" | "legacy_kb"
+export type KnowledgeObjectType =
+  | "Article"
+  | "Product"
+  | "Procedure"
+  | "DataRecord"
+  | "MediaAsset"
+  | "Collection"
+  | "ExternalSource"
+  | "Rule"
+
+export type KnowledgeMetadata = Record<string, unknown>
+
+export type SourceType =
+  | "feishu"
+  | "pdf"
+  | "word"
+  | "excel"
+  | "web"
+  | "web_page"
+  | "manual"
+  | "manual_input"
+  | "api"
+  | "database"
+  | "legacy_kb"
+  | "image"
+  | "video"
+  | "file"
+  | "pim"
+  | "dam"
+  | "crm"
 
 export type SourceRef = {
+  id?: string
   sourceId: string
   sourceType: SourceType
   sourceTitle: string
+  sourceName?: string
   sourceUrl?: string
+  sourceRecordId?: string
+  snapshotId?: string
+  snapshotTime?: string
+  evidenceRange?: string
+  syncJobId?: string
+  confidence?: number
   paragraphRef?: string
   version?: string
+}
+
+export type KnowledgeRelationType =
+  | "references"
+  | "derived_from"
+  | "applies_to"
+  | "contains"
+  | "part_of"
+  | "replaces"
+  | "conflicts_with"
+  | "explains"
+  | "has_manual"
+  | "has_part_catalog"
+  | "has_policy"
+  | "has_asset"
+  | "related_to"
+
+export type KnowledgeRelation = {
+  id?: string
+  sourceNodeId?: string
+  targetNodeId: string
+  relationType: KnowledgeRelationType
+  direction?: "outgoing" | "incoming"
+  confidence?: number
+  createdBy?: "system" | "user"
+  evidence?: {
+    sourceRefId?: string
+  }
 }
 
 export type WikiNode = {
   nodeId: string
   slug: string
   title: string
+  /**
+   * Legacy MVP-era UI classification. Keep it for existing filters and routes.
+   * Commercial knowledge modeling should use objectType + subtype + metadata.
+   */
   nodeType: WikiNodeType
+  objectType?: KnowledgeObjectType
+  subtype?: string
+  metadata?: KnowledgeMetadata
+  relations?: KnowledgeRelation[]
+  processingProfile?: string
   businessDomain?: string
   brand?: string
   productCategory?: string
@@ -77,6 +151,7 @@ export type WikiLink = {
   toTitle?: string
   targetTitle: string
   relationType:
+    | "references"
     | "reference"
     | "derived_from"
     | "overrides"

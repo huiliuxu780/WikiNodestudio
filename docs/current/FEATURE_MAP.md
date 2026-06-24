@@ -115,6 +115,14 @@ WikiNode 是平台的核心知识资产单元。
 
 它不是原始文档，也不是向量库 chunk，而是企业可管理、可编辑、可发布、可追溯的标准知识节点。
 
+从商业模型上看：
+
+```text
+WikiNode = Knowledge Object carrier
+```
+
+WikiNode 通过 `objectType`、`subtype`、`metadata`、`sourceRefs`、`relations`、`processingProfile` 和 `indexSegments` 承载可扩展知识对象模型。`objectType` 是小集合平台级分类；`subtype` 是未来可配置的业务分类。详细规则见 `docs/current/KNOWLEDGE_OBJECT_MODEL_SPEC.md`。
+
 示例：
 
 ```text
@@ -675,6 +683,11 @@ nodeId
 title
 slug
 nodeType
+objectType
+subtype
+metadata
+relations
+processingProfile
 businessDomain
 brand
 productCategory

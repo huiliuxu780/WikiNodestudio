@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import type { WikiLink } from "@/types/wiki"
 
 const relationLabels: Record<WikiLink["relationType"], string> = {
+  references: "References",
   reference: "Reference",
   derived_from: "Derived from",
   overrides: "Overrides",

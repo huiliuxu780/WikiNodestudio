@@ -54,8 +54,14 @@ export function WikiNodeInspector({
         </TabsList>
         <TabsContent value="metadata" className="mt-0 min-h-0 overflow-y-auto text-sm">
           <div className="flex flex-col gap-2 pr-1">
+          <div className="rounded-md border bg-background p-3 text-muted-foreground">
+            Knowledge Object fields extend WikiNode without replacing the existing nodeType filters.
+          </div>
           <MetaRow label={metadataLabels.nodeId} value={node.nodeId} />
           <MetaRow label="Slug" value={node.slug} />
+          <MetaRow label="Knowledge Object" value={node.objectType ?? commonLabels.none} />
+          <MetaRow label="Subtype" value={node.subtype ?? commonLabels.none} />
+          <MetaRow label="Processing Profile" value={node.processingProfile ?? commonLabels.none} />
           <MetaRow label={metadataLabels.nodeType} value={nodeTypeLabels[node.nodeType]} />
           <MetaRow label="Business Domain" value={node.businessDomain ?? commonLabels.none} />
           <MetaRow label="Brand" value={node.brand ?? commonLabels.none} />
@@ -76,6 +82,15 @@ export function WikiNodeInspector({
           <MetaRow label={metadataLabels.version} value={`v${node.version}`} />
           <MetaRow label={metadataLabels.createdAt} value={node.createdAt} />
           <MetaRow label={metadataLabels.updatedAt} value={node.updatedAt} />
+          {node.metadata ? (
+            <PanelSection title="Extensible metadata">
+              <div className="flex flex-col gap-2">
+                {Object.entries(node.metadata).map(([key, value]) => (
+                  <MetaRow key={key} label={key} value={formatMetadataValue(value)} />
+                ))}
+              </div>
+            </PanelSection>
+          ) : null}
           </div>
         </TabsContent>
         <TabsContent value="links" className="mt-0 min-h-0 overflow-y-auto">
@@ -161,4 +176,15 @@ function MetaRow({ label, value }: { label: string; value: ReactNode }) {
       <span className="truncate font-medium">{value}</span>
     </div>
   )
+}
+
+function formatMetadataValue(value: unknown) {
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return String(value)
+  }
+  if (value == null) {
+    return commonLabels.none
+  }
+
+  return JSON.stringify(value)
 }

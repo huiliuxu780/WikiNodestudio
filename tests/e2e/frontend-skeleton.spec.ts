@@ -132,6 +132,25 @@ test.describe("Frontend skeleton IA", () => {
     await expect(page.getByText(/Chunk Management/i)).toHaveCount(0)
   })
 
+  test("WikiNode editor exposes Knowledge Object model metadata without changing Index Segment language", async ({ page }) => {
+    await page.goto("/wiki-nodes/wn-001")
+
+    await expect(page.getByTestId("wikinode-inspector")).toContainText("Knowledge Object")
+    await expect(page.getByTestId("wikinode-inspector")).toContainText("Article")
+    await expect(page.getByTestId("wikinode-inspector")).toContainText("service_fee_policy")
+    await expect(page.getByTestId("wikinode-inspector")).toContainText("web_article_policy_v1")
+
+    await page.getByRole("tab", { name: "Sources" }).click()
+    await expect(page.getByTestId("wikinode-inspector")).toContainText("web_page")
+    await expect(page.getByTestId("wikinode-inspector")).toContainText("confidence")
+
+    await page.goto("/wiki-nodes")
+    await expect(page.getByRole("link", { name: "西门子 WM14U 洗衣机" })).toBeVisible()
+    await expect(page.getByRole("link", { name: "洗衣机配件目录" })).toBeVisible()
+
+    await expect(page.locator("main").last()).not.toContainText(/Chunk Management/i)
+  })
+
   test("WikiNode editor preview renders resolved and broken WikiLink badges", async ({ page }) => {
     await page.goto("/wiki-nodes/wn-001")
 
