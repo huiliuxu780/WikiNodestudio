@@ -44,6 +44,7 @@ export function RetrievalQueryPanel({
           onChange={(event) => onChange({ ...value, query: event.target.value })}
           placeholder="输入要验证的知识问题"
         />
+        <p className="text-xs text-muted-foreground">示例问题只会填入输入框，点击检索后返回 WikiNode 结果。</p>
       </div>
       <div className="grid gap-3 md:grid-cols-4">
         <FilterSelect

@@ -35,11 +35,14 @@ export function RetrievalResultCard({ result }: { result: RetrievalResult }) {
             <Badge key={tag} variant="outline">{tag}</Badge>
           ))}
         </div>
-        <InfoRow label="匹配原因" value={formatMatchedReason(result.matchedReason)} />
-        <InfoRow label="匹配字段" value={formatMatchedFields(result.matchedFields)} />
-        <InfoRow label="来源" value={result.node.sourceRefs.map((source) => source.sourceTitle).join("、") || commonLabels.none} />
-        <InfoRow label="出链" value={result.outgoingLinks.map((link) => link.targetTitle).join("、") || commonLabels.none} />
-        <InfoRow label="入链" value={result.incomingLinks.map((link) => link.fromTitle).join("、") || commonLabels.none} />
+        <InfoRow label="召回结果类型" value="WikiNode（业务知识节点）" />
+        <InfoRow label="为什么命中" value={formatMatchedReason(result.matchedReason)} />
+        <InfoRow label="命中字段" value={formatMatchedFields(result.matchedFields)} />
+        <InfoRow label="来源证据" value={result.node.sourceRefs.map((source) => source.sourceTitle).join("、") || commonLabels.none} />
+        <InfoRow
+          label="WikiLink 上下文"
+          value={`出链：${result.outgoingLinks.map((link) => link.targetTitle).join("、") || commonLabels.none}；入链：${result.incomingLinks.map((link) => link.fromTitle).join("、") || commonLabels.none}`}
+        />
         {result.matchedSegments ? <MatchedSegmentList segments={result.matchedSegments} /> : null}
         <div className="rounded-md border bg-muted/30 p-3">
           <div className="mb-1 text-xs font-medium text-muted-foreground">正文摘录</div>

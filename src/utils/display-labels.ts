@@ -20,7 +20,7 @@ export const commonLabels = {
   localReindexOnly: "当前任务不调用真实索引服务。",
   searchFailed: "检索失败",
   searchComplete: "检索完成",
-  noMatchedNodes: "暂无匹配的知识节点",
+  noMatchedNodes: "暂无匹配的知识节点，请调整问题、筛选条件或返回数量后重试。",
   backendUnavailable: "后端服务不可用，请确认服务启动后重试",
   unknownError: "未知错误，请稍后重试",
 }
