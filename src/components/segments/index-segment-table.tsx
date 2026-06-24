@@ -163,7 +163,11 @@ function SegmentPreview({ segment }: { segment?: IndexSegment }) {
         <div className="rounded-md border bg-muted/20 p-3 text-muted-foreground">
           父级 WikiNode / Knowledge Object 是业务可管理对象；这里展示进入同步前的 Index Segment 证据。
         </div>
+        <div className="rounded-md border bg-muted/20 p-3 text-muted-foreground">
+          当前只展示本地验收数据，不执行 embedding 或真实向量库同步。
+        </div>
         <InfoRow label="片段标题" value={segment.title ?? segment.segmentId} />
+        <InfoRow label="Index Segment 来源 WikiNode" value={segment.nodeTitle} />
         <InfoRow label="父级 WikiNode / Knowledge Object" value={segment.nodeTitle} />
         <InfoRow label={metadataLabels.objectType} value={labelFromMap(objectTypeLabels, segment.objectType ?? "Article")} />
         <InfoRow label={metadataLabels.subtype} value={labelFromMap(subtypeLabels, segment.subtype ?? commonLabels.none)} />
@@ -174,7 +178,7 @@ function SegmentPreview({ segment }: { segment?: IndexSegment }) {
         <InfoRow label={metadataLabels.createdAt} value={segment.createdAt ?? commonLabels.none} />
         <InfoRow label={metadataLabels.updatedAt} value={segment.updatedAt ?? commonLabels.none} />
         <div className="rounded-md border bg-background p-3">
-          <div className="mb-1 text-xs font-medium text-muted-foreground">内容预览</div>
+          <div className="mb-1 text-xs font-medium text-muted-foreground">内容证据</div>
           <p className="text-muted-foreground">{segment.contentPreview}</p>
         </div>
         <div className="rounded-md border bg-background p-3">
@@ -186,7 +190,7 @@ function SegmentPreview({ segment }: { segment?: IndexSegment }) {
           </div>
         </div>
         <div className="rounded-md border bg-background p-3">
-          <div className="mb-2 text-xs font-medium text-muted-foreground">来源证据摘要</div>
+          <div className="mb-2 text-xs font-medium text-muted-foreground">来源证据范围</div>
           <div className="flex flex-col gap-1 text-xs text-muted-foreground">
             {segment.sourceRefs.map((sourceRef) => (
               <span key={sourceRef.id ?? sourceRef.sourceId}>

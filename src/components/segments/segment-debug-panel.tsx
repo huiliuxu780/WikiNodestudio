@@ -15,6 +15,9 @@ export function SegmentDebugPanel({ segment }: { segment: IndexSegment }) {
         <div className="rounded-md border bg-background p-3 text-muted-foreground">
           处理策略说明来源材料如何变成 WikiNode / Knowledge Object；片段策略说明该对象如何生成 Index Segment。召回结果仍以 WikiNode 为中心。
         </div>
+        <div className="rounded-md border bg-background p-3 text-muted-foreground">
+          调试只解释召回证据，不调用 embedding、不写入外部向量库。当前调试对象来自本地样例 Index Segment。
+        </div>
         <InfoRow label="Index Segment" value={segment.segmentId} />
         <InfoRow label="父级 WikiNode / Knowledge Object" value={segment.nodeTitle} />
         <InfoRow label={metadataLabels.objectType} value={labelFromMap(objectTypeLabels, segment.objectType ?? "Article")} />
@@ -25,7 +28,7 @@ export function SegmentDebugPanel({ segment }: { segment: IndexSegment }) {
         <InfoRow label={metadataLabels.vectorDocId} value={segment.vectorDocId ?? "未同步"} />
         <InfoRow label="召回证据" value={segment.contentPreview} />
         <div className="rounded-md border bg-background p-3">
-          <div className="mb-2 text-xs font-medium text-muted-foreground">来源证据</div>
+          <div className="mb-2 text-xs font-medium text-muted-foreground">来源证据范围</div>
           <div className="flex flex-col gap-1 text-xs text-muted-foreground">
             {segment.sourceRefs.map((sourceRef) => (
               <span key={sourceRef.id ?? sourceRef.sourceId}>
