@@ -1,5 +1,16 @@
 version: 1
 decisions:
+  - id: D040
+    date: "2026-06-25"
+    title: "Implement single Draft WikiNode Suggestion generation operation"
+    rationale: "The user approved opening IM040 after IM039 established the write boundary. The implementation adds one deterministic one-record Parsed Document to Draft WikiNode Suggestion generation path, Source Operation evidence for each attempt, a safe POST API response, a controlled Parsed Result frontend trigger, API smoke, repository/API contract tests, and Playwright coverage while keeping accept/reject, WikiNode creation or update, WikiLink creation, publishing, indexing, Index Segment generation, vector sync, parser execution, external AI, LLM prompts, permissions, approval workflow, batch conversion, dependencies, package changes, and lockfile changes out of scope."
+    related:
+      - IM040
+      - D039
+      - DRAFT_WIKINODE_SUGGESTION_GENERATE_OPERATION
+      - DRAFT_WIKINODE_SUGGESTION_WRITE_BOUNDARY_PLAN
+      - DRAFT_WIKINODE_SUGGESTION_READONLY_MODEL
+      - SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN
   - id: D039
     date: "2026-06-25"
     title: "Plan Draft WikiNode Suggestion write boundaries before implementation"

@@ -5,6 +5,8 @@ import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.DraftWikiNodeSuggestion;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationRequest;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationResult;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
@@ -187,6 +189,14 @@ public class WikiNodeController {
   public List<DraftWikiNodeSuggestion> listParsedDocumentDraftWikiNodeSuggestions(@PathVariable String parsedDocumentId) {
     ensureParsedDocumentExists(parsedDocumentId);
     return repository.listDraftWikiNodeSuggestionsForParsedDocument(parsedDocumentId);
+  }
+
+  @PostMapping("/parsed-documents/{parsedDocumentId}/suggest-wikinode")
+  public DraftWikiNodeSuggestionGenerationResult generateDraftWikiNodeSuggestion(
+    @PathVariable String parsedDocumentId,
+    @RequestBody(required = false) DraftWikiNodeSuggestionGenerationRequest request
+  ) {
+    return repository.generateDraftWikiNodeSuggestion(parsedDocumentId, request);
   }
 
   @GetMapping("/raw-materials/{rawMaterialId}/draft-wikinode-suggestions")

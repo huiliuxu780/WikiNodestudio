@@ -301,6 +301,117 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
     );
   }
 
+  @Override
+  protected void insertSourceOperation(SourceOperation operation) {
+    int updated = jdbcTemplate.update(
+      """
+      update source_operations
+      set operation_type = ?, source_id = ?, raw_material_id = ?, parsed_document_id = ?, status = ?,
+          requested_by = ?, started_at = ?, finished_at = ?, summary = ?, error_summary = ?
+      where operation_id = ?
+      """,
+      operation.operationType(),
+      operation.sourceId(),
+      operation.rawMaterialId(),
+      operation.parsedDocumentId(),
+      operation.status(),
+      operation.requestedBy(),
+      operation.startedAt(),
+      operation.finishedAt(),
+      operation.summary(),
+      operation.errorSummary(),
+      operation.operationId()
+    );
+    if (updated == 0) {
+      jdbcTemplate.update(
+        """
+        insert into source_operations (
+          operation_id, operation_type, source_id, raw_material_id, parsed_document_id, status,
+          requested_by, started_at, finished_at, summary, error_summary
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        operation.operationId(),
+        operation.operationType(),
+        operation.sourceId(),
+        operation.rawMaterialId(),
+        operation.parsedDocumentId(),
+        operation.status(),
+        operation.requestedBy(),
+        operation.startedAt(),
+        operation.finishedAt(),
+        operation.summary(),
+        operation.errorSummary()
+      );
+    }
+  }
+
+  @Override
+  @Transactional
+  protected void insertDraftWikiNodeSuggestion(DraftWikiNodeSuggestion suggestion) {
+    int updated = jdbcTemplate.update(
+      """
+      update draft_wikinode_suggestions
+      set operation_id = ?, title = ?, object_type = ?, subtype = ?, content_draft = ?,
+          metadata_language = ?, metadata_business_domain = ?, confidence = ?, status = ?,
+          review_note = ?, conflict_status = ?, conflict_reasons = ?, matched_wiki_node_ids = ?,
+          matched_suggestion_ids = ?, updated_at = ?
+      where suggestion_id = ?
+      """,
+      suggestion.operationId(),
+      suggestion.title(),
+      suggestion.objectType(),
+      suggestion.subtype(),
+      suggestion.contentDraft(),
+      suggestion.metadataDraft().get("language"),
+      suggestion.metadataDraft().get("businessDomain"),
+      suggestion.confidence(),
+      suggestion.status(),
+      suggestion.reviewNote(),
+      suggestion.conflictStatus(),
+      String.join(",", suggestion.conflictReasons()),
+      String.join(",", suggestion.matchedWikiNodeIds()),
+      String.join(",", suggestion.matchedSuggestionIds()),
+      suggestion.updatedAt(),
+      suggestion.suggestionId()
+    );
+    if (updated == 0) {
+      jdbcTemplate.update(
+        """
+        insert into draft_wikinode_suggestions (
+          suggestion_id, parsed_document_id, raw_material_id, source_id, operation_id, title,
+          object_type, subtype, content_draft, metadata_language, metadata_business_domain,
+          confidence, status, review_note, conflict_status, conflict_reasons,
+          matched_wiki_node_ids, matched_suggestion_ids, created_at, updated_at
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        suggestion.suggestionId(),
+        suggestion.parsedDocumentId(),
+        suggestion.rawMaterialId(),
+        suggestion.sourceId(),
+        suggestion.operationId(),
+        suggestion.title(),
+        suggestion.objectType(),
+        suggestion.subtype(),
+        suggestion.contentDraft(),
+        suggestion.metadataDraft().get("language"),
+        suggestion.metadataDraft().get("businessDomain"),
+        suggestion.confidence(),
+        suggestion.status(),
+        suggestion.reviewNote(),
+        suggestion.conflictStatus(),
+        String.join(",", suggestion.conflictReasons()),
+        String.join(",", suggestion.matchedWikiNodeIds()),
+        String.join(",", suggestion.matchedSuggestionIds()),
+        suggestion.createdAt(),
+        suggestion.updatedAt()
+      );
+    }
+    jdbcTemplate.update("delete from draft_wikinode_suggestion_source_refs where suggestion_id = ?", suggestion.suggestionId());
+    jdbcTemplate.update("delete from draft_wikinode_relation_candidates where suggestion_id = ?", suggestion.suggestionId());
+    insertDraftWikiNodeSuggestionSourceRefs(suggestion);
+    insertDraftWikiNodeRelationCandidates(suggestion);
+  }
+
   private WikiNode mapNode(ResultSet resultSet) throws SQLException {
     String nodeId = resultSet.getString("node_id");
     return new WikiNode(
@@ -460,6 +571,48 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
         sourceRef.sourceUrl(),
         sourceRef.paragraphRef(),
         sourceRef.version()
+      );
+    }
+  }
+
+  private void insertDraftWikiNodeSuggestionSourceRefs(DraftWikiNodeSuggestion suggestion) {
+    for (int index = 0; index < suggestion.sourceRefs().size(); index++) {
+      ParsedDocumentSourceRef sourceRef = suggestion.sourceRefs().get(index);
+      jdbcTemplate.update(
+        """
+        insert into draft_wikinode_suggestion_source_refs (
+          suggestion_id, position, source_id, raw_material_id, parsed_document_id,
+          locator_type, locator, excerpt, confidence
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        suggestion.suggestionId(),
+        index,
+        sourceRef.sourceId(),
+        sourceRef.rawMaterialId(),
+        sourceRef.parsedDocumentId(),
+        sourceRef.locatorType(),
+        sourceRef.locator(),
+        sourceRef.excerpt(),
+        sourceRef.confidence()
+      );
+    }
+  }
+
+  private void insertDraftWikiNodeRelationCandidates(DraftWikiNodeSuggestion suggestion) {
+    for (int index = 0; index < suggestion.relationCandidates().size(); index++) {
+      DraftWikiNodeRelationCandidate candidate = suggestion.relationCandidates().get(index);
+      jdbcTemplate.update(
+        """
+        insert into draft_wikinode_relation_candidates (
+          suggestion_id, position, target_title, relation_type, source, confidence
+        ) values (?, ?, ?, ?, ?, ?)
+        """,
+        suggestion.suggestionId(),
+        index,
+        candidate.targetTitle(),
+        candidate.relationType(),
+        candidate.source(),
+        candidate.confidence()
       );
     }
   }

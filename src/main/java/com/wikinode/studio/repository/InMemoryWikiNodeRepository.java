@@ -7,6 +7,7 @@ import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.WikiNode;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,9 +23,9 @@ public class InMemoryWikiNodeRepository extends AbstractWikiNodeRepository {
   private final List<SourceItem> sources = WikiNodeSeedData.sources();
   private final List<RawMaterial> rawMaterials = WikiNodeSeedData.rawMaterials();
   private final List<ParsedDocument> parsedDocuments = WikiNodeSeedData.parsedDocuments();
-  private final List<SourceOperation> sourceOperations = WikiNodeSeedData.sourceOperations();
+  private final List<SourceOperation> sourceOperations = new ArrayList<>(WikiNodeSeedData.sourceOperations());
   private final List<ParserProfile> parserProfiles = WikiNodeSeedData.parserProfiles();
-  private final List<DraftWikiNodeSuggestion> draftWikiNodeSuggestions = WikiNodeSeedData.draftWikiNodeSuggestions();
+  private final List<DraftWikiNodeSuggestion> draftWikiNodeSuggestions = new ArrayList<>(WikiNodeSeedData.draftWikiNodeSuggestions());
 
   public InMemoryWikiNodeRepository() {
     WikiNodeSeedData.nodes().forEach(node -> nodes.put(node.nodeId(), node));
@@ -84,5 +85,17 @@ public class InMemoryWikiNodeRepository extends AbstractWikiNodeRepository {
   @Override
   protected List<DraftWikiNodeSuggestion> loadDraftWikiNodeSuggestions() {
     return draftWikiNodeSuggestions;
+  }
+
+  @Override
+  protected void insertSourceOperation(SourceOperation operation) {
+    sourceOperations.removeIf(existing -> existing.operationId().equals(operation.operationId()));
+    sourceOperations.add(operation);
+  }
+
+  @Override
+  protected void insertDraftWikiNodeSuggestion(DraftWikiNodeSuggestion suggestion) {
+    draftWikiNodeSuggestions.removeIf(existing -> existing.suggestionId().equals(suggestion.suggestionId()));
+    draftWikiNodeSuggestions.add(suggestion);
   }
 }

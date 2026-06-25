@@ -165,6 +165,58 @@ class WikiNodeApiContractTest {
   }
 
   @Test
+  void generatesOneDraftWikiNodeSuggestionFromOneParsedDocument() throws Exception {
+    String body = """
+      {
+        "conversionProfile": "excel_fee_table_v1",
+        "idempotencyKey": "api-contract-pd-003"
+      }
+      """;
+
+    HttpResponse<String> generate = post("/api/parsed-documents/pd-003/suggest-wikinode", body);
+    HttpResponse<String> suggestions = get("/api/parsed-documents/pd-003/draft-wikinode-suggestions");
+
+    assertThat(generate.statusCode()).isEqualTo(200);
+    assertThat(generate.body()).contains("\"parsedDocumentId\":\"pd-003\"");
+    assertThat(generate.body()).contains("\"status\":\"succeeded\"");
+    assertThat(generate.body()).contains("\"summary\":\"已生成待审核 WikiNode 建议。\"");
+    assertThat(generate.body()).contains("\"suggestionId\":\"sug-pd-003\"");
+    assertThat(generate.body()).doesNotContain("\"nodeId\"");
+    assertThat(generate.body()).doesNotContain("\"indexSegmentId\"");
+    assertThat(generate.body()).doesNotContain("\"chunk\"");
+
+    assertThat(suggestions.statusCode()).isEqualTo(200);
+    assertThat(suggestions.body()).contains("\"suggestionId\":\"sug-pd-003\"");
+    assertThat(suggestions.body()).contains("\"operationId\":\"op-pd-003-suggest-");
+    assertThat(suggestions.body()).contains("\"title\":\"维修收费标准 Excel\"");
+    assertThat(suggestions.body()).contains("\"objectType\":\"DataRecord\"");
+    assertThat(suggestions.body()).contains("\"subtype\":\"fee_table\"");
+    assertThat(suggestions.body()).contains("\"status\":\"draft\"");
+    assertThat(suggestions.body()).contains("\"sourceRefs\"");
+    assertThat(suggestions.body()).doesNotContain("\"published\":true");
+    assertThat(suggestions.body()).doesNotContain("\"indexSegmentId\"");
+  }
+
+  @Test
+  void skipsDraftWikiNodeSuggestionGenerationForExistingSuggestion() throws Exception {
+    String body = """
+      {
+        "conversionProfile": "feishu_article_v1",
+        "idempotencyKey": "api-contract-pd-001"
+      }
+      """;
+
+    HttpResponse<String> generate = post("/api/parsed-documents/pd-001/suggest-wikinode", body);
+
+    assertThat(generate.statusCode()).isEqualTo(200);
+    assertThat(generate.body()).contains("\"parsedDocumentId\":\"pd-001\"");
+    assertThat(generate.body()).contains("\"status\":\"skipped\"");
+    assertThat(generate.body()).contains("\"summary\":\"该 Parsed Document 已有待审核 WikiNode 建议。\"");
+    assertThat(generate.body()).doesNotContain("\"nodeId\"");
+    assertThat(generate.body()).doesNotContain("\"indexSegmentId\"");
+  }
+
+  @Test
   void retrievalReturnsWikiNodeObjectsNotChunks() throws Exception {
     String body = """
       {

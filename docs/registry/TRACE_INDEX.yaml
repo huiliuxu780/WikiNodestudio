@@ -104,6 +104,20 @@ phase2_plans:
     read_only_contract: DRAFT_WIKINODE_SUGGESTION_READONLY_CONTRACT_PLAN
     read_only_model: DRAFT_WIKINODE_SUGGESTION_READONLY_MODEL
     operation_plan: SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN
+  DRAFT_WIKINODE_SUGGESTION_GENERATE_OPERATION:
+    decision: D040
+    plan: DRAFT_WIKINODE_SUGGESTION_WRITE_BOUNDARY_PLAN
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    request_model: src/main/java/com/wikinode/studio/model/DraftWikiNodeSuggestionGenerationRequest.java
+    response_model: src/main/java/com/wikinode/studio/model/DraftWikiNodeSuggestionGenerationResult.java
+    repository: src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
+    jdbc_repository: src/main/java/com/wikinode/studio/repository/JdbcWikiNodeRepository.java
+    frontend_service: src/services/source-api-service.ts
+    frontend_page: src/pages/skeleton-pages.tsx
+    api_contract_test: src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+    repository_test: src/test/java/com/wikinode/studio/repository/JdbcWikiNodeRepositoryTest.java
+    api_smoke: scripts/api-smoke.sh
+    playwright: tests/e2e/draft-wikinode-suggestion-readonly.spec.ts
   SOURCE_OPERATION_READONLY_LOGS:
     decision: D030
     plan: docs/current/SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN.md
@@ -223,3 +237,6 @@ tasks:
   IM039:
     decision: D039
     plan: DRAFT_WIKINODE_SUGGESTION_WRITE_BOUNDARY_PLAN
+  IM040:
+    decision: D040
+    implementation: DRAFT_WIKINODE_SUGGESTION_GENERATE_OPERATION

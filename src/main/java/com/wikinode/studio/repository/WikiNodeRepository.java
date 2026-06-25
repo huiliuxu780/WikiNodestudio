@@ -5,6 +5,8 @@ import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.DraftWikiNodeSuggestion;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationRequest;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationResult;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
@@ -67,6 +69,11 @@ public interface WikiNodeRepository {
   List<DraftWikiNodeSuggestion> listDraftWikiNodeSuggestionsForRawMaterial(String rawMaterialId);
 
   Optional<DraftWikiNodeSuggestion> findDraftWikiNodeSuggestion(String suggestionId);
+
+  DraftWikiNodeSuggestionGenerationResult generateDraftWikiNodeSuggestion(
+    String parsedDocumentId,
+    DraftWikiNodeSuggestionGenerationRequest request
+  );
 
   IndexStatusSummary indexStatus();
 }
