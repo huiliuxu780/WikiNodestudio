@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.wikinode.studio.model.ParsedDocument;
+import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.WikiNode;
@@ -145,6 +146,27 @@ class JdbcWikiNodeRepositoryTest {
       });
   }
 
+  @Test
+  void loadsParserProfileReadOnlyRegistry() {
+    JdbcTemplate jdbcTemplate = jdbcTemplateWithParserProfiles();
+    JdbcWikiNodeRepository repository = new JdbcWikiNodeRepository(jdbcTemplate);
+
+    assertThat(repository.listParserProfiles())
+      .extracting(ParserProfile::parserProfile)
+      .contains("feishu_article_v1", "pdf_manual_article_v1", "excel_fee_table_v1");
+
+    assertThat(repository.listParserProfiles())
+      .anySatisfy(profile -> {
+        assertThat(profile.parserProfile()).isEqualTo("feishu_article_v1");
+        assertThat(profile.displayName()).isEqualTo("飞书文章解析 Profile");
+        assertThat(profile.supportedRawMaterialTypes()).containsExactly("document_snapshot");
+        assertThat(profile.supportedSourceTypes()).containsExactly("feishu");
+        assertThat(profile.contentFormat()).isEqualTo("markdown");
+        assertThat(profile.enabled()).isTrue();
+        assertThat(profile.version()).isEqualTo("v1");
+      });
+  }
+
   private JdbcTemplate jdbcTemplate() {
     SingleConnectionDataSource dataSource = new SingleConnectionDataSource(
       "jdbc:h2:mem:wikinode-%s;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH".formatted(System.nanoTime()),
@@ -185,6 +207,23 @@ class JdbcWikiNodeRepositoryTest {
       new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
       new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql"),
       new ClassPathResource("db/migration/V4__create_source_operation_schema.sql")
+    );
+    populator.execute(dataSource);
+    return new JdbcTemplate(dataSource);
+  }
+
+  private JdbcTemplate jdbcTemplateWithParserProfiles() {
+    SingleConnectionDataSource dataSource = new SingleConnectionDataSource(
+      "jdbc:h2:mem:wikinode-parser-profile-%s;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH".formatted(System.nanoTime()),
+      "sa",
+      "",
+      true
+    );
+    ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
+      new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
+      new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql"),
+      new ClassPathResource("db/migration/V4__create_source_operation_schema.sql"),
+      new ClassPathResource("db/migration/V5__create_parser_profile_schema.sql")
     );
     populator.execute(dataSource);
     return new JdbcTemplate(dataSource);

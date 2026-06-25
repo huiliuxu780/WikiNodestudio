@@ -66,6 +66,18 @@ phase2_plans:
     api_contract_test: src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
     repository_test: src/test/java/com/wikinode/studio/repository/JdbcWikiNodeRepositoryTest.java
     playwright: tests/e2e/source-operation-readonly-logs.spec.ts
+  PARSER_PROFILE_READONLY_REGISTRY:
+    decision: D031
+    plan: docs/current/SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN.md
+    backend_model: src/main/java/com/wikinode/studio/model/ParserProfile.java
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    repository: src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
+    migration: src/main/resources/db/migration/V5__create_parser_profile_schema.sql
+    frontend_service: src/services/parser-profile-api-service.ts
+    frontend_page: src/pages/skeleton-pages.tsx
+    api_contract_test: src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+    repository_test: src/test/java/com/wikinode/studio/repository/JdbcWikiNodeRepositoryTest.java
+    playwright: tests/e2e/parser-profile-readonly-registry.spec.ts
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
@@ -135,4 +147,8 @@ tasks:
   IM030:
     decision: D030
     implementation: SOURCE_OPERATION_READONLY_LOGS
+    api_smoke: scripts/api-smoke.sh
+  IM031:
+    decision: D031
+    implementation: PARSER_PROFILE_READONLY_REGISTRY
     api_smoke: scripts/api-smoke.sh

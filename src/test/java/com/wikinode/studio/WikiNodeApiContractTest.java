@@ -116,6 +116,22 @@ class WikiNodeApiContractTest {
   }
 
   @Test
+  void exposesParserProfilesAsReadOnlyRegistry() throws Exception {
+    HttpResponse<String> response = get("/api/parser-profiles");
+
+    assertThat(response.statusCode()).isEqualTo(200);
+    assertThat(response.body()).contains("\"parserProfile\":\"feishu_article_v1\"");
+    assertThat(response.body()).contains("\"displayName\":\"飞书文章解析 Profile\"");
+    assertThat(response.body()).contains("\"supportedRawMaterialTypes\"");
+    assertThat(response.body()).contains("\"supportedSourceTypes\"");
+    assertThat(response.body()).contains("\"contentFormat\":\"markdown\"");
+    assertThat(response.body()).contains("\"enabled\":true");
+    assertThat(response.body()).doesNotContain("\"credential\"");
+    assertThat(response.body()).doesNotContain("\"plugin\"");
+    assertThat(response.body()).doesNotContain("\"chunk\"");
+  }
+
+  @Test
   void retrievalReturnsWikiNodeObjectsNotChunks() throws Exception {
     String body = """
       {

@@ -2,6 +2,7 @@ package com.wikinode.studio.repository;
 
 import com.wikinode.studio.model.IndexStatusSummary;
 import com.wikinode.studio.model.ParsedDocument;
+import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
@@ -55,6 +56,8 @@ public interface WikiNodeRepository {
   List<SourceOperation> listSourceOperationsForRawMaterial(String rawMaterialId);
 
   Optional<SourceOperation> findSourceOperation(String operationId);
+
+  List<ParserProfile> listParserProfiles();
 
   IndexStatusSummary indexStatus();
 }

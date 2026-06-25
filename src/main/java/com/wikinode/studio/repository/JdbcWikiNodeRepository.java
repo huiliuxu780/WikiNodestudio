@@ -2,6 +2,7 @@ package com.wikinode.studio.repository;
 
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParsedDocumentSourceRef;
+import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.SourceItem;
 import com.wikinode.studio.model.SourceOperation;
@@ -9,6 +10,7 @@ import com.wikinode.studio.model.SourceRef;
 import com.wikinode.studio.model.WikiNode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -232,6 +234,27 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
     );
   }
 
+  @Override
+  protected List<ParserProfile> loadParserProfiles() {
+    return jdbcTemplate.query(
+      """
+      select parser_profile, display_name, supported_raw_material_types, supported_source_types,
+             content_format, enabled, version
+      from parser_profiles
+      order by parser_profile
+      """,
+      (resultSet, rowNumber) -> new ParserProfile(
+        resultSet.getString("parser_profile"),
+        resultSet.getString("display_name"),
+        splitCsv(resultSet.getString("supported_raw_material_types")),
+        splitCsv(resultSet.getString("supported_source_types")),
+        resultSet.getString("content_format"),
+        resultSet.getBoolean("enabled"),
+        resultSet.getString("version")
+      )
+    );
+  }
+
   private WikiNode mapNode(ResultSet resultSet) throws SQLException {
     String nodeId = resultSet.getString("node_id");
     return new WikiNode(
@@ -308,6 +331,13 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       "language", resultSet.getString("metadata_language"),
       "businessDomain", resultSet.getString("metadata_business_domain")
     );
+  }
+
+  private List<String> splitCsv(String value) {
+    if (value == null || value.isBlank()) {
+      return List.of();
+    }
+    return Arrays.stream(value.split(",")).map(String::trim).filter(item -> !item.isBlank()).toList();
   }
 
   private void replaceTags(WikiNode node) {
