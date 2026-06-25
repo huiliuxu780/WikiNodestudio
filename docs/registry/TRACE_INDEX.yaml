@@ -65,6 +65,12 @@ phase2_plans:
     parent_plan: docs/current/SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN.md
     upload_boundary_plan: FILE_UPLOAD_CONSTRAINT_PLAN
     parser_profile_registry: PARSER_PROFILE_READONLY_REGISTRY
+  DRAFT_WIKINODE_SUGGESTION_PLAN:
+    decision: D034
+    file: docs/current/DRAFT_WIKINODE_SUGGESTION_PLAN.md
+    parent_plan: docs/current/SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN.md
+    parsed_document_contract: SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_MODEL_CONTRACT
+    previous_parse_plan: SINGLE_RAW_MATERIAL_PARSE_PLAN
   SOURCE_OPERATION_READONLY_LOGS:
     decision: D030
     plan: docs/current/SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN.md
@@ -169,3 +175,6 @@ tasks:
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN
+  IM034:
+    decision: D034
+    plan: DRAFT_WIKINODE_SUGGESTION_PLAN

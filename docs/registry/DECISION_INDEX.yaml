@@ -1,5 +1,15 @@
 version: 1
 decisions:
+  - id: D034
+    date: "2026-06-25"
+    title: "Plan Draft WikiNode suggestion boundaries before WikiNode creation"
+    rationale: "IM034 defines how a future approved Parsed Document to Draft WikiNode suggestion operation should validate eligibility, carry SourceRef evidence forward, write Source Operation lifecycle evidence, handle duplicates and conflicts, summarize safe errors, constrain retry, and preserve manual governance. It does not implement WikiNode creation, suggestion generation, API endpoints, database migrations, frontend actions, accept/reject workflow, publishing, indexing, batch conversion, permissions, or external AI integration."
+    related:
+      - IM034
+      - D033
+      - DRAFT_WIKINODE_SUGGESTION_PLAN
+      - SINGLE_RAW_MATERIAL_PARSE_PLAN
+      - SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN
   - id: D033
     date: "2026-06-25"
     title: "Plan single Raw Material parse semantics before parser execution"

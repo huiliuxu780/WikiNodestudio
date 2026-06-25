@@ -35,6 +35,7 @@ Implemented by prior increments:
 - IM031: read-only Parser Profile registry, GET API, and Parser Engine profile panel.
 - IM032: file upload constraints planning for MIME types, size limits, storage, security scan, errors, cleanup, and retry boundaries.
 - IM033: single Raw Material parse planning for Parser Profile selection, operation lifecycle, Parsed Document write semantics, safe errors, retry, and rollback boundaries.
+- IM034: draft WikiNode suggestion planning for eligibility, sourceRefs carry-forward, Source Operation lifecycle, duplicate/conflict rules, accept/reject boundaries, safe errors, retry, and rollback constraints.
 
 Current product behavior:
 
@@ -323,6 +324,7 @@ Type: planning only unless explicitly expanded.
 Goal:
 
 - Plan how a Parsed Document can suggest a draft WikiNode without bypassing manual governance.
+- Detailed plan: `docs/current/DRAFT_WIKINODE_SUGGESTION_PLAN.md`.
 
 Must preserve:
 
@@ -376,10 +378,10 @@ IM029 does not:
 
 ## 10. Recommended Next Task
 
-Recommended next task after IM033:
+Recommended next task after IM034:
 
 ```text
-IM034 Draft WikiNode Suggestion Planning
+IM035 Draft WikiNode Suggestion Read-only Contract Planning
 ```
 
-Start IM034 as planning only unless the user explicitly expands scope. It must not add WikiNode creation, auto-publish, auto-index, batch conversion, parser execution, or backend write APIs.
+Start IM035 as planning only unless the user explicitly expands scope. It must not add WikiNode creation, accept/reject actions, auto-publish, auto-index, batch conversion, parser execution, backend write APIs, or database migrations.
