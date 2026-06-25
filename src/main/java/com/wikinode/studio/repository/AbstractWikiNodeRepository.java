@@ -8,6 +8,7 @@ import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
+import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.SourceRef;
 import com.wikinode.studio.model.WikiGraphOverview;
 import com.wikinode.studio.model.WikiLink;
@@ -43,6 +44,8 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   protected abstract List<RawMaterial> loadRawMaterials();
 
   protected abstract List<ParsedDocument> loadParsedDocuments();
+
+  protected abstract List<SourceOperation> loadSourceOperations();
 
   @Override
   public List<WikiNode> listNodes() {
@@ -140,6 +143,21 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   @Override
   public Optional<ParsedDocument> findParsedDocument(String parsedDocumentId) {
     return loadParsedDocuments().stream().filter(parsedDocument -> parsedDocument.parsedDocumentId().equals(parsedDocumentId)).findFirst();
+  }
+
+  @Override
+  public List<SourceOperation> listSourceOperationsForSource(String sourceId) {
+    return loadSourceOperations().stream().filter(operation -> operation.sourceId().equals(sourceId)).toList();
+  }
+
+  @Override
+  public List<SourceOperation> listSourceOperationsForRawMaterial(String rawMaterialId) {
+    return loadSourceOperations().stream().filter(operation -> rawMaterialId.equals(operation.rawMaterialId())).toList();
+  }
+
+  @Override
+  public Optional<SourceOperation> findSourceOperation(String operationId) {
+    return loadSourceOperations().stream().filter(operation -> operation.operationId().equals(operationId)).findFirst();
   }
 
   @Override

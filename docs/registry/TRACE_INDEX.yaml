@@ -54,6 +54,18 @@ phase2_plans:
     file: docs/current/SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN.md
     previous_frontend_alignment: SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_FRONTEND_API_ALIGNMENT
     previous_backend_contract: SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_READONLY_BACKEND
+  SOURCE_OPERATION_READONLY_LOGS:
+    decision: D030
+    plan: docs/current/SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN.md
+    backend_model: src/main/java/com/wikinode/studio/model/SourceOperation.java
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    repository: src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
+    migration: src/main/resources/db/migration/V4__create_source_operation_schema.sql
+    frontend_service: src/services/source-api-service.ts
+    frontend_pages: src/pages/skeleton-pages.tsx
+    api_contract_test: src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+    repository_test: src/test/java/com/wikinode/studio/repository/JdbcWikiNodeRepositoryTest.java
+    playwright: tests/e2e/source-operation-readonly-logs.spec.ts
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
@@ -120,3 +132,7 @@ tasks:
   IM029:
     decision: D029
     plan: SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN
+  IM030:
+    decision: D030
+    implementation: SOURCE_OPERATION_READONLY_LOGS
+    api_smoke: scripts/api-smoke.sh

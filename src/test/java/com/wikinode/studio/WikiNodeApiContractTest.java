@@ -93,6 +93,29 @@ class WikiNodeApiContractTest {
   }
 
   @Test
+  void exposesSourceOperationLogsAsReadOnlyEvidence() throws Exception {
+    HttpResponse<String> sourceOperations = get("/api/sources/src-feishu-cc/operations");
+    HttpResponse<String> rawMaterialOperations = get("/api/raw-materials/rm-001/operations");
+    HttpResponse<String> operationDetail = get("/api/source-operations/op-src-feishu-sync-001");
+
+    assertThat(sourceOperations.statusCode()).isEqualTo(200);
+    assertThat(sourceOperations.body()).contains("\"operationId\":\"op-src-feishu-sync-001\"");
+    assertThat(sourceOperations.body()).contains("\"operationType\":\"source_sync\"");
+    assertThat(sourceOperations.body()).contains("\"status\":\"succeeded\"");
+
+    assertThat(rawMaterialOperations.statusCode()).isEqualTo(200);
+    assertThat(rawMaterialOperations.body()).contains("\"operationType\":\"parse_raw_material\"");
+    assertThat(rawMaterialOperations.body()).contains("\"rawMaterialId\":\"rm-001\"");
+
+    assertThat(operationDetail.statusCode()).isEqualTo(200);
+    assertThat(operationDetail.body()).contains("\"summary\"");
+    assertThat(operationDetail.body()).contains("\"requestedBy\":\"system\"");
+    assertThat(operationDetail.body()).doesNotContain("\"credential\"");
+    assertThat(operationDetail.body()).doesNotContain("\"secret\"");
+    assertThat(operationDetail.body()).doesNotContain("\"chunk\"");
+  }
+
+  @Test
   void retrievalReturnsWikiNodeObjectsNotChunks() throws Exception {
     String body = """
       {

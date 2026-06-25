@@ -90,6 +90,11 @@ if (!Array.isArray(sourceRawMaterials) || !sourceRawMaterials.some((rawMaterial)
   throw new Error("GET /api/sources/{id}/raw-materials: FAIL expected Raw Material list")
 }
 
+const sourceOperations = await request("GET /api/sources/{id}/operations", "/sources/src-feishu-cc/operations")
+if (!Array.isArray(sourceOperations) || !sourceOperations.some((operation) => operation.operationId === "op-src-feishu-sync-001")) {
+  throw new Error("GET /api/sources/{id}/operations: FAIL expected Source Operation list")
+}
+
 const rawMaterials = await request("GET /api/raw-materials", "/raw-materials")
 if (!Array.isArray(rawMaterials) || !rawMaterials.some((rawMaterial) => rawMaterial.parseStatus === "parsed")) {
   throw new Error("GET /api/raw-materials: FAIL expected parsed Raw Material")
@@ -105,6 +110,11 @@ if (!Array.isArray(parsedDocuments) || !parsedDocuments.some((parsedDocument) =>
   throw new Error("GET /api/raw-materials/{id}/parsed-documents: FAIL expected Parsed Document list")
 }
 
+const rawMaterialOperations = await request("GET /api/raw-materials/{id}/operations", "/raw-materials/rm-001/operations")
+if (!Array.isArray(rawMaterialOperations) || !rawMaterialOperations.some((operation) => operation.operationType === "parse_raw_material")) {
+  throw new Error("GET /api/raw-materials/{id}/operations: FAIL expected Raw Material Operation list")
+}
+
 const parsedDocumentDetail = await request("GET /api/parsed-documents/{id}", "/parsed-documents/pd-001")
 if (!parsedDocumentDetail.normalizedContent || !Array.isArray(parsedDocumentDetail.sourceRefs)) {
   throw new Error("GET /api/parsed-documents/{id}: FAIL expected normalized content and source refs")
@@ -112,6 +122,15 @@ if (!parsedDocumentDetail.normalizedContent || !Array.isArray(parsedDocumentDeta
 
 if (Object.prototype.hasOwnProperty.call(parsedDocumentDetail, "chunk")) {
   throw new Error("GET /api/parsed-documents/{id}: FAIL response exposed chunk")
+}
+
+const sourceOperationDetail = await request("GET /api/source-operations/{id}", "/source-operations/op-src-feishu-sync-001")
+if (sourceOperationDetail.operationType !== "source_sync" || sourceOperationDetail.requestedBy !== "system") {
+  throw new Error("GET /api/source-operations/{id}: FAIL expected Source Operation detail")
+}
+
+if (JSON.stringify(sourceOperationDetail).includes("credential") || JSON.stringify(sourceOperationDetail).includes("secret") || JSON.stringify(sourceOperationDetail).includes("chunk")) {
+  throw new Error("GET /api/source-operations/{id}: FAIL response exposed forbidden internals")
 }
 
 const created = await request("POST /api/wiki-nodes", "/wiki-nodes", {

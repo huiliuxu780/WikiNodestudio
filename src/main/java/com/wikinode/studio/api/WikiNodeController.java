@@ -6,6 +6,7 @@ import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
+import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.WikiGraphOverview;
 import com.wikinode.studio.model.WikiLink;
 import com.wikinode.studio.model.WikiNode;
@@ -123,6 +124,12 @@ public class WikiNodeController {
     return repository.listRawMaterialsForSource(sourceId);
   }
 
+  @GetMapping("/sources/{sourceId}/operations")
+  public List<SourceOperation> listSourceOperations(@PathVariable String sourceId) {
+    ensureSourceExists(sourceId);
+    return repository.listSourceOperationsForSource(sourceId);
+  }
+
   @GetMapping("/raw-materials")
   public List<RawMaterial> listRawMaterials() {
     return repository.listRawMaterials();
@@ -140,10 +147,22 @@ public class WikiNodeController {
     return repository.listParsedDocumentsForRawMaterial(rawMaterialId);
   }
 
+  @GetMapping("/raw-materials/{rawMaterialId}/operations")
+  public List<SourceOperation> listRawMaterialOperations(@PathVariable String rawMaterialId) {
+    ensureRawMaterialExists(rawMaterialId);
+    return repository.listSourceOperationsForRawMaterial(rawMaterialId);
+  }
+
   @GetMapping("/parsed-documents/{parsedDocumentId}")
   public ParsedDocument getParsedDocument(@PathVariable String parsedDocumentId) {
     return repository.findParsedDocument(parsedDocumentId)
       .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parsed Document not found"));
+  }
+
+  @GetMapping("/source-operations/{operationId}")
+  public SourceOperation getSourceOperation(@PathVariable String operationId) {
+    return repository.findSourceOperation(operationId)
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Source Operation not found"));
   }
 
   @GetMapping("/index-status")

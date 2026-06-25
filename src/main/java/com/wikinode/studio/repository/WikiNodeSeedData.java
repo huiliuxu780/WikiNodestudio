@@ -4,6 +4,7 @@ import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParsedDocumentSourceRef;
 import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.SourceItem;
+import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.SourceRef;
 import com.wikinode.studio.model.WikiNode;
 import java.util.List;
@@ -79,6 +80,50 @@ final class WikiNodeSeedData {
         null,
         "2026-06-16",
         "2026-06-16"
+      )
+    );
+  }
+
+  static List<SourceOperation> sourceOperations() {
+    return List.of(
+      new SourceOperation(
+        "op-src-feishu-sync-001",
+        "source_sync",
+        "src-feishu-cc",
+        null,
+        null,
+        "succeeded",
+        "system",
+        "2026-06-20T10:30:00+08:00",
+        "2026-06-20T10:35:00+08:00",
+        "Completed read-only Source sync evidence capture for 2 Raw Materials.",
+        null
+      ),
+      new SourceOperation(
+        "op-src-feishu-parse-001",
+        "parse_raw_material",
+        "src-feishu-cc",
+        "rm-001",
+        "pd-001",
+        "succeeded",
+        "system",
+        "2026-06-20T10:36:00+08:00",
+        "2026-06-20T10:37:00+08:00",
+        "Completed read-only Parsed Document evidence preview.",
+        null
+      ),
+      new SourceOperation(
+        "op-word-parse-001",
+        "parse_raw_material",
+        "src-word-manual",
+        "rm-004",
+        null,
+        "failed",
+        "system",
+        "2026-06-12T18:21:00+08:00",
+        "2026-06-12T18:22:00+08:00",
+        "Parser profile rejected this Raw Material in the read-only seed baseline.",
+        "Unsupported document structure in seed evidence."
       )
     );
   }

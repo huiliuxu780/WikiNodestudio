@@ -4,6 +4,7 @@ import { mockSources } from "@/data/mock-sources"
 import { listWikiNodes } from "@/services/wiki-node-api-service"
 import type { ParsedDocument, RawMaterial } from "@/types/raw-material"
 import type { SourceItem } from "@/types/source"
+import type { SourceOperation } from "@/types/source-operation"
 
 export function listSources() {
   return withMockFallback(
@@ -33,6 +34,13 @@ export function listRawMaterialsForSource(sourceId: string) {
   )
 }
 
+export function listSourceOperationsForSource(sourceId: string) {
+  return withMockFallback(
+    apiGet<SourceOperation[]>(`/sources/${sourceId}/operations`),
+    () => mockSourceOperations.filter((operation) => operation.sourceId === sourceId)
+  )
+}
+
 export function getRawMaterial(rawMaterialId: string) {
   return withMockFallback(
     apiGet<RawMaterial>(`/raw-materials/${rawMaterialId}`),
@@ -44,6 +52,20 @@ export function listParsedDocumentsForRawMaterial(rawMaterialId: string) {
   return withMockFallback(
     apiGet<ParsedDocument[]>(`/raw-materials/${rawMaterialId}/parsed-documents`),
     () => mockParsedDocuments.filter((parsedDocument) => parsedDocument.rawMaterialId === rawMaterialId)
+  )
+}
+
+export function listSourceOperationsForRawMaterial(rawMaterialId: string) {
+  return withMockFallback(
+    apiGet<SourceOperation[]>(`/raw-materials/${rawMaterialId}/operations`),
+    () => mockSourceOperations.filter((operation) => operation.rawMaterialId === rawMaterialId)
+  )
+}
+
+export function getSourceOperation(operationId: string) {
+  return withMockFallback(
+    apiGet<SourceOperation>(`/source-operations/${operationId}`),
+    () => mockSourceOperations.find((operation) => operation.operationId === operationId) ?? mockSourceOperations[0]
   )
 }
 
@@ -139,5 +161,47 @@ const mockParsedDocuments: ParsedDocument[] = [
     parseErrorSummary: null,
     createdAt: "2026-06-16",
     updatedAt: "2026-06-16",
+  },
+]
+
+const mockSourceOperations: SourceOperation[] = [
+  {
+    operationId: "op-src-feishu-sync-001",
+    operationType: "source_sync",
+    sourceId: "src-feishu-cc",
+    rawMaterialId: null,
+    parsedDocumentId: null,
+    status: "succeeded",
+    requestedBy: "system",
+    startedAt: "2026-06-20T10:30:00+08:00",
+    finishedAt: "2026-06-20T10:35:00+08:00",
+    summary: "Completed read-only Source sync evidence capture for 2 Raw Materials.",
+    errorSummary: null,
+  },
+  {
+    operationId: "op-src-feishu-parse-001",
+    operationType: "parse_raw_material",
+    sourceId: "src-feishu-cc",
+    rawMaterialId: "rm-001",
+    parsedDocumentId: "pd-001",
+    status: "succeeded",
+    requestedBy: "system",
+    startedAt: "2026-06-20T10:36:00+08:00",
+    finishedAt: "2026-06-20T10:37:00+08:00",
+    summary: "Completed read-only Parsed Document evidence preview.",
+    errorSummary: null,
+  },
+  {
+    operationId: "op-word-parse-001",
+    operationType: "parse_raw_material",
+    sourceId: "src-word-manual",
+    rawMaterialId: "rm-004",
+    parsedDocumentId: null,
+    status: "failed",
+    requestedBy: "system",
+    startedAt: "2026-06-12T18:21:00+08:00",
+    finishedAt: "2026-06-12T18:22:00+08:00",
+    summary: "Parser profile rejected this Raw Material in the read-only seed baseline.",
+    errorSummary: "Unsupported document structure in seed evidence.",
   },
 ]
