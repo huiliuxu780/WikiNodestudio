@@ -4,9 +4,13 @@ import com.wikinode.studio.model.GraphEdge;
 import com.wikinode.studio.model.GraphNode;
 import com.wikinode.studio.model.IndexStatusSummary;
 import com.wikinode.studio.model.ParsedDocument;
+import com.wikinode.studio.model.ParsedDocumentSourceRef;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
+import com.wikinode.studio.model.DraftWikiNodeRelationCandidate;
 import com.wikinode.studio.model.DraftWikiNodeSuggestion;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationRequest;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationResult;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
@@ -17,6 +21,8 @@ import com.wikinode.studio.model.WikiLink;
 import com.wikinode.studio.model.WikiNode;
 import com.wikinode.studio.model.WikiNodeUpsertRequest;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -52,6 +58,10 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   protected abstract List<ParserProfile> loadParserProfiles();
 
   protected abstract List<DraftWikiNodeSuggestion> loadDraftWikiNodeSuggestions();
+
+  protected abstract void insertSourceOperation(SourceOperation operation);
+
+  protected abstract void insertDraftWikiNodeSuggestion(DraftWikiNodeSuggestion suggestion);
 
   @Override
   public List<WikiNode> listNodes() {
@@ -198,11 +208,220 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   }
 
   @Override
+  public DraftWikiNodeSuggestionGenerationResult generateDraftWikiNodeSuggestion(
+    String parsedDocumentId,
+    DraftWikiNodeSuggestionGenerationRequest request
+  ) {
+    Optional<ParsedDocument> parsedDocument = findParsedDocument(parsedDocumentId);
+    if (parsedDocument.isEmpty()) {
+      return new DraftWikiNodeSuggestionGenerationResult(
+        null,
+        parsedDocumentId,
+        "failed",
+        "未找到可用于生成建议的 Parsed Document。",
+        null
+      );
+    }
+
+    ParsedDocument document = parsedDocument.get();
+    String operationId = operationIdFor(document);
+
+    Optional<DraftWikiNodeSuggestionGenerationResult> skipped = generationSkipResult(document, request, operationId);
+    if (skipped.isPresent()) {
+      insertSourceOperation(sourceOperation(document, operationId, "skipped", skipped.get().summary(), null));
+      return skipped.get();
+    }
+
+    DraftWikiNodeSuggestion suggestion = buildDraftWikiNodeSuggestion(document, operationId);
+    insertSourceOperation(sourceOperation(document, operationId, "succeeded", "已生成待审核 WikiNode 建议。", null));
+    insertDraftWikiNodeSuggestion(suggestion);
+    return new DraftWikiNodeSuggestionGenerationResult(
+      operationId,
+      document.parsedDocumentId(),
+      "succeeded",
+      "已生成待审核 WikiNode 建议。",
+      suggestion.suggestionId()
+    );
+  }
+
+  @Override
   public WikiGraphOverview graphOverview() {
     return new WikiGraphOverview(
       listNodes().stream().map(this::graphNode).toList(),
       allLinks().stream().map(this::graphEdge).toList()
     );
+  }
+
+  private Optional<DraftWikiNodeSuggestionGenerationResult> generationSkipResult(
+    ParsedDocument parsedDocument,
+    DraftWikiNodeSuggestionGenerationRequest request,
+    String operationId
+  ) {
+    if (!"parsed".equals(parsedDocument.parseStatus())) {
+      return Optional.of(generationResult(operationId, parsedDocument.parsedDocumentId(), "skipped", "Parsed Document 尚未解析完成，不能生成 WikiNode 建议。", null));
+    }
+    if (parsedDocument.normalizedContent() == null || parsedDocument.normalizedContent().isBlank()) {
+      return Optional.of(generationResult(operationId, parsedDocument.parsedDocumentId(), "skipped", "解析内容为空，不能生成 WikiNode 建议。", null));
+    }
+    if (parsedDocument.sourceRefs() == null || parsedDocument.sourceRefs().isEmpty()) {
+      return Optional.of(generationResult(operationId, parsedDocument.parsedDocumentId(), "skipped", "缺少 SourceRef 证据，不能生成 WikiNode 建议。", null));
+    }
+    if (!isSupportedConversionProfile(parsedDocument, request)) {
+      return Optional.of(generationResult(operationId, parsedDocument.parsedDocumentId(), "skipped", "当前内容没有可用的 WikiNode 建议规则。", null));
+    }
+    if (hasExistingActiveSuggestion(parsedDocument.parsedDocumentId())) {
+      return Optional.of(generationResult(operationId, parsedDocument.parsedDocumentId(), "skipped", "该 Parsed Document 已有待审核 WikiNode 建议。", null));
+    }
+    if (loadNodes().stream().anyMatch(node -> node.title().equals(suggestedTitle(parsedDocument)))) {
+      return Optional.of(generationResult(operationId, parsedDocument.parsedDocumentId(), "skipped", "已有 WikiNode 使用相同来源证据，请先确认是否需要更新。", null));
+    }
+    return Optional.empty();
+  }
+
+  private DraftWikiNodeSuggestionGenerationResult generationResult(
+    String operationId,
+    String parsedDocumentId,
+    String status,
+    String summary,
+    String suggestionId
+  ) {
+    return new DraftWikiNodeSuggestionGenerationResult(operationId, parsedDocumentId, status, summary, suggestionId);
+  }
+
+  private boolean isSupportedConversionProfile(
+    ParsedDocument parsedDocument,
+    DraftWikiNodeSuggestionGenerationRequest request
+  ) {
+    String requestedProfile = request == null ? null : request.conversionProfile();
+    String profile = requestedProfile == null || requestedProfile.isBlank()
+      ? parsedDocument.parserProfile()
+      : requestedProfile;
+    return Set.of("feishu_article_v1", "pdf_manual_article_v1", "excel_fee_table_v1").contains(profile);
+  }
+
+  private boolean hasExistingActiveSuggestion(String parsedDocumentId) {
+    return loadDraftWikiNodeSuggestions().stream()
+      .anyMatch(suggestion -> parsedDocumentId.equals(suggestion.parsedDocumentId())
+        && Set.of("draft", "needs_review", "accepted").contains(suggestion.status()));
+  }
+
+  private DraftWikiNodeSuggestion buildDraftWikiNodeSuggestion(ParsedDocument parsedDocument, String operationId) {
+    String suggestedTitle = suggestedTitle(parsedDocument);
+    String objectType = suggestedObjectType(parsedDocument);
+    String subtype = suggestedSubtype(parsedDocument);
+    List<DraftWikiNodeRelationCandidate> relationCandidates = suggestedRelationCandidates(parsedDocument);
+    return new DraftWikiNodeSuggestion(
+      suggestionIdFor(parsedDocument),
+      parsedDocument.parsedDocumentId(),
+      parsedDocument.rawMaterialId(),
+      parsedDocument.sourceId(),
+      operationId,
+      suggestedTitle,
+      objectType,
+      subtype,
+      contentDraft(parsedDocument, suggestedTitle),
+      parsedDocument.metadata(),
+      parsedDocument.sourceRefs(),
+      relationCandidates,
+      suggestedConfidence(parsedDocument),
+      "draft",
+      null,
+      "none",
+      List.of(),
+      List.of(),
+      List.of(),
+      parsedDocument.sourceRefs().size(),
+      relationCandidates.size(),
+      today(),
+      today()
+    );
+  }
+
+  private SourceOperation sourceOperation(
+    ParsedDocument parsedDocument,
+    String operationId,
+    String status,
+    String summary,
+    String errorSummary
+  ) {
+    String now = OffsetDateTime.now(ZoneOffset.ofHours(8)).toString();
+    return new SourceOperation(
+      operationId,
+      "suggest_wikinode",
+      parsedDocument.sourceId(),
+      parsedDocument.rawMaterialId(),
+      parsedDocument.parsedDocumentId(),
+      status,
+      "system",
+      now,
+      now,
+      summary,
+      errorSummary
+    );
+  }
+
+  private String operationIdFor(ParsedDocument parsedDocument) {
+    return "op-%s-suggest-%s".formatted(parsedDocument.parsedDocumentId(), System.currentTimeMillis());
+  }
+
+  private String suggestionIdFor(ParsedDocument parsedDocument) {
+    return "sug-%s".formatted(parsedDocument.parsedDocumentId());
+  }
+
+  private String suggestedTitle(ParsedDocument parsedDocument) {
+    String title = parsedDocument.title() == null ? "" : parsedDocument.title().trim();
+    title = title.replaceAll("\\s*解析结果$", "").trim();
+    if (!title.isBlank()) {
+      return title;
+    }
+    String content = Optional.ofNullable(parsedDocument.normalizedContent()).orElse("");
+    Matcher heading = Pattern.compile("(?m)^#\\s+(.+)$").matcher(content);
+    return heading.find() ? heading.group(1).trim() : parsedDocument.parsedDocumentId();
+  }
+
+  private String suggestedObjectType(ParsedDocument parsedDocument) {
+    return switch (parsedDocument.parserProfile()) {
+      case "excel_fee_table_v1" -> "DataRecord";
+      case "pdf_manual_article_v1" -> "Article";
+      default -> "Article";
+    };
+  }
+
+  private String suggestedSubtype(ParsedDocument parsedDocument) {
+    return switch (parsedDocument.parserProfile()) {
+      case "excel_fee_table_v1" -> "fee_table";
+      case "pdf_manual_article_v1" -> "guide";
+      default -> "service_policy";
+    };
+  }
+
+  private Double suggestedConfidence(ParsedDocument parsedDocument) {
+    return parsedDocument.sourceRefs().stream()
+      .map(ParsedDocumentSourceRef::confidence)
+      .filter(value -> value != null)
+      .findFirst()
+      .orElse(0.72);
+  }
+
+  private List<DraftWikiNodeRelationCandidate> suggestedRelationCandidates(ParsedDocument parsedDocument) {
+    Matcher matcher = DOUBLE_LINK_PATTERN.matcher(Optional.ofNullable(parsedDocument.normalizedContent()).orElse(""));
+    List<DraftWikiNodeRelationCandidate> candidates = new ArrayList<>();
+    while (matcher.find()) {
+      candidates.add(new DraftWikiNodeRelationCandidate(matcher.group(1).trim(), "references", "inferred_from_source_ref", 0.64));
+    }
+    return candidates;
+  }
+
+  private String contentDraft(ParsedDocument parsedDocument, String suggestedTitle) {
+    String content = Optional.ofNullable(parsedDocument.normalizedContent()).orElse("").trim();
+    if (content.startsWith("# ")) {
+      return "%s\n\n该内容仍是待审核 WikiNode 建议，不会自动创建 WikiNode、发布或索引。".formatted(content);
+    }
+    return "# %s\n\n%s\n\n该内容仍是待审核 WikiNode 建议，不会自动创建 WikiNode、发布或索引。".formatted(suggestedTitle, content);
+  }
+
+  private String today() {
+    return LocalDate.now().toString();
   }
 
   @Override

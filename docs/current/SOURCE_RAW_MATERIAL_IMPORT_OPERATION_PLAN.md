@@ -40,6 +40,7 @@ Implemented by prior increments:
 - IM036: Draft WikiNode Suggestion read-only implementation for seeded persistence, GET APIs, frontend review panels, and tests without generation or accept/reject actions.
 - IM037: Draft WikiNode Suggestion read-only acceptance sweep for detail-page evidence boundaries, relation-candidate source labels, and no-write-action browser coverage.
 - IM039: Draft WikiNode Suggestion write-boundary planning for generation, accept, reject, retry, duplicate/conflict, Source Operation, API, frontend, persistence, and stop-condition sequencing without implementation.
+- IM040: single Parsed Document to Draft WikiNode Suggestion generation operation with Source Operation evidence, safe API response, frontend trigger, API smoke, and tests; no accept/reject, WikiNode creation/update, publish, index, vector sync, parser execution, AI, permissions, approval workflow, or batch conversion.
 
 Current product behavior:
 
@@ -505,3 +506,35 @@ IM040 Draft WikiNode Suggestion Generate Operation
 ```
 
 IM040 should implement only one deterministic one-record Parsed Document to Draft WikiNode Suggestion generation path after explicit approval. It must not include accept/reject, WikiNode creation/update, publish, index, vector sync, parser execution, external AI, permissions, approval workflow, or batch conversion.
+
+### IM040 - Draft WikiNode Suggestion Generate Operation
+
+Type: one-record write implementation.
+
+Goal:
+
+- Implement a deterministic write path from one existing Parsed Document to one Draft WikiNode Suggestion.
+- Create Source Operation evidence for each generation attempt.
+- Expose one safe POST API and one controlled frontend trigger from the Parsed Result page.
+
+Implemented scope:
+
+- `POST /api/parsed-documents/{parsedDocumentId}/suggest-wikinode` returns `operationId`, `parsedDocumentId`, `status`, safe `summary`, and `suggestionId` when a suggestion is created.
+- Generation validates Parsed Document status, normalized content, SourceRef evidence, allowlisted conversion profile, and existing active suggestions.
+- Eligible generation writes one Draft WikiNode Suggestion into existing suggestion tables and copies SourceRef evidence forward.
+- Skipped generation writes Source Operation evidence with a Chinese safe summary and does not create WikiNode, WikiLink, Index Segment, publish, index, vector sync, parser, AI, permission, approval, or batch records.
+- Parsed Result frontend exposes only `生成 WikiNode 建议`, disables duplicate generation when a suggestion already exists, shows loading/success/failure feedback, and keeps accept/reject absent.
+
+Forbidden:
+
+- No accept/reject workflow.
+- No WikiNode creation or update.
+- No WikiLink creation.
+- No publish or index.
+- No Index Segment generation.
+- No vector sync.
+- No parser execution.
+- No external AI, LLM, prompts, credentials, or model provider integration.
+- No permissions or approval workflow.
+- No batch conversion.
+- No new dependencies, package changes, or lockfile changes.

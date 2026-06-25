@@ -7,6 +7,8 @@ import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.DraftWikiNodeSuggestion;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationRequest;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationResult;
 import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.WikiNode;
 import com.wikinode.studio.model.WikiNodeUpsertRequest;
@@ -202,6 +204,136 @@ class JdbcWikiNodeRepositoryTest {
         assertThat(suggestion.matchedWikiNodeIds()).containsExactly("wn-001");
         assertThat(suggestion.matchedSuggestionIds()).isEmpty();
       });
+  }
+
+  @Test
+  void persistsDraftWikiNodeSuggestionGenerationWithSourceOperationEvidence() {
+    JdbcTemplate jdbcTemplate = jdbcTemplateWithDraftWikiNodeSuggestions();
+    JdbcWikiNodeRepository repository = new JdbcWikiNodeRepository(jdbcTemplate);
+
+    DraftWikiNodeSuggestionGenerationResult result = repository.generateDraftWikiNodeSuggestion(
+      "pd-003",
+      new DraftWikiNodeSuggestionGenerationRequest("excel_fee_table_v1", "repo-pd-003")
+    );
+
+    assertThat(result.status()).isEqualTo("succeeded");
+    assertThat(result.operationId()).startsWith("op-pd-003-suggest-");
+    assertThat(result.suggestionId()).isEqualTo("sug-pd-003");
+    assertThat(repository.findSourceOperation(result.operationId()))
+      .hasValueSatisfying(operation -> {
+        assertThat(operation.operationType()).isEqualTo("suggest_wikinode");
+        assertThat(operation.parsedDocumentId()).isEqualTo("pd-003");
+        assertThat(operation.status()).isEqualTo("succeeded");
+        assertThat(operation.summary()).isEqualTo("已生成待审核 WikiNode 建议。");
+      });
+    assertThat(repository.listDraftWikiNodeSuggestionsForParsedDocument("pd-003"))
+      .singleElement()
+      .satisfies(suggestion -> {
+        assertThat(suggestion.suggestionId()).isEqualTo("sug-pd-003");
+        assertThat(suggestion.operationId()).isEqualTo(result.operationId());
+        assertThat(suggestion.title()).isEqualTo("维修收费标准 Excel");
+        assertThat(suggestion.objectType()).isEqualTo("DataRecord");
+        assertThat(suggestion.subtype()).isEqualTo("fee_table");
+        assertThat(suggestion.status()).isEqualTo("draft");
+        assertThat(suggestion.sourceRefs()).hasSize(1);
+        assertThat(suggestion.relationCandidates()).isEmpty();
+      });
+  }
+
+  @Test
+  void skipsDraftWikiNodeSuggestionGenerationForDuplicateSuggestion() {
+    JdbcTemplate jdbcTemplate = jdbcTemplateWithDraftWikiNodeSuggestions();
+    JdbcWikiNodeRepository repository = new JdbcWikiNodeRepository(jdbcTemplate);
+
+    DraftWikiNodeSuggestionGenerationResult result = repository.generateDraftWikiNodeSuggestion(
+      "pd-001",
+      new DraftWikiNodeSuggestionGenerationRequest("feishu_article_v1", "repo-pd-001")
+    );
+
+    assertThat(result.status()).isEqualTo("skipped");
+    assertThat(result.summary()).isEqualTo("该 Parsed Document 已有待审核 WikiNode 建议。");
+    assertThat(result.suggestionId()).isNull();
+    assertThat(repository.findSourceOperation(result.operationId()))
+      .hasValueSatisfying(operation -> {
+        assertThat(operation.operationType()).isEqualTo("suggest_wikinode");
+        assertThat(operation.status()).isEqualTo("skipped");
+        assertThat(operation.errorSummary()).isNull();
+      });
+    assertThat(repository.listDraftWikiNodeSuggestionsForParsedDocument("pd-001")).hasSize(1);
+  }
+
+  @Test
+  void skipsDraftWikiNodeSuggestionGenerationWhenParsedDocumentIsNotParsed() {
+    JdbcTemplate jdbcTemplate = jdbcTemplateWithDraftWikiNodeSuggestions();
+    jdbcTemplate.update(
+      """
+      insert into parsed_documents (
+        parsed_document_id, raw_material_id, source_id, title, content_format, normalized_content,
+        metadata_language, metadata_business_domain, parser_profile, parse_status, parse_error_summary,
+        created_at, updated_at
+      ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      """,
+      "pd-not-ready",
+      "rm-001",
+      "src-feishu-cc",
+      "未完成解析结果",
+      "markdown",
+      "# 未完成",
+      "zh-CN",
+      "after_sales",
+      "feishu_article_v1",
+      "parsing",
+      null,
+      "2026-06-25",
+      "2026-06-25"
+    );
+    JdbcWikiNodeRepository repository = new JdbcWikiNodeRepository(jdbcTemplate);
+
+    DraftWikiNodeSuggestionGenerationResult result = repository.generateDraftWikiNodeSuggestion(
+      "pd-not-ready",
+      new DraftWikiNodeSuggestionGenerationRequest("feishu_article_v1", "repo-pd-not-ready")
+    );
+
+    assertThat(result.status()).isEqualTo("skipped");
+    assertThat(result.summary()).isEqualTo("Parsed Document 尚未解析完成，不能生成 WikiNode 建议。");
+    assertThat(repository.listDraftWikiNodeSuggestionsForParsedDocument("pd-not-ready")).isEmpty();
+  }
+
+  @Test
+  void skipsDraftWikiNodeSuggestionGenerationWithoutSourceRefs() {
+    JdbcTemplate jdbcTemplate = jdbcTemplateWithDraftWikiNodeSuggestions();
+    jdbcTemplate.update(
+      """
+      insert into parsed_documents (
+        parsed_document_id, raw_material_id, source_id, title, content_format, normalized_content,
+        metadata_language, metadata_business_domain, parser_profile, parse_status, parse_error_summary,
+        created_at, updated_at
+      ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      """,
+      "pd-no-source-ref",
+      "rm-001",
+      "src-feishu-cc",
+      "缺少证据解析结果",
+      "markdown",
+      "# 缺少证据",
+      "zh-CN",
+      "after_sales",
+      "feishu_article_v1",
+      "parsed",
+      null,
+      "2026-06-25",
+      "2026-06-25"
+    );
+    JdbcWikiNodeRepository repository = new JdbcWikiNodeRepository(jdbcTemplate);
+
+    DraftWikiNodeSuggestionGenerationResult result = repository.generateDraftWikiNodeSuggestion(
+      "pd-no-source-ref",
+      new DraftWikiNodeSuggestionGenerationRequest("feishu_article_v1", "repo-pd-no-source-ref")
+    );
+
+    assertThat(result.status()).isEqualTo("skipped");
+    assertThat(result.summary()).isEqualTo("缺少 SourceRef 证据，不能生成 WikiNode 建议。");
+    assertThat(repository.listDraftWikiNodeSuggestionsForParsedDocument("pd-no-source-ref")).isEmpty();
   }
 
   private JdbcTemplate jdbcTemplate() {

@@ -1,4 +1,4 @@
-import { apiGet, withMockFallback } from "@/services/api-client"
+import { apiGet, apiPost, withMockFallback } from "@/services/api-client"
 import { mockRawMaterials } from "@/data/mock-raw-materials"
 import { mockSources } from "@/data/mock-sources"
 import { listWikiNodes } from "@/services/wiki-node-api-service"
@@ -95,6 +95,35 @@ export function getDraftWikiNodeSuggestion(suggestionId: string) {
   return withMockFallback(
     apiGet<DraftWikiNodeSuggestion>(`/draft-wikinode-suggestions/${suggestionId}`),
     () => mockDraftWikiNodeSuggestions.find((suggestion) => suggestion.suggestionId === suggestionId) ?? mockDraftWikiNodeSuggestions[0]
+  )
+}
+
+export type DraftWikiNodeSuggestionGenerationRequest = {
+  conversionProfile?: string
+  idempotencyKey?: string
+}
+
+export type DraftWikiNodeSuggestionGenerationResult = {
+  operationId?: string | null
+  parsedDocumentId: string
+  status: "succeeded" | "skipped" | "failed"
+  summary: string
+  suggestionId?: string | null
+}
+
+export function generateDraftWikiNodeSuggestion(
+  parsedDocumentId: string,
+  request: DraftWikiNodeSuggestionGenerationRequest
+) {
+  return withMockFallback(
+    apiPost<DraftWikiNodeSuggestionGenerationResult>(`/parsed-documents/${parsedDocumentId}/suggest-wikinode`, request),
+    (): DraftWikiNodeSuggestionGenerationResult => ({
+      operationId: `mock-${parsedDocumentId}-suggest`,
+      parsedDocumentId,
+      status: "skipped",
+      summary: "当前 Mock fallback 不执行真实 WikiNode 建议生成。",
+      suggestionId: null,
+    })
   )
 }
 

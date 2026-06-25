@@ -1,5 +1,5 @@
 import { Link, useParams } from "react-router-dom"
-import type { ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import type { KnowledgeMetadata, KnowledgeRelation } from "@/types/wiki"
 
 import { mockIndexSegments } from "@/data/mock-index-segments"
@@ -14,6 +14,7 @@ import { SegmentDebugPanel } from "@/components/segments/segment-debug-panel"
 import { SegmentStrategyCard } from "@/components/segments/segment-strategy-card"
 import { IndexSegmentTable } from "@/components/segments/index-segment-table"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LinkList } from "@/components/wiki/link-list"
 import { useAsyncData } from "@/hooks/use-async-data"
@@ -22,6 +23,7 @@ import {
   getRawMaterial,
   getDraftWikiNodeSuggestion,
   getSource,
+  generateDraftWikiNodeSuggestion,
   listDraftWikiNodeSuggestionsForParsedDocument,
   listDraftWikiNodeSuggestionsForRawMaterial,
   listParsedDocumentsForRawMaterial,
@@ -404,6 +406,28 @@ export function ParsedResultPreviewPage() {
     isLoading: isSuggestionsLoading,
     reload: reloadSuggestions,
   } = useAsyncData(() => parsedDocument?.parsedDocumentId ? listDraftWikiNodeSuggestionsForParsedDocument(parsedDocument.parsedDocumentId) : Promise.resolve([]), [], [parsedDocument?.parsedDocumentId])
+  const [generationSummary, setGenerationSummary] = useState<string | null>(null)
+  const [generationStatus, setGenerationStatus] = useState<"idle" | "running" | "succeeded" | "skipped" | "failed">("idle")
+  const canGenerateSuggestion = Boolean(parsedDocument) && suggestions.length === 0
+
+  async function handleGenerateSuggestion() {
+    if (!parsedDocument || generationStatus === "running") return
+
+    setGenerationStatus("running")
+    setGenerationSummary("生成中...")
+    try {
+      const result = await generateDraftWikiNodeSuggestion(parsedDocument.parsedDocumentId, {
+        conversionProfile: parsedDocument.parserProfile,
+        idempotencyKey: `ui-${parsedDocument.parsedDocumentId}`,
+      })
+      setGenerationStatus(result.status)
+      setGenerationSummary(result.summary)
+      await reloadSuggestions()
+    } catch {
+      setGenerationStatus("failed")
+      setGenerationSummary("生成 WikiNode 建议失败，请稍后重试。")
+    }
+  }
 
   return (
     <PageScaffold title="解析结果预览" description="查看进入 WikiNode 标准化之前的内容形态和来源证据；当前不运行真实解析器。">
@@ -443,6 +467,31 @@ export function ParsedResultPreviewPage() {
       </div>
       {isParsedDocumentsLoading ? <LoadingBlock text="正在加载 Parsed Document..." /> : null}
       {parsedDocument ? <ParsedDocumentPreview parsedDocument={parsedDocument} /> : null}
+      {parsedDocument ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">WikiNode 建议生成</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3 text-sm md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <p className="text-muted-foreground">从当前 Parsed Document 生成一个待审核 WikiNode 建议，不会创建 WikiNode、发布、索引或批量转换。</p>
+              {generationSummary ? (
+                <p className={generationStatus === "failed" ? "text-destructive" : "text-foreground"}>{generationSummary}</p>
+              ) : suggestions.length > 0 ? (
+                <p className="text-muted-foreground">该 Parsed Document 已有待审核 WikiNode 建议。</p>
+              ) : null}
+            </div>
+            <Button
+              type="button"
+              onClick={handleGenerateSuggestion}
+              disabled={!canGenerateSuggestion || generationStatus === "running"}
+              className="w-fit"
+            >
+              {generationStatus === "running" ? "生成中..." : suggestions.length > 0 ? "已有 WikiNode 建议" : "生成 WikiNode 建议"}
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
       <DraftWikiNodeSuggestionPanel suggestions={suggestions} isLoading={isSuggestionsLoading} mode="detail" />
       <SimpleList items={[
         "Parsed Document 是解析后的标准化内容预览。",

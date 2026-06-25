@@ -166,6 +166,27 @@ if (!Array.isArray(rawMaterialSuggestions) || !rawMaterialSuggestions.some((sugg
   throw new Error("GET /api/raw-materials/{id}/draft-wikinode-suggestions: FAIL expected scoped suggestions")
 }
 
+const generatedSuggestion = await request("POST /api/parsed-documents/{id}/suggest-wikinode", "/parsed-documents/pd-003/suggest-wikinode", {
+  method: "POST",
+  body: JSON.stringify({
+    conversionProfile: "excel_fee_table_v1",
+    idempotencyKey: "api-smoke-pd-003",
+  }),
+})
+
+if (generatedSuggestion.parsedDocumentId !== "pd-003" || !["succeeded", "skipped"].includes(generatedSuggestion.status)) {
+  throw new Error("POST /api/parsed-documents/{id}/suggest-wikinode: FAIL expected generated or skipped result")
+}
+
+if (JSON.stringify(generatedSuggestion).includes("nodeId") || JSON.stringify(generatedSuggestion).includes("indexSegmentId") || JSON.stringify(generatedSuggestion).includes("chunk")) {
+  throw new Error("POST /api/parsed-documents/{id}/suggest-wikinode: FAIL response exposed forbidden internals")
+}
+
+const generatedScopedSuggestions = await request("GET /api/parsed-documents/{id}/draft-wikinode-suggestions", "/parsed-documents/pd-003/draft-wikinode-suggestions")
+if (!Array.isArray(generatedScopedSuggestions) || !generatedScopedSuggestions.some((suggestion) => suggestion.suggestionId === "sug-pd-003")) {
+  throw new Error("GET /api/parsed-documents/{id}/draft-wikinode-suggestions: FAIL expected generated suggestion")
+}
+
 const created = await request("POST /api/wiki-nodes", "/wiki-nodes", {
   method: "POST",
   body: JSON.stringify({

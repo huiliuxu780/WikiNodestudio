@@ -92,6 +92,17 @@ const apiSuggestion = {
   updatedAt: "2026-06-25",
 }
 
+const generatedSuggestion = {
+  ...apiSuggestion,
+  suggestionId: "sug-api-generated",
+  operationId: "op-api-generated",
+  title: "API Generated WikiNode 建议",
+  contentDraft: "# API Generated WikiNode 建议\n\n这是刚生成的待审核 WikiNode 建议。",
+  conflictStatus: "none",
+  conflictReasons: [],
+  matchedWikiNodeIds: [],
+}
+
 test.describe("Draft WikiNode Suggestion read-only review", () => {
   test.beforeEach(async ({ page }) => {
     await page.route("**/api/sources/src-api-only", (route) => route.fulfill({ json: apiSource }))
@@ -128,7 +139,40 @@ test.describe("Draft WikiNode Suggestion read-only review", () => {
     await expect(page.getByText("这是待审核的 WikiNode 建议。")).toBeVisible()
     await expect(page.getByText("来自 API 的来源证据").first()).toBeVisible()
     await expect(page.getByText("收费政策")).toBeVisible()
-    await expect(page.getByText("不会创建 WikiNode、发布、索引或批量转换")).toBeVisible()
+    await expect(page.getByText("只读建议，不会创建 WikiNode、发布、索引或批量转换。")).toBeVisible()
+  })
+
+  test("generates one Draft WikiNode Suggestion from Parsed Result without review actions", async ({ page }) => {
+    let parsedDocumentSuggestions: unknown[] = []
+    await page.route("**/api/parsed-documents/pd-api-only/draft-wikinode-suggestions", (route) => {
+      return route.fulfill({ json: parsedDocumentSuggestions })
+    })
+    await page.route("**/api/parsed-documents/pd-api-only/suggest-wikinode", async (route) => {
+      expect(route.request().method()).toBe("POST")
+      parsedDocumentSuggestions = [generatedSuggestion]
+      return route.fulfill({
+        json: {
+          operationId: "op-api-generated",
+          parsedDocumentId: "pd-api-only",
+          status: "succeeded",
+          summary: "已生成待审核 WikiNode 建议。",
+          suggestionId: "sug-api-generated",
+        },
+      })
+    })
+
+    await page.goto("/raw-materials/rm-api-only/parsed-result")
+
+    await expect(page.getByRole("button", { name: "生成 WikiNode 建议" })).toBeVisible()
+    await page.getByRole("button", { name: "生成 WikiNode 建议" }).click()
+
+    await expect(page.getByText("已生成待审核 WikiNode 建议。")).toBeVisible()
+    await expect(page.getByRole("link", { name: "API Generated WikiNode 建议" })).toBeVisible()
+    await expect(page.getByRole("button", { name: "采纳" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "拒绝" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "发布" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "索引" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "批量转换" })).toHaveCount(0)
   })
 
   test("renders suggestion detail with explicit evidence boundaries and no write actions", async ({ page }) => {
