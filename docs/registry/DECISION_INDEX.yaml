@@ -1,5 +1,15 @@
 version: 1
 decisions:
+  - id: D037
+    date: "2026-06-25"
+    title: "Keep Draft WikiNode Suggestion acceptance sweep read-only"
+    rationale: "The user approved IM037 after IM036 landed the read-only model. This sweep only clarifies suggestion detail evidence boundaries, relation candidate source labels, and Playwright no-write-action coverage while keeping suggestion generation, accept/reject, WikiNode creation or update, publishing, indexing, vector sync, parser execution, external AI, permissions, approval workflow, batch conversion, backend, database, API, Java model, package changes, and dependencies out of scope."
+    related:
+      - IM037
+      - IM036
+      - DRAFT_WIKINODE_SUGGESTION_READONLY_ACCEPTANCE_SWEEP
+      - DRAFT_WIKINODE_SUGGESTION_READONLY_MODEL
+      - DRAFT_WIKINODE_SUGGESTION_READONLY_CONTRACT_PLAN
   - id: D036
     date: "2026-06-25"
     title: "Implement Draft WikiNode Suggestion as a read-only review model"

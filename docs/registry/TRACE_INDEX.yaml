@@ -90,6 +90,13 @@ phase2_plans:
     api_contract_test: src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
     repository_test: src/test/java/com/wikinode/studio/repository/JdbcWikiNodeRepositoryTest.java
     playwright: tests/e2e/draft-wikinode-suggestion-readonly.spec.ts
+  DRAFT_WIKINODE_SUGGESTION_READONLY_ACCEPTANCE_SWEEP:
+    decision: D037
+    contract: DRAFT_WIKINODE_SUGGESTION_READONLY_CONTRACT_PLAN
+    implementation: DRAFT_WIKINODE_SUGGESTION_READONLY_MODEL
+    frontend_page: src/pages/skeleton-pages.tsx
+    display_labels: src/utils/display-labels.ts
+    playwright: tests/e2e/draft-wikinode-suggestion-readonly.spec.ts
   SOURCE_OPERATION_READONLY_LOGS:
     decision: D030
     plan: docs/current/SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN.md
@@ -203,3 +210,6 @@ tasks:
   IM036:
     decision: D036
     implementation: DRAFT_WIKINODE_SUGGESTION_READONLY_MODEL
+  IM037:
+    decision: D037
+    acceptance: DRAFT_WIKINODE_SUGGESTION_READONLY_ACCEPTANCE_SWEEP

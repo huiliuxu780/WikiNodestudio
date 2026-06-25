@@ -9,6 +9,7 @@ Status: planning baseline only.
 Implemented by:
 
 - IM036: read-only Draft WikiNode Suggestion model, migration seed, GET APIs, frontend review panels, and tests.
+- IM037: read-only acceptance sweep for evidence boundaries, relation candidate source labels, suggestion detail coverage, and operation-boundary Playwright checks.
 
 ## 1. Purpose
 
@@ -359,3 +360,12 @@ IM037 Draft WikiNode Suggestion Read-only Acceptance Sweep
 ```
 
 IM037 should remain acceptance and polish oriented unless the user explicitly expands scope. It should verify the read-only suggestion review path, status labels, evidence display, and operation boundaries without adding suggestion generation, accept/reject, WikiNode creation, publishing, indexing, vector sync, parser execution, external AI, permissions, or batch conversion.
+
+IM037 acceptance sweep scope:
+
+- Show explicit Source, Raw Material, Parsed Document, and Source Operation boundaries on the suggestion detail view.
+- Keep relation candidate source labels Chinese-readable.
+- Cover the suggestion detail route with Playwright checks for evidence boundaries and absent write actions.
+- Preserve the invariant that a suggestion is not an imported WikiNode and does not affect Retrieval API results.
+
+No follow-up implementation is authorized by this document. After IM037, the next decision should be whether to plan a separate write-boundary task for suggestion generation or accept/reject; that decision must be a new approved scope.
