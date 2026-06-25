@@ -54,6 +54,11 @@ phase2_plans:
     file: docs/current/SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN.md
     previous_frontend_alignment: SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_FRONTEND_API_ALIGNMENT
     previous_backend_contract: SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_READONLY_BACKEND
+  FILE_UPLOAD_CONSTRAINT_PLAN:
+    decision: D032
+    file: docs/current/FILE_UPLOAD_CONSTRAINT_PLAN.md
+    parent_plan: docs/current/SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN.md
+    previous_parser_profile_registry: PARSER_PROFILE_READONLY_REGISTRY
   SOURCE_OPERATION_READONLY_LOGS:
     decision: D030
     plan: docs/current/SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN.md
@@ -152,3 +157,6 @@ tasks:
     decision: D031
     implementation: PARSER_PROFILE_READONLY_REGISTRY
     api_smoke: scripts/api-smoke.sh
+  IM032:
+    decision: D032
+    plan: FILE_UPLOAD_CONSTRAINT_PLAN
