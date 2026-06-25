@@ -57,3 +57,17 @@ export type DraftWikiNodeSuggestionAcceptResult = {
   nodeId?: string | null
   nodeStatus?: "draft" | "published" | "archived" | string | null
 }
+
+export type DraftWikiNodeSuggestionRetryRequest = {
+  reviewNote: string
+}
+
+export type DraftWikiNodeSuggestionRetryResult = {
+  suggestionId: string
+  status: "superseded" | "skipped" | "failed"
+  summary: string
+  reviewNote?: string | null
+  replacementSuggestionId?: string | null
+  replacementStatus?: "draft" | "needs_review" | string | null
+  operationId?: string | null
+}

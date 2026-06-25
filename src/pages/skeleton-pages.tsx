@@ -16,7 +16,9 @@ import { IndexSegmentTable } from "@/components/segments/index-segment-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { LinkList } from "@/components/wiki/link-list"
 import { useAsyncData } from "@/hooks/use-async-data"
@@ -27,6 +29,7 @@ import {
   getDraftWikiNodeSuggestion,
   getSource,
   generateDraftWikiNodeSuggestion,
+  listDraftWikiNodeSuggestions,
   listDraftWikiNodeSuggestionsForParsedDocument,
   listDraftWikiNodeSuggestionsForRawMaterial,
   listParsedDocumentsForRawMaterial,
@@ -35,6 +38,7 @@ import {
   listSourceOperationsForRawMaterial,
   listSourceOperationsForSource,
   rejectDraftWikiNodeSuggestion,
+  retryDraftWikiNodeSuggestion,
 } from "@/services/source-api-service"
 import type { ParserProfile } from "@/types/parser-profile"
 import type { DraftWikiNodeSuggestion } from "@/types/draft-wikinode-suggestion"
@@ -67,6 +71,9 @@ import {
   userStatusLabels,
 } from "@/utils/display-labels"
 import { getIncomingLinks } from "@/utils/link-parser"
+
+type SuggestionStatusFilter = "all" | DraftWikiNodeSuggestion["status"]
+type SuggestionConflictFilter = "all" | DraftWikiNodeSuggestion["conflictStatus"]
 
 const routeCards = {
   同步任务: ["当前不执行真实同步任务", "展示 Source 到 Raw Material 的验收边界", "后台任务留到后续阶段"],
@@ -519,6 +526,11 @@ export function DraftWikiNodeSuggestionDetailPage() {
   const [reviewFeedback, setReviewFeedback] = useState("")
   const [reviewError, setReviewError] = useState("")
   const [isRejecting, setIsRejecting] = useState(false)
+  const [retryNote, setRetryNote] = useState("")
+  const [retryFeedback, setRetryFeedback] = useState("")
+  const [retryError, setRetryError] = useState("")
+  const [replacementSuggestionId, setReplacementSuggestionId] = useState("")
+  const [isRetrying, setIsRetrying] = useState(false)
   const {
     data: suggestion,
     error,
@@ -528,7 +540,9 @@ export function DraftWikiNodeSuggestionDetailPage() {
 
   const canReviewSuggestion = suggestion ? ["draft", "needs_review"].includes(suggestion.status) : false
   const canAcceptSuggestion = canReviewSuggestion && suggestion?.conflictStatus === "none"
+  const canRetrySuggestion = suggestion ? ["draft", "needs_review", "rejected"].includes(suggestion.status) : false
   const linkedAcceptedNodeId = acceptedNodeId || (suggestion?.status === "accepted" ? suggestion.matchedWikiNodeIds[0] ?? "" : "")
+  const linkedReplacementSuggestionId = replacementSuggestionId || (suggestion?.status === "superseded" ? suggestion.matchedSuggestionIds[0] ?? "" : "")
 
   async function handleAcceptSuggestion() {
     if (!activeSuggestionId) return
@@ -583,6 +597,33 @@ export function DraftWikiNodeSuggestionDetailPage() {
     }
   }
 
+  async function handleRetrySuggestion() {
+    if (!activeSuggestionId) return
+    const cleanRetryNote = retryNote.trim()
+    if (!cleanRetryNote) {
+      setRetryError("重新生成原因不能为空。")
+      setRetryFeedback("")
+      return
+    }
+
+    setIsRetrying(true)
+    setRetryError("")
+    setRetryFeedback("")
+    try {
+      const result = await retryDraftWikiNodeSuggestion(activeSuggestionId, {
+        reviewNote: cleanRetryNote,
+      })
+      setRetryFeedback(result.summary)
+      setReplacementSuggestionId(result.replacementSuggestionId ?? "")
+      setRetryNote("")
+      await reload()
+    } catch {
+      setRetryError("重新生成 WikiNode 建议失败，请稍后重试。")
+    } finally {
+      setIsRetrying(false)
+    }
+  }
+
   return (
     <PageScaffold title="WikiNode 建议详情" description="查看 Draft WikiNode Suggestion，并允许单条采纳或拒绝；本页不会发布、索引或批量转换。">
       <ApiErrorNotice error={error} onRetry={reload} />
@@ -602,7 +643,7 @@ export function DraftWikiNodeSuggestionDetailPage() {
           ]} />
           <Card>
             <CardContent className="space-y-3 p-4 text-sm text-muted-foreground">
-              <p>采纳只会创建草稿 WikiNode，并保留来源证据；拒绝只会更新当前建议的审核状态。本页不会发布、索引、创建 WikiLink 或批量转换。</p>
+              <p>采纳只会创建草稿 WikiNode，并保留来源证据；拒绝或重新生成只会更新建议审核状态和替代关系。本页不会发布、索引、创建 WikiLink 或批量转换。</p>
               <div className="flex flex-wrap gap-2 text-xs">
                 <span className="rounded-md border px-2 py-1">Source {suggestion.sourceId}</span>
                 <span className="rounded-md border px-2 py-1">Raw Material {suggestion.rawMaterialId}</span>
@@ -659,6 +700,25 @@ export function DraftWikiNodeSuggestionDetailPage() {
                   打开草稿 WikiNode
                 </Link>
               ) : null}
+              {canRetrySuggestion ? (
+                <div className="space-y-2 rounded-md border p-3">
+                  <Label htmlFor="draft-wikinode-suggestion-retry-note">重新生成原因</Label>
+                  <Textarea
+                    id="draft-wikinode-suggestion-retry-note"
+                    value={retryNote}
+                    onChange={(event) => setRetryNote(event.target.value)}
+                    placeholder="说明为什么需要基于同一 Parsed Document 重新生成建议。"
+                  />
+                  <Button type="button" variant="outline" onClick={handleRetrySuggestion} disabled={isRetrying}>
+                    {isRetrying ? "正在重新生成..." : "重新生成建议"}
+                  </Button>
+                </div>
+              ) : null}
+              {linkedReplacementSuggestionId ? (
+                <Link className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" to={`/draft-wikinode-suggestions/${linkedReplacementSuggestionId}`}>
+                  打开新建议
+                </Link>
+              ) : null}
               {suggestion.reviewNote ? (
                 <div className="rounded-md border bg-muted/20 p-3 text-muted-foreground">
                   当前审核备注：{suggestion.reviewNote}
@@ -674,6 +734,11 @@ export function DraftWikiNodeSuggestionDetailPage() {
                   {reviewFeedback}
                 </div>
               ) : null}
+              {retryFeedback ? (
+                <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-emerald-700">
+                  {retryFeedback}
+                </div>
+              ) : null}
               {acceptError ? (
                 <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-destructive">
                   {acceptError}
@@ -684,11 +749,139 @@ export function DraftWikiNodeSuggestionDetailPage() {
                   {reviewError}
                 </div>
               ) : null}
+              {retryError ? (
+                <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-destructive">
+                  {retryError}
+                </div>
+              ) : null}
             </CardContent>
           </Card>
           <DraftWikiNodeSuggestionPanel suggestions={[suggestion]} isLoading={false} mode="detail" showReviewOutcome={false} />
         </>
       ) : null}
+    </PageScaffold>
+  )
+}
+
+export function DraftWikiNodeSuggestionReviewConsolePage() {
+  const [query, setQuery] = useState("")
+  const [statusFilter, setStatusFilter] = useState<SuggestionStatusFilter>("all")
+  const [conflictFilter, setConflictFilter] = useState<SuggestionConflictFilter>("all")
+  const {
+    data: suggestions,
+    error,
+    isLoading,
+    reload,
+  } = useAsyncData(() => listDraftWikiNodeSuggestions(), [], [])
+
+  const normalizedQuery = query.trim().toLowerCase()
+  const filteredSuggestions = suggestions.filter((suggestion) => {
+    const matchesStatus = statusFilter === "all" || suggestion.status === statusFilter
+    const matchesConflict = conflictFilter === "all" || suggestion.conflictStatus === conflictFilter
+    const matchesQuery = !normalizedQuery || [
+      suggestion.title,
+      suggestion.suggestionId,
+      suggestion.parsedDocumentId,
+      suggestion.rawMaterialId,
+      suggestion.sourceId,
+      suggestion.operationId,
+      suggestion.subtype ?? "",
+    ].some((value) => value.toLowerCase().includes(normalizedQuery))
+    return matchesStatus && matchesConflict && matchesQuery
+  })
+
+  const activeCount = suggestions.filter((suggestion) => ["draft", "needs_review"].includes(suggestion.status)).length
+  const acceptedCount = suggestions.filter((suggestion) => suggestion.status === "accepted").length
+  const supersededCount = suggestions.filter((suggestion) => suggestion.status === "superseded").length
+
+  function resetFilters() {
+    setQuery("")
+    setStatusFilter("all")
+    setConflictFilter("all")
+  }
+
+  return (
+    <PageScaffold
+      title="WikiNode 建议评审"
+      description="按状态、冲突和来源证据检查 Draft WikiNode Suggestion 的完整评审生命周期。"
+    >
+      <ApiErrorNotice error={error} onRetry={reload} />
+      <SummaryGrid items={[
+        ["全部建议", String(suggestions.length)],
+        ["待处理", String(activeCount)],
+        ["已采纳", String(acceptedCount)],
+        ["已替换", String(supersededCount)],
+      ]} />
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">评审筛选</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3 lg:grid-cols-[minmax(220px,1fr)_180px_180px_auto]">
+          <div className="space-y-1">
+            <Label htmlFor="draft-wikinode-suggestion-search">搜索 WikiNode 建议</Label>
+            <Input
+              id="draft-wikinode-suggestion-search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="标题、Source、Raw Material、Parsed Document"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="draft-wikinode-suggestion-status-filter">建议状态</Label>
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as SuggestionStatusFilter)}>
+              <SelectTrigger id="draft-wikinode-suggestion-status-filter" aria-label="建议状态" className="w-full">
+                <SelectValue placeholder="全部状态" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部状态</SelectItem>
+                <SelectItem value="draft">待审核</SelectItem>
+                <SelectItem value="needs_review">需要复核</SelectItem>
+                <SelectItem value="accepted">已采纳</SelectItem>
+                <SelectItem value="rejected">已拒绝</SelectItem>
+                <SelectItem value="superseded">已替换</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="draft-wikinode-suggestion-conflict-filter">冲突状态</Label>
+            <Select value={conflictFilter} onValueChange={(value) => setConflictFilter(value as SuggestionConflictFilter)}>
+              <SelectTrigger id="draft-wikinode-suggestion-conflict-filter" aria-label="冲突状态" className="w-full">
+                <SelectValue placeholder="全部冲突" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部冲突</SelectItem>
+                <SelectItem value="none">未发现冲突</SelectItem>
+                <SelectItem value="title_match">标题可能重复</SelectItem>
+                <SelectItem value="source_ref_match">证据来源可能重复</SelectItem>
+                <SelectItem value="existing_suggestion">已存在待审核建议</SelectItem>
+                <SelectItem value="accepted_before">已采纳过相关建议</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-end">
+            <Button type="button" variant="outline" onClick={resetFilters}>重置筛选</Button>
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">建议生命周期</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <p className="text-muted-foreground">
+            本页只处理 Draft WikiNode Suggestion 的评审状态、替代关系和证据追踪；不会发布、索引、创建 WikiLink 或批量转换。
+          </p>
+          {isLoading ? <LoadingBlock text="正在加载 WikiNode 建议..." /> : null}
+          {!isLoading && filteredSuggestions.length === 0 ? (
+            <div className="rounded-md border border-dashed p-3 text-muted-foreground">
+              暂无符合当前筛选条件的 WikiNode 建议。
+            </div>
+          ) : null}
+          {filteredSuggestions.map((suggestion) => (
+            <SuggestionLifecycleCard key={suggestion.suggestionId} suggestion={suggestion} />
+          ))}
+        </CardContent>
+      </Card>
     </PageScaffold>
   )
 }
@@ -1034,7 +1227,89 @@ function SuggestionReviewOutcome({ suggestion }: { suggestion: DraftWikiNodeSugg
     )
   }
 
+  if (suggestion.status === "superseded") {
+    const replacementSuggestionId = suggestion.matchedSuggestionIds[0]
+    return (
+      <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-muted bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+        <span>已被新建议替代</span>
+        {replacementSuggestionId ? (
+          <Link className="font-medium text-primary underline-offset-4 hover:underline" to={`/draft-wikinode-suggestions/${replacementSuggestionId}`}>
+            打开新建议
+          </Link>
+        ) : null}
+        {suggestion.reviewNote ? <span>审核备注：{suggestion.reviewNote}</span> : null}
+      </div>
+    )
+  }
+
   return null
+}
+
+function SuggestionLifecycleCard({ suggestion }: { suggestion: DraftWikiNodeSuggestion }) {
+  const acceptedNodeId = suggestion.status === "accepted" ? suggestion.matchedWikiNodeIds[0] : ""
+  const replacementSuggestionId = suggestion.status === "superseded" ? suggestion.matchedSuggestionIds[0] : ""
+  const previousSuggestionId = suggestion.status !== "superseded" ? suggestion.matchedSuggestionIds[0] : ""
+  const nextStep = lifecycleNextStep(suggestion)
+
+  return (
+    <div className="rounded-md border p-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge variant="outline">{labelFromMap(objectTypeLabels, suggestion.objectType)}</Badge>
+        <Badge variant="secondary">{labelFromMap(draftWikiNodeSuggestionStatusLabels, suggestion.status)}</Badge>
+        <Badge variant={suggestion.conflictStatus === "none" ? "outline" : "destructive"}>
+          {labelFromMap(draftWikiNodeSuggestionConflictLabels, suggestion.conflictStatus)}
+        </Badge>
+      </div>
+      <Link to={`/draft-wikinode-suggestions/${suggestion.suggestionId}`} className="mt-2 block font-medium hover:underline">
+        {suggestion.title}
+      </Link>
+      <div className="mt-2 grid gap-2 text-xs text-muted-foreground md:grid-cols-2 xl:grid-cols-4">
+        <span>Source {suggestion.sourceId}</span>
+        <span>Raw Material {suggestion.rawMaterialId}</span>
+        <span>Parsed Document {suggestion.parsedDocumentId}</span>
+        <span>Source Operation {suggestion.operationId}</span>
+      </div>
+      <div className="mt-2 rounded-md border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+        下一步：{nextStep}
+      </div>
+      <div className="mt-2 flex flex-wrap gap-3 text-xs">
+        {acceptedNodeId ? (
+          <Link className="font-medium text-primary underline-offset-4 hover:underline" to={`/wiki-nodes/${acceptedNodeId}`}>
+            打开草稿 WikiNode
+          </Link>
+        ) : null}
+        {replacementSuggestionId ? (
+          <Link className="font-medium text-primary underline-offset-4 hover:underline" to={`/draft-wikinode-suggestions/${replacementSuggestionId}`}>
+            打开新建议
+          </Link>
+        ) : null}
+        {previousSuggestionId ? (
+          <Link className="font-medium text-primary underline-offset-4 hover:underline" to={`/draft-wikinode-suggestions/${previousSuggestionId}`}>
+            查看来源建议
+          </Link>
+        ) : null}
+      </div>
+      {suggestion.reviewNote ? (
+        <div className="mt-2 text-xs text-muted-foreground">审核备注：{suggestion.reviewNote}</div>
+      ) : null}
+    </div>
+  )
+}
+
+function lifecycleNextStep(suggestion: DraftWikiNodeSuggestion) {
+  if (suggestion.status === "accepted") {
+    return "进入草稿 WikiNode 后继续人工编辑；本页不会发布或索引。"
+  }
+  if (suggestion.status === "rejected") {
+    return "保持拒绝记录，可在详情页基于同一 Parsed Document 重新生成。"
+  }
+  if (suggestion.status === "superseded") {
+    return "查看新建议并继续评审，旧建议仅保留审计证据。"
+  }
+  if (suggestion.conflictStatus !== "none") {
+    return "先处理冲突，可拒绝或重新生成，不能直接采纳。"
+  }
+  return "进入详情页采纳为草稿 WikiNode、拒绝或重新生成。"
 }
 
 function SuggestionEvidenceBlock({ suggestion }: { suggestion: DraftWikiNodeSuggestion }) {

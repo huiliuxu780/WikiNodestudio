@@ -3,6 +3,7 @@ import {
   ArchiveIcon,
   DatabaseIcon,
   FileTextIcon,
+  FileSearchIcon,
   GitBranchIcon,
   HardDriveIcon,
   LibraryIcon,
@@ -89,6 +90,11 @@ const data = {
       title: "原始材料",
       url: "/raw-materials",
       icon: ArchiveIcon,
+    },
+    {
+      title: "WikiNode 建议",
+      url: "/draft-wikinode-suggestions",
+      icon: FileSearchIcon,
     },
     {
       title: "Index Segment",

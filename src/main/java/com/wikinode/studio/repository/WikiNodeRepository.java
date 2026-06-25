@@ -10,6 +10,8 @@ import com.wikinode.studio.model.DraftWikiNodeSuggestionAcceptResult;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationRequest;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationResult;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionRejectRequest;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionRetryRequest;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionRetryResult;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionReviewResult;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
@@ -82,6 +84,11 @@ public interface WikiNodeRepository {
   DraftWikiNodeSuggestionReviewResult rejectDraftWikiNodeSuggestion(
     String suggestionId,
     DraftWikiNodeSuggestionRejectRequest request
+  );
+
+  DraftWikiNodeSuggestionRetryResult retryDraftWikiNodeSuggestion(
+    String suggestionId,
+    DraftWikiNodeSuggestionRetryRequest request
   );
 
   DraftWikiNodeSuggestionAcceptResult acceptDraftWikiNodeSuggestion(

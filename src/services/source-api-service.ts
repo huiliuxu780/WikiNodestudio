@@ -7,6 +7,8 @@ import type {
   DraftWikiNodeSuggestionAcceptRequest,
   DraftWikiNodeSuggestionAcceptResult,
   DraftWikiNodeSuggestionRejectRequest,
+  DraftWikiNodeSuggestionRetryRequest,
+  DraftWikiNodeSuggestionRetryResult,
   DraftWikiNodeSuggestionReviewResult,
 } from "@/types/draft-wikinode-suggestion"
 import type { ParsedDocument, RawMaterial } from "@/types/raw-material"
@@ -104,6 +106,13 @@ export function getDraftWikiNodeSuggestion(suggestionId: string) {
   )
 }
 
+export function listDraftWikiNodeSuggestions() {
+  return withMockFallback(
+    apiGet<DraftWikiNodeSuggestion[]>("/draft-wikinode-suggestions"),
+    () => mockDraftWikiNodeSuggestions
+  )
+}
+
 export type DraftWikiNodeSuggestionGenerationRequest = {
   conversionProfile?: string
   idempotencyKey?: string
@@ -161,6 +170,24 @@ export function acceptDraftWikiNodeSuggestion(
       reviewNote: request.reviewNote,
       nodeId: null,
       nodeStatus: null,
+    })
+  )
+}
+
+export function retryDraftWikiNodeSuggestion(
+  suggestionId: string,
+  request: DraftWikiNodeSuggestionRetryRequest
+) {
+  return withMockFallback(
+    apiPost<DraftWikiNodeSuggestionRetryResult>(`/draft-wikinode-suggestions/${suggestionId}/retry`, request),
+    (): DraftWikiNodeSuggestionRetryResult => ({
+      suggestionId,
+      status: "skipped",
+      summary: "当前 Mock fallback 不执行真实 WikiNode 建议重新生成操作。",
+      reviewNote: request.reviewNote,
+      replacementSuggestionId: null,
+      replacementStatus: null,
+      operationId: null,
     })
   )
 }

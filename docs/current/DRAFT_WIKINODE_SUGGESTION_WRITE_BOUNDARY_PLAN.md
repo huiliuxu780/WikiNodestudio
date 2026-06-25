@@ -63,7 +63,7 @@ The future write surface must be split into separate approved tasks.
 | Generate suggestion | One Parsed Document creates at most one Draft WikiNode Suggestion through deterministic rules. | Accept/reject, WikiNode creation, AI/LLM, batch conversion. |
 | Reject suggestion | One existing suggestion transitions to `rejected` with a safe reviewer note. | Deleting evidence, blocking future suggestions globally, creating WikiNode. |
 | Accept suggestion | One existing suggestion transitions to `accepted` and may create a draft WikiNode only if separately approved in the task. | Publish, index, vector sync, batch accept. |
-| Retry generation | One failed `suggest_wikinode` operation creates a new Source Operation and re-runs eligibility checks. | Reusing failed operations, batch retry, bypassing duplicate checks. |
+| Retry generation | One existing Draft WikiNode Suggestion creates one replacement suggestion from the same Parsed Document and marks the old suggestion `superseded`. | Accepted-suggestion retry, WikiNode updates, batch retry, parser/AI/vector work. |
 | Batch conversion | Deferred. Requires separate approval after single-record generation and review are stable. | Any first write implementation. |
 
 ## 5. Recommended Implementation Sequence
@@ -85,6 +85,11 @@ Recommended sequence:
    - Keep publish, index, vector sync, and batch conversion absent.
 4. `IM043 Draft WikiNode Suggestion Review Flow Acceptance Sweep`
    - Polish the review flow after generation, reject, and accept are stable.
+5. `IM044 Draft WikiNode Suggestion Lifecycle Review Console`
+   - Implement single-suggestion retry from an existing Draft WikiNode Suggestion.
+   - Mark the source suggestion `superseded` and link it to the replacement suggestion through `matchedSuggestionIds`.
+   - Add a lifecycle review console that makes `draft`, `needs_review`, `accepted`, `rejected`, and `superseded` states searchable and filterable.
+   - Keep accepted-suggestion retry, WikiNode updates, WikiLink creation, publish, index, vector sync, parser execution, AI/LLM, permissions, approval workflow, and batch conversion absent.
 
 Planning-only IMs should be reserved for high-risk boundaries such as accept-to-WikiNode, permissions, batch operations, external integrations, or schema expansion. Low-risk review-state changes may combine boundary clarification and implementation when they use existing fields and remain single-record.
 
@@ -274,10 +279,15 @@ Forbidden accept response fields:
 - storage credentials
 - signed URLs
 
-These APIs remain deferred until separately planned and approved:
+This API is approved only for single-suggestion retry/replacement:
 
 ```http
 POST /api/draft-wikinode-suggestions/{suggestionId}/retry
+```
+
+Batch conversion remains deferred until separately planned and approved:
+
+```http
 POST /api/draft-wikinode-suggestions/batch
 ```
 
@@ -352,6 +362,32 @@ Conflict values must continue using the read-only labels defined by IM035/IM036/
 - `source_ref_match`
 - `existing_suggestion`
 - `accepted_before`
+
+## 12.1 Retry And Replacement Policy
+
+IM044 approves only single-record retry/replacement.
+
+Allowed behavior:
+
+- Retry starts from one existing Draft WikiNode Suggestion.
+- Retry must require a Chinese user-readable `reviewNote`.
+- Retry uses the suggestion's existing `parsedDocumentId`; the frontend must not provide a replacement Parsed Document payload.
+- Retry creates one new Source Operation using the existing Parsed Document chain.
+- Retry creates one replacement Draft WikiNode Suggestion from the same Parsed Document.
+- Retry marks the source suggestion `superseded`.
+- The source suggestion links to the replacement suggestion through `matchedSuggestionIds`.
+- The replacement suggestion links back to the source suggestion through `matchedSuggestionIds`.
+- Source, Raw Material, Parsed Document, Source Operation, sourceRefs, and relation candidates remain inspectable.
+
+Retry must not:
+
+- Retry an `accepted` suggestion.
+- Update an existing WikiNode.
+- Create WikiLinks.
+- Publish, index, generate Index Segments, or sync vectors.
+- Execute parser, AI/LLM, embedding, or external integration work.
+- Perform batch retry or batch conversion.
+- Add new database fields or migrations.
 
 ## 13. Frontend Boundary
 
@@ -432,16 +468,17 @@ Stop for explicit approval if any future task needs:
 - Batch conversion.
 - Export or destructive operations.
 
-## 17. Recommended Next Task
+## 17. Current Status
 
 ```text
-IM043 Draft WikiNode Suggestion Review Flow Acceptance Sweep
+IM044 Draft WikiNode Suggestion Lifecycle Review Console
 ```
 
-Recommended scope for IM043:
+Current IM044 scope:
 
-- Polish the review flow after generation, rejection, and accept-to-draft are stable.
-- Surface accepted and rejected review outcomes in Suggestion lists and detail pages.
-- Preserve the accepted draft WikiNode link after page reload through `matchedWikiNodeIds`.
-- Add Playwright coverage for accepted/rejected outcomes and persistent draft WikiNode links.
-- Keep backend API, DB, migration, Java model, WikiLink creation, publish, index, vector sync, parser execution, AI/LLM, permissions, approval workflow, and batch conversion out of scope.
+- Add `POST /api/draft-wikinode-suggestions/{suggestionId}/retry`.
+- Use existing `status` and `matchedSuggestionIds` fields to express replacement.
+- Add frontend retry feedback and replacement link on the suggestion detail page.
+- Add `/draft-wikinode-suggestions` as a lifecycle review console with search, status filter, conflict filter, state counts, evidence links, and replacement links.
+- Add API, repository, and Playwright coverage for retry/replacement and lifecycle review.
+- Keep DB migration, dependencies, accepted-suggestion retry, WikiNode updates, WikiLink creation, publish, index, vector sync, parser execution, AI/LLM, permissions, approval workflow, and batch conversion out of scope.
