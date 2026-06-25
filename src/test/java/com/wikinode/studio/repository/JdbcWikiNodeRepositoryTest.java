@@ -7,6 +7,8 @@ import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.DraftWikiNodeSuggestion;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionAcceptRequest;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionAcceptResult;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationRequest;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationResult;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionRejectRequest;
@@ -375,6 +377,63 @@ class JdbcWikiNodeRepositoryTest {
     ))
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("拒绝原因不能为空");
+  }
+
+  @Test
+  void acceptsDraftWikiNodeSuggestionAsDraftWikiNodeAndKeepsSuggestionEvidence() {
+    JdbcTemplate jdbcTemplate = jdbcTemplateWithDraftWikiNodeSuggestions();
+    JdbcWikiNodeRepository repository = new JdbcWikiNodeRepository(jdbcTemplate);
+
+    DraftWikiNodeSuggestionAcceptResult result = repository.acceptDraftWikiNodeSuggestion(
+      "sug-002",
+      new DraftWikiNodeSuggestionAcceptRequest("确认进入草稿 WikiNode，后续人工编辑。")
+    );
+
+    assertThat(result.suggestionId()).isEqualTo("sug-002");
+    assertThat(result.status()).isEqualTo("accepted");
+    assertThat(result.summary()).isEqualTo("已采纳为草稿 WikiNode。");
+    assertThat(result.reviewNote()).isEqualTo("确认进入草稿 WikiNode，后续人工编辑。");
+    assertThat(result.nodeId()).isEqualTo("wn-from-sug-002");
+    assertThat(result.nodeStatus()).isEqualTo("draft");
+
+    assertThat(repository.findDraftWikiNodeSuggestion("sug-002"))
+      .hasValueSatisfying(suggestion -> {
+        assertThat(suggestion.status()).isEqualTo("accepted");
+        assertThat(suggestion.reviewNote()).isEqualTo("确认进入草稿 WikiNode，后续人工编辑。");
+        assertThat(suggestion.sourceRefs()).hasSize(1);
+        assertThat(suggestion.relationCandidates()).hasSize(1);
+        assertThat(suggestion.matchedWikiNodeIds()).containsExactly("wn-from-sug-002");
+      });
+    assertThat(repository.findNode("wn-from-sug-002"))
+      .hasValueSatisfying(node -> {
+        assertThat(node.title()).isEqualTo("洗碗机基础排查建议");
+        assertThat(node.status()).isEqualTo("draft");
+        assertThat(node.indexStatus()).isEqualTo("not_indexed");
+        assertThat(node.contentMarkdown()).contains("排查时先确认电源、水路和错误码");
+        assertThat(node.sourceRefs()).singleElement().satisfies(sourceRef -> {
+          assertThat(sourceRef.sourceId()).isEqualTo("src-pdf-dishwasher");
+          assertThat(sourceRef.sourceType()).isEqualTo("parsed_document");
+          assertThat(sourceRef.paragraphRef()).isEqualTo("page:P-8");
+          assertThat(sourceRef.version()).isEqualTo("rm-002");
+        });
+      });
+  }
+
+  @Test
+  void skipsAcceptForConflictedDraftWikiNodeSuggestion() {
+    JdbcTemplate jdbcTemplate = jdbcTemplateWithDraftWikiNodeSuggestions();
+    JdbcWikiNodeRepository repository = new JdbcWikiNodeRepository(jdbcTemplate);
+
+    DraftWikiNodeSuggestionAcceptResult result = repository.acceptDraftWikiNodeSuggestion(
+      "sug-001",
+      new DraftWikiNodeSuggestionAcceptRequest("尝试采纳冲突建议。")
+    );
+
+    assertThat(result.status()).isEqualTo("skipped");
+    assertThat(result.summary()).isEqualTo("存在冲突，不能直接采纳为 WikiNode。");
+    assertThat(result.nodeId()).isNull();
+    assertThat(repository.findDraftWikiNodeSuggestion("sug-001"))
+      .hasValueSatisfying(suggestion -> assertThat(suggestion.status()).isEqualTo("draft"));
   }
 
   private JdbcTemplate jdbcTemplate() {

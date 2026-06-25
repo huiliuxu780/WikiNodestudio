@@ -187,14 +187,14 @@ if (!Array.isArray(generatedScopedSuggestions) || !generatedScopedSuggestions.so
   throw new Error("GET /api/parsed-documents/{id}/draft-wikinode-suggestions: FAIL expected generated suggestion")
 }
 
-const rejectedSuggestion = await request("POST /api/draft-wikinode-suggestions/{id}/reject", "/draft-wikinode-suggestions/sug-002/reject", {
+const rejectedSuggestion = await request("POST /api/draft-wikinode-suggestions/{id}/reject", "/draft-wikinode-suggestions/sug-001/reject", {
   method: "POST",
   body: JSON.stringify({
-    reviewNote: "API smoke 确认暂不进入 WikiNode。",
+    reviewNote: "API smoke 确认冲突建议暂不进入 WikiNode。",
   }),
 })
 
-if (rejectedSuggestion.suggestionId !== "sug-002" || !["rejected", "skipped"].includes(rejectedSuggestion.status)) {
+if (rejectedSuggestion.suggestionId !== "sug-001" || !["rejected", "skipped"].includes(rejectedSuggestion.status)) {
   throw new Error("POST /api/draft-wikinode-suggestions/{id}/reject: FAIL expected rejected or skipped result")
 }
 
@@ -202,9 +202,34 @@ if (JSON.stringify(rejectedSuggestion).includes("nodeId") || JSON.stringify(reje
   throw new Error("POST /api/draft-wikinode-suggestions/{id}/reject: FAIL response exposed forbidden internals")
 }
 
-const rejectedSuggestionDetail = await request("GET /api/draft-wikinode-suggestions/{id}", "/draft-wikinode-suggestions/sug-002")
-if (rejectedSuggestionDetail.status !== "rejected" || rejectedSuggestionDetail.reviewNote !== "API smoke 确认暂不进入 WikiNode。") {
+const rejectedSuggestionDetail = await request("GET /api/draft-wikinode-suggestions/{id}", "/draft-wikinode-suggestions/sug-001")
+if (rejectedSuggestionDetail.status !== "rejected" || rejectedSuggestionDetail.reviewNote !== "API smoke 确认冲突建议暂不进入 WikiNode。") {
   throw new Error("GET /api/draft-wikinode-suggestions/{id}: FAIL expected rejected suggestion")
+}
+
+const acceptedSuggestion = await request("POST /api/draft-wikinode-suggestions/{id}/accept", "/draft-wikinode-suggestions/sug-002/accept", {
+  method: "POST",
+  body: JSON.stringify({
+    reviewNote: "API smoke 确认进入草稿 WikiNode。",
+  }),
+})
+
+if (acceptedSuggestion.suggestionId !== "sug-002" || !["accepted", "skipped"].includes(acceptedSuggestion.status)) {
+  throw new Error("POST /api/draft-wikinode-suggestions/{id}/accept: FAIL expected accepted or skipped result")
+}
+
+if (JSON.stringify(acceptedSuggestion).includes("wikiLinkId") || JSON.stringify(acceptedSuggestion).includes("indexSegmentId") || JSON.stringify(acceptedSuggestion).includes("chunk")) {
+  throw new Error("POST /api/draft-wikinode-suggestions/{id}/accept: FAIL response exposed forbidden internals")
+}
+
+const acceptedSuggestionDetail = await request("GET /api/draft-wikinode-suggestions/{id}", "/draft-wikinode-suggestions/sug-002")
+if (acceptedSuggestionDetail.status !== "accepted" || acceptedSuggestionDetail.reviewNote !== "API smoke 确认进入草稿 WikiNode。") {
+  throw new Error("GET /api/draft-wikinode-suggestions/{id}: FAIL expected accepted suggestion")
+}
+
+const acceptedNode = await request("GET /api/wiki-nodes/{id}", `/wiki-nodes/${acceptedSuggestion.nodeId ?? "wn-from-sug-002"}`)
+if (acceptedNode.status !== "draft" || acceptedNode.indexStatus !== "not_indexed") {
+  throw new Error("GET /api/wiki-nodes/{id}: FAIL accepted suggestion should create draft non-indexed WikiNode")
 }
 
 const created = await request("POST /api/wiki-nodes", "/wiki-nodes", {

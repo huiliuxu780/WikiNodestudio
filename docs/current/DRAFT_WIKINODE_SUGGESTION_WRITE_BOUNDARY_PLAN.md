@@ -239,17 +239,51 @@ Forbidden response fields:
 - storage credentials
 - signed URLs
 
-These APIs remain deferred until separately planned and approved:
+Acceptance may be implemented as a single-record draft WikiNode creation operation after explicit approval:
 
 ```http
 POST /api/draft-wikinode-suggestions/{suggestionId}/accept
+```
+
+Request body:
+
+```json
+{
+  "reviewNote": "确认进入草稿 WikiNode，后续人工编辑。"
+}
+```
+
+Success response:
+
+```json
+{
+  "suggestionId": "sug-002",
+  "status": "accepted",
+  "summary": "已采纳为草稿 WikiNode。",
+  "reviewNote": "确认进入草稿 WikiNode，后续人工编辑。",
+  "nodeId": "wn-from-sug-002",
+  "nodeStatus": "draft"
+}
+```
+
+Forbidden accept response fields:
+
+- `wikiLinkId`
+- `indexSegmentId`
+- raw vector chunks
+- storage credentials
+- signed URLs
+
+These APIs remain deferred until separately planned and approved:
+
+```http
 POST /api/draft-wikinode-suggestions/{suggestionId}/retry
 POST /api/draft-wikinode-suggestions/batch
 ```
 
 ## 10. Accept Boundary
 
-Accept is higher risk than generation because it may create curated knowledge.
+Accept is higher risk than generation because it may create curated knowledge. IM042 approves only the single-record create-draft path; update-existing semantics remain deferred.
 
 Minimum future accept constraints:
 
@@ -259,6 +293,7 @@ Minimum future accept constraints:
 - Accept may update an existing draft WikiNode only after update semantics are separately planned.
 - Accept must preserve the suggestion, sourceRefs, relation candidates, and Source Operation evidence.
 - Accept must set the suggestion status to `accepted` only after the WikiNode write succeeds.
+- Accept must leave the created WikiNode as `draft` with `not_indexed`.
 
 Accept must not:
 
@@ -266,7 +301,9 @@ Accept must not:
 - Index.
 - Generate Index Segments.
 - Sync vectors.
+- Create WikiLinks.
 - Create batch WikiNodes.
+- Update existing WikiNodes.
 - Delete Parsed Document or Raw Material evidence.
 - Resolve conflicts silently.
 

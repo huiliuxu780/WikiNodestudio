@@ -4,6 +4,8 @@ import { mockSources } from "@/data/mock-sources"
 import { listWikiNodes } from "@/services/wiki-node-api-service"
 import type {
   DraftWikiNodeSuggestion,
+  DraftWikiNodeSuggestionAcceptRequest,
+  DraftWikiNodeSuggestionAcceptResult,
   DraftWikiNodeSuggestionRejectRequest,
   DraftWikiNodeSuggestionReviewResult,
 } from "@/types/draft-wikinode-suggestion"
@@ -142,6 +144,23 @@ export function rejectDraftWikiNodeSuggestion(
       status: "skipped",
       summary: "当前 Mock fallback 不执行真实 WikiNode 建议拒绝操作。",
       reviewNote: request.reviewNote,
+    })
+  )
+}
+
+export function acceptDraftWikiNodeSuggestion(
+  suggestionId: string,
+  request: DraftWikiNodeSuggestionAcceptRequest
+) {
+  return withMockFallback(
+    apiPost<DraftWikiNodeSuggestionAcceptResult>(`/draft-wikinode-suggestions/${suggestionId}/accept`, request),
+    (): DraftWikiNodeSuggestionAcceptResult => ({
+      suggestionId,
+      status: "skipped",
+      summary: "当前 Mock fallback 不执行真实 WikiNode 建议采纳操作。",
+      reviewNote: request.reviewNote,
+      nodeId: null,
+      nodeStatus: null,
     })
   )
 }

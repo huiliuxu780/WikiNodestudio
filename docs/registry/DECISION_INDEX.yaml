@@ -1,5 +1,16 @@
 version: 1
 decisions:
+  - id: D042
+    date: "2026-06-25"
+    title: "Implement Draft WikiNode Suggestion accept operation as draft WikiNode creation only"
+    rationale: "After IM041 established the review decision slice and reject operation, IM042 implements only the single-record accept path: a reviewable non-conflicted Draft WikiNode Suggestion can be accepted with a required note, creating one draft WikiNode with not_indexed status and preserved Parsed Document source evidence. It keeps update-existing WikiNode semantics, WikiLink creation, publishing, indexing, Index Segment generation, vector sync, parser execution, external AI, LLM prompts, permissions, approval workflow, batch conversion, migrations, dependencies, package changes, and lockfile changes out of scope."
+    related:
+      - IM042
+      - D041
+      - D040
+      - DRAFT_WIKINODE_SUGGESTION_ACCEPT_TO_DRAFT_WIKINODE
+      - DRAFT_WIKINODE_SUGGESTION_WRITE_BOUNDARY_PLAN
+      - SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN
   - id: D041
     date: "2026-06-25"
     title: "Implement Draft WikiNode Suggestion reject operation as a coherent review slice"

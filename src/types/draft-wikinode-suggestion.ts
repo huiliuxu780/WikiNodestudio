@@ -44,3 +44,16 @@ export type DraftWikiNodeSuggestionReviewResult = {
   summary: string
   reviewNote?: string | null
 }
+
+export type DraftWikiNodeSuggestionAcceptRequest = {
+  reviewNote: string
+}
+
+export type DraftWikiNodeSuggestionAcceptResult = {
+  suggestionId: string
+  status: "accepted" | "skipped" | "failed"
+  summary: string
+  reviewNote?: string | null
+  nodeId?: string | null
+  nodeStatus?: "draft" | "published" | "archived" | string | null
+}
