@@ -34,6 +34,7 @@ Implemented by prior increments:
 - IM030: read-only Source Operation logs, GET APIs, and Source / Raw Material operation log panels.
 - IM031: read-only Parser Profile registry, GET API, and Parser Engine profile panel.
 - IM032: file upload constraints planning for MIME types, size limits, storage, security scan, errors, cleanup, and retry boundaries.
+- IM033: single Raw Material parse planning for Parser Profile selection, operation lifecycle, Parsed Document write semantics, safe errors, retry, and rollback boundaries.
 
 Current product behavior:
 
@@ -298,6 +299,7 @@ Type: planning only unless explicitly expanded.
 Goal:
 
 - Specify manual one-record parse execution after upload/storage boundaries are approved.
+- Detailed plan: `docs/current/SINGLE_RAW_MATERIAL_PARSE_PLAN.md`.
 
 Must define:
 
@@ -374,10 +376,10 @@ IM029 does not:
 
 ## 10. Recommended Next Task
 
-Recommended next task after IM032:
+Recommended next task after IM033:
 
 ```text
-IM033 Single Raw Material Parse Planning
+IM034 Draft WikiNode Suggestion Planning
 ```
 
-Start IM033 as planning only unless the user explicitly expands scope. It must not add parser execution, parser dependencies, Parsed Document writes, retry execution, or batch parse.
+Start IM034 as planning only unless the user explicitly expands scope. It must not add WikiNode creation, auto-publish, auto-index, batch conversion, parser execution, or backend write APIs.

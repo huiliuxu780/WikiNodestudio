@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D033
+    date: "2026-06-25"
+    title: "Plan single Raw Material parse semantics before parser execution"
+    rationale: "IM033 defines how a future approved single-record parse operation should select Parser Profiles, write Source Operation lifecycle evidence, persist Parsed Document output, summarize safe errors, constrain retry, and handle rollback. It does not implement parser execution, parser dependencies, API endpoints, database migrations, UI actions, Parsed Document writes, retry execution, WikiNode creation, or batch parse."
+    related:
+      - IM033
+      - D032
+      - SINGLE_RAW_MATERIAL_PARSE_PLAN
+      - SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN
   - id: D032
     date: "2026-06-25"
     title: "Plan file upload constraints before any upload implementation"

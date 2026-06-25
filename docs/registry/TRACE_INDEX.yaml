@@ -59,6 +59,12 @@ phase2_plans:
     file: docs/current/FILE_UPLOAD_CONSTRAINT_PLAN.md
     parent_plan: docs/current/SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN.md
     previous_parser_profile_registry: PARSER_PROFILE_READONLY_REGISTRY
+  SINGLE_RAW_MATERIAL_PARSE_PLAN:
+    decision: D033
+    file: docs/current/SINGLE_RAW_MATERIAL_PARSE_PLAN.md
+    parent_plan: docs/current/SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN.md
+    upload_boundary_plan: FILE_UPLOAD_CONSTRAINT_PLAN
+    parser_profile_registry: PARSER_PROFILE_READONLY_REGISTRY
   SOURCE_OPERATION_READONLY_LOGS:
     decision: D030
     plan: docs/current/SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN.md
@@ -160,3 +166,6 @@ tasks:
   IM032:
     decision: D032
     plan: FILE_UPLOAD_CONSTRAINT_PLAN
+  IM033:
+    decision: D033
+    plan: SINGLE_RAW_MATERIAL_PARSE_PLAN
