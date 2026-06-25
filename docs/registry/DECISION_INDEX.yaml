@@ -1,5 +1,13 @@
 version: 1
 decisions:
+  - id: D028
+    date: "2026-06-25"
+    title: "Wire Source evidence frontend pages to approved read-only APIs"
+    rationale: "IM028 follows the merged IM027 read-only backend contract by connecting existing Source, Raw Material, and Parsed Document pages to GET endpoints only. It keeps create source, upload, sync execution, parser execution, external connectors, backend changes, database changes, dependency changes, and write APIs out of scope."
+    related:
+      - IM028
+      - D027
+      - SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_READONLY_BACKEND
   - id: D027
     date: "2026-06-25"
     title: "Implement approved read-only Source evidence backend contract"

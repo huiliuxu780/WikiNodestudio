@@ -68,14 +68,15 @@ export function SourcesPage() {
                   <th className="p-2">负责人</th>
                   <th className="p-2">同步状态</th>
                   <th className="p-2">最后同步</th>
+                  <th className="p-2">Raw Material</th>
                   <th className="p-2">生成节点</th>
                 </tr>
               </thead>
               <tbody>
                 {sources.length === 0 ? (
                   <tr>
-                    <td className="p-4 text-sm text-muted-foreground" colSpan={6}>
-                      暂无知识来源。本页当前只展示本地样例数据，不提供真实 Source import 或文件上传。
+                    <td className="p-4 text-sm text-muted-foreground" colSpan={7}>
+                      暂无知识来源。本页当前只展示后端只读证据链，不提供真实 Source import 或文件上传。
                     </td>
                   </tr>
                 ) : sources.map((source) => (
@@ -87,6 +88,7 @@ export function SourcesPage() {
                     <td className="p-2">{source.owner}</td>
                     <td className="p-2">{labelFromMap(syncStatusLabels, source.syncStatus)}</td>
                     <td className="p-2">{source.lastSyncedAt}</td>
+                    <td className="p-2">{source.rawMaterialCount} 个 Raw Material</td>
                     <td className="p-2">{source.generatedNodes}</td>
                   </tr>
                 ))}

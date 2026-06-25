@@ -43,6 +43,12 @@ phase2_plans:
     api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
     repository: src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
     migration: src/main/resources/db/migration/V3__create_source_evidence_schema.sql
+  SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_FRONTEND_API_ALIGNMENT:
+    decision: D028
+    backend_contract: SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_READONLY_BACKEND
+    service: src/services/source-api-service.ts
+    source_page: src/pages/sources-page.tsx
+    detail_pages: src/pages/skeleton-pages.tsx
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
@@ -100,3 +106,9 @@ tasks:
     api_contract_test: src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
     repository_test: src/test/java/com/wikinode/studio/repository/JdbcWikiNodeRepositoryTest.java
     api_smoke: scripts/api-smoke.sh
+  IM028:
+    decision: D028
+    implementation: SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_FRONTEND_API_ALIGNMENT
+    api_alignment_test: tests/e2e/source-raw-material-api-alignment.spec.ts
+    acceptance_test: tests/e2e/source-raw-material-acceptance.spec.ts
+    route_fixture: tests/e2e/source-api-fixtures.ts
