@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.RawMaterial;
+import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.WikiNode;
 import com.wikinode.studio.model.WikiNodeUpsertRequest;
 import java.util.List;
@@ -121,6 +122,29 @@ class JdbcWikiNodeRepositoryTest {
     });
   }
 
+  @Test
+  void loadsSourceOperationReadOnlyLogs() {
+    JdbcTemplate jdbcTemplate = jdbcTemplateWithSourceOperations();
+    JdbcWikiNodeRepository repository = new JdbcWikiNodeRepository(jdbcTemplate);
+
+    assertThat(repository.listSourceOperationsForSource("src-feishu-cc"))
+      .extracting(SourceOperation::operationId)
+      .contains("op-src-feishu-sync-001", "op-src-feishu-parse-001");
+
+    assertThat(repository.listSourceOperationsForRawMaterial("rm-001"))
+      .extracting(SourceOperation::operationType)
+      .containsExactly("parse_raw_material");
+
+    assertThat(repository.findSourceOperation("op-src-feishu-sync-001"))
+      .hasValueSatisfying(operation -> {
+        assertThat(operation.sourceId()).isEqualTo("src-feishu-cc");
+        assertThat(operation.operationType()).isEqualTo("source_sync");
+        assertThat(operation.status()).isEqualTo("succeeded");
+        assertThat(operation.summary()).contains("read-only");
+        assertThat(operation.errorSummary()).isNull();
+      });
+  }
+
   private JdbcTemplate jdbcTemplate() {
     SingleConnectionDataSource dataSource = new SingleConnectionDataSource(
       "jdbc:h2:mem:wikinode-%s;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH".formatted(System.nanoTime()),
@@ -145,6 +169,22 @@ class JdbcWikiNodeRepositoryTest {
     ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
       new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
       new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql")
+    );
+    populator.execute(dataSource);
+    return new JdbcTemplate(dataSource);
+  }
+
+  private JdbcTemplate jdbcTemplateWithSourceOperations() {
+    SingleConnectionDataSource dataSource = new SingleConnectionDataSource(
+      "jdbc:h2:mem:wikinode-source-op-%s;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH".formatted(System.nanoTime()),
+      "sa",
+      "",
+      true
+    );
+    ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
+      new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
+      new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql"),
+      new ClassPathResource("db/migration/V4__create_source_operation_schema.sql")
     );
     populator.execute(dataSource);
     return new JdbcTemplate(dataSource);

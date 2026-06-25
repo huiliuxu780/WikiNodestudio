@@ -6,6 +6,7 @@ import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
+import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.WikiGraphOverview;
 import com.wikinode.studio.model.WikiLink;
 import com.wikinode.studio.model.WikiNode;
@@ -48,6 +49,12 @@ public interface WikiNodeRepository {
   List<ParsedDocument> listParsedDocumentsForRawMaterial(String rawMaterialId);
 
   Optional<ParsedDocument> findParsedDocument(String parsedDocumentId);
+
+  List<SourceOperation> listSourceOperationsForSource(String sourceId);
+
+  List<SourceOperation> listSourceOperationsForRawMaterial(String rawMaterialId);
+
+  Optional<SourceOperation> findSourceOperation(String operationId);
 
   IndexStatusSummary indexStatus();
 }

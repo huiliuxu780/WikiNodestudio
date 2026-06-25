@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D030
+    date: "2026-06-25"
+    title: "Add read-only Source Operation logs before execution capabilities"
+    rationale: "The user explicitly approved crossing backend model, database migration, API, and frontend observability boundaries for IM030. The implementation adds read-only Source Operation records, GET APIs, and UI operation log panels only, while keeping real sync, upload, parser execution, retry, credentials, permissions, approval, batch/export, write APIs, dependency changes, and package changes out of scope."
+    related:
+      - IM030
+      - D029
+      - SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN
+      - SOURCE_OPERATION_READONLY_LOGS
   - id: D029
     date: "2026-06-25"
     title: "Plan parser and import operations before any real execution capability"

@@ -23,9 +23,12 @@ import {
   listParsedDocumentsForRawMaterial,
   listRawMaterials,
   listRawMaterialsForSource,
+  listSourceOperationsForRawMaterial,
+  listSourceOperationsForSource,
 } from "@/services/source-api-service"
 import type { ParsedDocument, RawMaterial } from "@/types/raw-material"
 import type { SourceItem } from "@/types/source"
+import type { SourceOperation } from "@/types/source-operation"
 import {
   contentFormatLabels,
   indexStatusLabels,
@@ -39,6 +42,8 @@ import {
   rawMaterialTypeLabels,
   relationTypeLabels,
   sourceTypeLabels,
+  sourceOperationStatusLabels,
+  sourceOperationTypeLabels,
   storageProviderLabels,
   statusLabels,
   subtypeLabels,
@@ -147,11 +152,18 @@ export function SourceDetailPage() {
     isLoading: isRawMaterialsLoading,
     reload: reloadRawMaterials,
   } = useAsyncData(() => activeSourceId ? listRawMaterialsForSource(activeSourceId) : Promise.resolve([]), [], [activeSourceId])
+  const {
+    data: operations,
+    error: operationsError,
+    isLoading: isOperationsLoading,
+    reload: reloadOperations,
+  } = useAsyncData(() => activeSourceId ? listSourceOperationsForSource(activeSourceId) : Promise.resolve([]), [], [activeSourceId])
 
   return (
     <PageScaffold title="知识来源详情" description={source ? `${source.title}。当前页面只展示来源配置和生成 WikiNode 的验收基线。` : "查看 Source 到 Raw Material 的只读证据链。"}>
       <ApiErrorNotice error={sourceError} onRetry={reloadSource} />
       <ApiErrorNotice error={rawMaterialsError} onRetry={reloadRawMaterials} />
+      <ApiErrorNotice error={operationsError} onRetry={reloadOperations} />
       {isSourceLoading ? <LoadingBlock text="正在加载知识来源..." /> : null}
       {source ? (
         <SummaryGrid items={[
@@ -208,6 +220,7 @@ export function SourceDetailPage() {
         "不执行真实同步、授权连接或后台任务。",
         "真实 Source import、文件上传和解析留到后续阶段。",
       ]} />
+      <SourceOperationLogPanel operations={operations} isLoading={isOperationsLoading} />
     </PageScaffold>
   )
 }
@@ -280,12 +293,19 @@ export function RawMaterialDetailPage() {
     error: parsedDocumentsError,
     reload: reloadParsedDocuments,
   } = useAsyncData(() => activeRawMaterialId ? listParsedDocumentsForRawMaterial(activeRawMaterialId) : Promise.resolve([]), [], [activeRawMaterialId])
+  const {
+    data: operations,
+    error: operationsError,
+    isLoading: isOperationsLoading,
+    reload: reloadOperations,
+  } = useAsyncData(() => activeRawMaterialId ? listSourceOperationsForRawMaterial(activeRawMaterialId) : Promise.resolve([]), [], [activeRawMaterialId])
 
   return (
     <PageScaffold title="原始材料详情" description={raw?.title ?? "查看 Raw Material 到 Parsed Document 的只读证据链。"}>
       <ApiErrorNotice error={rawError} onRetry={reloadRaw} />
       <ApiErrorNotice error={sourceError} onRetry={reloadSource} />
       <ApiErrorNotice error={parsedDocumentsError} onRetry={reloadParsedDocuments} />
+      <ApiErrorNotice error={operationsError} onRetry={reloadOperations} />
       {isRawLoading ? <LoadingBlock text="正在加载 Raw Material..." /> : null}
       {raw ? (
         <SummaryGrid items={[
@@ -336,6 +356,7 @@ export function RawMaterialDetailPage() {
         "下载、重新解析和真实存储访问均未开放。",
         "真实文件存储、解析任务和访问控制留到后续阶段。",
       ]} />
+      <SourceOperationLogPanel operations={operations} isLoading={isOperationsLoading} />
     </PageScaffold>
   )
 }
@@ -575,6 +596,46 @@ function ParsedDocumentPreview({ parsedDocument }: { parsedDocument: ParsedDocum
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+function SourceOperationLogPanel({ operations, isLoading }: { operations: SourceOperation[]; isLoading: boolean }) {
+  return (
+    <Card>
+      <CardHeader>
+        <h2 className="text-base font-medium leading-snug">操作日志</h2>
+      </CardHeader>
+      <CardContent className="space-y-3 text-sm">
+        <p className="text-muted-foreground">只读操作日志，不会启动同步、上传、解析或重试。</p>
+        {isLoading ? (
+          <LoadingBlock text="正在加载操作日志..." />
+        ) : operations.length === 0 ? (
+          <div className="rounded-md border border-dashed p-3 text-muted-foreground">
+            暂无操作日志。当前页面不会创建同步、上传、解析或重试任务。
+          </div>
+        ) : operations.map((operation) => (
+          <div key={operation.operationId} className="rounded-md border p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline">{labelFromMap(sourceOperationTypeLabels, operation.operationType)}</Badge>
+              <Badge variant={operation.status === "failed" ? "destructive" : "secondary"}>
+                {labelFromMap(sourceOperationStatusLabels, operation.status)}
+              </Badge>
+              <span className="text-xs text-muted-foreground">执行人 {operation.requestedBy}</span>
+            </div>
+            <div className="mt-2 font-medium">{operation.summary}</div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              {operation.startedAt}
+              {operation.finishedAt ? ` -> ${operation.finishedAt}` : ""}
+            </div>
+            {operation.errorSummary ? (
+              <div className="mt-2 rounded-md border border-destructive/30 bg-destructive/5 p-2 text-destructive">
+                {operation.errorSummary}
+              </div>
+            ) : null}
+          </div>
+        ))}
+      </CardContent>
+    </Card>
   )
 }
 

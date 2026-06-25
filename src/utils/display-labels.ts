@@ -147,6 +147,24 @@ export const parseStatusLabels: Record<string, string> = {
   skipped: "已跳过",
 }
 
+export const sourceOperationTypeLabels: Record<string, string> = {
+  source_sync: "来源同步",
+  file_upload: "文件上传",
+  raw_material_capture: "快照采集",
+  parse_raw_material: "解析 Raw Material",
+  retry_parse: "重新解析",
+  suggest_wikinode: "建议 WikiNode",
+}
+
+export const sourceOperationStatusLabels: Record<string, string> = {
+  queued: "等待中",
+  running: "运行中",
+  succeeded: "已完成",
+  failed: "解析失败",
+  cancelled: "已取消",
+  skipped: "已跳过",
+}
+
 export const rawMaterialTypeLabels: Record<string, string> = {
   file: "文件",
   document_snapshot: "文档快照",

@@ -4,6 +4,7 @@ import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParsedDocumentSourceRef;
 import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.SourceItem;
+import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.SourceRef;
 import com.wikinode.studio.model.WikiNode;
 import java.sql.ResultSet;
@@ -203,6 +204,31 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
           resultSet.getString("updated_at")
         );
       }
+    );
+  }
+
+  @Override
+  protected List<SourceOperation> loadSourceOperations() {
+    return jdbcTemplate.query(
+      """
+      select operation_id, operation_type, source_id, raw_material_id, parsed_document_id, status,
+             requested_by, started_at, finished_at, summary, error_summary
+      from source_operations
+      order by started_at desc, operation_id
+      """,
+      (resultSet, rowNumber) -> new SourceOperation(
+        resultSet.getString("operation_id"),
+        resultSet.getString("operation_type"),
+        resultSet.getString("source_id"),
+        resultSet.getString("raw_material_id"),
+        resultSet.getString("parsed_document_id"),
+        resultSet.getString("status"),
+        resultSet.getString("requested_by"),
+        resultSet.getString("started_at"),
+        resultSet.getString("finished_at"),
+        resultSet.getString("summary"),
+        resultSet.getString("error_summary")
+      )
     );
   }
 
