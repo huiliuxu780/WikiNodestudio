@@ -1,5 +1,13 @@
 version: 1
 decisions:
+  - id: D029
+    date: "2026-06-25"
+    title: "Plan parser and import operations before any real execution capability"
+    rationale: "IM029 documents future Source operation, parser profile, upload, parser retry, storage, and WikiNode suggestion boundaries without implementing code. Real import, upload, parser execution, storage access, credentials, permissions, approval, export, and batch operations remain hard stop areas requiring explicit approval in later IM tasks."
+    related:
+      - IM029
+      - SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN
+      - D028
   - id: D028
     date: "2026-06-25"
     title: "Wire Source evidence frontend pages to approved read-only APIs"
