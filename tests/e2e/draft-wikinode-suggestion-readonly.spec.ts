@@ -103,6 +103,26 @@ const generatedSuggestion = {
   matchedWikiNodeIds: [],
 }
 
+const acceptedSuggestion = {
+  ...apiSuggestion,
+  suggestionId: "sug-api-accepted",
+  title: "API Accepted WikiNode 建议",
+  status: "accepted",
+  reviewNote: "确认进入草稿 WikiNode，后续人工编辑。",
+  conflictStatus: "none",
+  conflictReasons: [],
+  matchedWikiNodeIds: ["wn-from-sug-api-accepted"],
+}
+
+const rejectedSuggestion = {
+  ...apiSuggestion,
+  suggestionId: "sug-api-rejected",
+  title: "API Rejected WikiNode 建议",
+  status: "rejected",
+  reviewNote: "证据不足，暂不进入 WikiNode。",
+  matchedWikiNodeIds: [],
+}
+
 test.describe("Draft WikiNode Suggestion read-only review", () => {
   test.beforeEach(async ({ page }) => {
     await page.route("**/api/sources/src-api-only", (route) => route.fulfill({ json: apiSource }))
@@ -119,7 +139,7 @@ test.describe("Draft WikiNode Suggestion read-only review", () => {
     await page.goto("/raw-materials/rm-api-only")
 
     await expect(page.getByRole("heading", { name: "WikiNode 建议" })).toBeVisible()
-    await expect(page.getByText("只读建议，不会创建 WikiNode、发布、索引或批量转换。")).toBeVisible()
+    await expect(page.getByText("这里展示 Draft WikiNode Suggestion 与审核结果；采纳或拒绝请进入建议详情。")).toBeVisible()
     await expect(page.getByRole("link", { name: /API Only WikiNode 建议/ })).toBeVisible()
     await expect(page.getByText("待审核")).toBeVisible()
     await expect(page.getByText("标题可能重复").first()).toBeVisible()
@@ -139,7 +159,22 @@ test.describe("Draft WikiNode Suggestion read-only review", () => {
     await expect(page.getByText("这是待审核的 WikiNode 建议。")).toBeVisible()
     await expect(page.getByText("来自 API 的来源证据").first()).toBeVisible()
     await expect(page.getByText("收费政策")).toBeVisible()
-    await expect(page.getByText("只读建议，不会创建 WikiNode、发布、索引或批量转换。")).toBeVisible()
+    await expect(page.getByText("这里展示 Draft WikiNode Suggestion 与审核结果；采纳或拒绝请进入建议详情。")).toBeVisible()
+  })
+
+  test("surfaces accepted and rejected review outcomes in linked suggestion lists", async ({ page }) => {
+    await page.route("**/api/raw-materials/rm-api-only/draft-wikinode-suggestions", (route) => {
+      return route.fulfill({ json: [acceptedSuggestion, rejectedSuggestion] })
+    })
+
+    await page.goto("/raw-materials/rm-api-only")
+
+    await expect(page.getByText("已采纳为草稿 WikiNode")).toBeVisible()
+    await expect(page.getByRole("link", { name: "打开草稿 WikiNode" })).toHaveAttribute("href", "/wiki-nodes/wn-from-sug-api-accepted")
+    await expect(page.getByText("已拒绝：证据不足，暂不进入 WikiNode。")).toBeVisible()
+    await expect(page.getByRole("button", { name: "发布" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "索引" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "批量转换" })).toHaveCount(0)
   })
 
   test("generates one Draft WikiNode Suggestion from Parsed Result without review actions", async ({ page }) => {
@@ -280,5 +315,19 @@ test.describe("Draft WikiNode Suggestion read-only review", () => {
     await expect(page.getByRole("button", { name: "发布" })).toHaveCount(0)
     await expect(page.getByRole("button", { name: "索引" })).toHaveCount(0)
     await expect(page.getByRole("button", { name: "批量转换" })).toHaveCount(0)
+  })
+
+  test("renders accepted suggestion detail with persistent draft WikiNode link", async ({ page }) => {
+    await page.route("**/api/draft-wikinode-suggestions/sug-api-accepted", (route) => {
+      return route.fulfill({ json: acceptedSuggestion })
+    })
+
+    await page.goto("/draft-wikinode-suggestions/sug-api-accepted")
+
+    await expect(page.getByText("当前状态为已采纳，不能继续采纳或拒绝。")).toBeVisible()
+    await expect(page.getByText("确认进入草稿 WikiNode，后续人工编辑。")).toBeVisible()
+    await expect(page.getByRole("link", { name: "打开草稿 WikiNode" })).toHaveAttribute("href", "/wiki-nodes/wn-from-sug-api-accepted")
+    await expect(page.getByRole("button", { name: "采纳为草稿 WikiNode" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "拒绝建议" })).toHaveCount(0)
   })
 })

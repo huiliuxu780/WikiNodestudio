@@ -607,3 +607,38 @@ Forbidden:
 - No batch conversion.
 - No database migration.
 - No new dependencies, package changes, or lockfile changes.
+
+### IM043 - Draft WikiNode Suggestion Review Flow Acceptance Sweep
+
+Type: frontend acceptance sweep.
+
+Goal:
+
+- Make the Draft WikiNode Suggestion review flow readable after generation, rejection, and accept-to-draft are all present.
+- Surface accepted and rejected review outcomes from suggestion lists without requiring users to infer state from raw badges.
+- Keep accepted draft WikiNode links visible after page reload.
+
+Implemented scope:
+
+- Suggestion lists now explain that they display Draft WikiNode Suggestions and review outcomes, while review actions remain on the detail page.
+- Accepted suggestions show `已采纳为草稿 WikiNode`, the reviewer note when present, and an `打开草稿 WikiNode` link when `matchedWikiNodeIds` has a created draft WikiNode.
+- Rejected suggestions show the rejection note in list context.
+- Suggestion detail uses persisted `matchedWikiNodeIds` to keep the created draft WikiNode link visible after reload.
+- Playwright coverage verifies accepted/rejected list outcomes and the persistent accepted-detail link.
+
+Forbidden:
+
+- No backend API changes.
+- No Java model changes.
+- No database migration.
+- No new persistence semantics.
+- No WikiNode update semantics.
+- No WikiLink creation.
+- No publish or index.
+- No Index Segment generation.
+- No vector sync.
+- No parser execution.
+- No external AI, LLM, prompts, credentials, or model provider integration.
+- No permissions or approval workflow.
+- No batch conversion.
+- No new dependencies, package changes, or lockfile changes.

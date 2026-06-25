@@ -528,6 +528,7 @@ export function DraftWikiNodeSuggestionDetailPage() {
 
   const canReviewSuggestion = suggestion ? ["draft", "needs_review"].includes(suggestion.status) : false
   const canAcceptSuggestion = canReviewSuggestion && suggestion?.conflictStatus === "none"
+  const linkedAcceptedNodeId = acceptedNodeId || (suggestion?.status === "accepted" ? suggestion.matchedWikiNodeIds[0] ?? "" : "")
 
   async function handleAcceptSuggestion() {
     if (!activeSuggestionId) return
@@ -653,8 +654,8 @@ export function DraftWikiNodeSuggestionDetailPage() {
                   当前状态为{labelFromMap(draftWikiNodeSuggestionStatusLabels, suggestion.status)}，不能继续采纳或拒绝。
                 </div>
               )}
-              {acceptedNodeId ? (
-                <Link className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" to={`/wiki-nodes/${acceptedNodeId}`}>
+              {linkedAcceptedNodeId ? (
+                <Link className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" to={`/wiki-nodes/${linkedAcceptedNodeId}`}>
                   打开草稿 WikiNode
                 </Link>
               ) : null}
@@ -685,7 +686,7 @@ export function DraftWikiNodeSuggestionDetailPage() {
               ) : null}
             </CardContent>
           </Card>
-          <DraftWikiNodeSuggestionPanel suggestions={[suggestion]} isLoading={false} mode="detail" />
+          <DraftWikiNodeSuggestionPanel suggestions={[suggestion]} isLoading={false} mode="detail" showReviewOutcome={false} />
         </>
       ) : null}
     </PageScaffold>
@@ -947,10 +948,12 @@ function DraftWikiNodeSuggestionPanel({
   suggestions,
   isLoading,
   mode,
+  showReviewOutcome = true,
 }: {
   suggestions: DraftWikiNodeSuggestion[]
   isLoading: boolean
   mode: "summary" | "detail"
+  showReviewOutcome?: boolean
 }) {
   return (
     <Card>
@@ -958,7 +961,7 @@ function DraftWikiNodeSuggestionPanel({
         <h2 className="text-base font-medium leading-snug">WikiNode 建议</h2>
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
-        <p className="text-muted-foreground">只读建议，不会创建 WikiNode、发布、索引或批量转换。</p>
+        <p className="text-muted-foreground">这里展示 Draft WikiNode Suggestion 与审核结果；采纳或拒绝请进入建议详情。</p>
         {isLoading ? (
           <LoadingBlock text="正在加载 WikiNode 建议..." />
         ) : suggestions.length === 0 ? (
@@ -983,6 +986,7 @@ function DraftWikiNodeSuggestionPanel({
             {suggestion.conflictReasons.length > 0 ? (
               <div className="mt-2 text-xs text-destructive">{suggestion.conflictReasons.join("、")}</div>
             ) : null}
+            {showReviewOutcome ? <SuggestionReviewOutcome suggestion={suggestion} /> : null}
             {mode === "detail" ? (
               <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(260px,0.8fr)]">
                 <pre className="max-h-[280px] overflow-auto whitespace-pre-wrap rounded-md border bg-muted/20 p-3 text-sm leading-6">
@@ -1003,6 +1007,34 @@ function DraftWikiNodeSuggestionPanel({
       </CardContent>
     </Card>
   )
+}
+
+function SuggestionReviewOutcome({ suggestion }: { suggestion: DraftWikiNodeSuggestion }) {
+  const linkedNodeId = suggestion.status === "accepted" ? suggestion.matchedWikiNodeIds[0] : ""
+
+  if (suggestion.status === "accepted") {
+    return (
+      <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+        <span>已采纳为草稿 WikiNode</span>
+        {linkedNodeId ? (
+          <Link className="font-medium underline-offset-4 hover:underline" to={`/wiki-nodes/${linkedNodeId}`}>
+            打开草稿 WikiNode
+          </Link>
+        ) : null}
+        {suggestion.reviewNote ? <span>审核备注：{suggestion.reviewNote}</span> : null}
+      </div>
+    )
+  }
+
+  if (suggestion.status === "rejected") {
+    return (
+      <div className="mt-2 rounded-md border border-muted bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+        已拒绝{suggestion.reviewNote ? `：${suggestion.reviewNote}` : ""}
+      </div>
+    )
+  }
+
+  return null
 }
 
 function SuggestionEvidenceBlock({ suggestion }: { suggestion: DraftWikiNodeSuggestion }) {

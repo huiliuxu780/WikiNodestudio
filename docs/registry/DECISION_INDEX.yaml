@@ -1,5 +1,17 @@
 version: 1
 decisions:
+  - id: D043
+    date: "2026-06-25"
+    title: "Polish Draft WikiNode Suggestion review flow after accept and reject"
+    rationale: "After IM040-IM042 established generation, rejection, and accept-to-draft behavior, IM043 performs a frontend acceptance sweep so PM users can read review outcomes directly from suggestion lists and accepted suggestion details retain the draft WikiNode link after reload. It keeps backend APIs, Java models, database migrations, persistence semantics, WikiNode update semantics, WikiLink creation, publishing, indexing, Index Segment generation, vector sync, parser execution, external AI, LLM prompts, permissions, approval workflow, batch conversion, dependencies, package changes, and lockfile changes out of scope."
+    related:
+      - IM043
+      - D042
+      - D041
+      - D040
+      - DRAFT_WIKINODE_SUGGESTION_REVIEW_FLOW_ACCEPTANCE_SWEEP
+      - DRAFT_WIKINODE_SUGGESTION_WRITE_BOUNDARY_PLAN
+      - SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN
   - id: D042
     date: "2026-06-25"
     title: "Implement Draft WikiNode Suggestion accept operation as draft WikiNode creation only"

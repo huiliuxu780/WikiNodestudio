@@ -435,12 +435,13 @@ Stop for explicit approval if any future task needs:
 ## 17. Recommended Next Task
 
 ```text
-IM040 Draft WikiNode Suggestion Generate Operation
+IM043 Draft WikiNode Suggestion Review Flow Acceptance Sweep
 ```
 
-Recommended scope for IM040:
+Recommended scope for IM043:
 
-- Implement one deterministic write endpoint from one Parsed Document to one Draft WikiNode Suggestion.
-- Produce Source Operation lifecycle evidence.
-- Add API contract, repository, API smoke, and Playwright coverage.
-- Keep accept/reject, WikiNode creation/update, publish, index, vector sync, parser execution, AI/LLM, permissions, approval workflow, and batch conversion out of scope.
+- Polish the review flow after generation, rejection, and accept-to-draft are stable.
+- Surface accepted and rejected review outcomes in Suggestion lists and detail pages.
+- Preserve the accepted draft WikiNode link after page reload through `matchedWikiNodeIds`.
+- Add Playwright coverage for accepted/rejected outcomes and persistent draft WikiNode links.
+- Keep backend API, DB, migration, Java model, WikiLink creation, publish, index, vector sync, parser execution, AI/LLM, permissions, approval workflow, and batch conversion out of scope.
