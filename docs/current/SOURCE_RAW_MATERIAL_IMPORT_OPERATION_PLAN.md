@@ -38,6 +38,7 @@ Implemented by prior increments:
 - IM034: draft WikiNode suggestion planning for eligibility, sourceRefs carry-forward, Source Operation lifecycle, duplicate/conflict rules, accept/reject boundaries, safe errors, retry, and rollback constraints.
 - IM035: Draft WikiNode Suggestion read-only contract planning for first-class suggestion model shape, read-only APIs, review surfaces, Source Operation coupling, duplicate/conflict visibility, deferred write APIs, and future migration boundaries.
 - IM036: Draft WikiNode Suggestion read-only implementation for seeded persistence, GET APIs, frontend review panels, and tests without generation or accept/reject actions.
+- IM037: Draft WikiNode Suggestion read-only acceptance sweep for detail-page evidence boundaries, relation-candidate source labels, and no-write-action browser coverage.
 
 Current product behavior:
 
@@ -442,3 +443,24 @@ Forbidden:
 - No accept/reject workflow.
 - No WikiNode creation.
 - No publish, index, vector sync, parser execution, external AI, permissions, or batch conversion.
+
+### IM037 - Draft WikiNode Suggestion Read-only Acceptance Sweep
+
+Type: frontend acceptance polish + Playwright coverage.
+
+Goal:
+
+- Verify and polish the read-only suggestion review path without changing backend, database, API, Java model, or package dependencies.
+
+Implemented scope:
+
+- Suggestion detail page now explicitly displays Source, Raw Material, Parsed Document, and Source Operation boundaries.
+- Relation candidate source values are rendered through a shared Chinese-readable display label.
+- Playwright coverage verifies the suggestion detail route, evidence boundaries, no-write-action controls, and Retrieval API non-impact copy.
+
+Forbidden:
+
+- No suggestion generation.
+- No accept/reject workflow.
+- No WikiNode creation or update.
+- No publish, index, vector sync, parser execution, external AI, permissions, approval workflow, or batch conversion.

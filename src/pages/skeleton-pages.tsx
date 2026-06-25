@@ -48,6 +48,7 @@ import {
   objectTypeLabels,
   parseStatusLabels,
   rawMaterialTypeLabels,
+  relationCandidateSourceLabels,
   relationTypeLabels,
   sourceTypeLabels,
   sourceOperationStatusLabels,
@@ -478,7 +479,19 @@ export function DraftWikiNodeSuggestionDetailPage() {
             ["关系候选", `${suggestion.relationCandidateCount} 条`],
             ["冲突状态", labelFromMap(draftWikiNodeSuggestionConflictLabels, suggestion.conflictStatus)],
             ["可信度", formatConfidence(suggestion.confidence)],
+            ["Source Operation", suggestion.operationId],
           ]} />
+          <Card>
+            <CardContent className="space-y-3 p-4 text-sm text-muted-foreground">
+              <p>不是已采纳的 WikiNode，不影响 Retrieval API 结果。当前页面只读，不会生成、采纳、拒绝、发布、索引或批量转换。</p>
+              <div className="flex flex-wrap gap-2 text-xs">
+                <span className="rounded-md border px-2 py-1">Source {suggestion.sourceId}</span>
+                <span className="rounded-md border px-2 py-1">Raw Material {suggestion.rawMaterialId}</span>
+                <span className="rounded-md border px-2 py-1">Parsed Document {suggestion.parsedDocumentId}</span>
+                <span className="rounded-md border px-2 py-1">Source Operation {suggestion.operationId}</span>
+              </div>
+            </CardContent>
+          </Card>
           <DraftWikiNodeSuggestionPanel suggestions={[suggestion]} isLoading={false} mode="detail" />
         </>
       ) : null}
@@ -807,6 +820,11 @@ function SuggestionEvidenceBlock({ suggestion }: { suggestion: DraftWikiNodeSugg
         {suggestion.sourceRefs.map((sourceRef) => (
           <div key={`${sourceRef.parsedDocumentId}-${sourceRef.locator}`} className="text-sm">
             <div>{labelFromMap(locatorTypeLabels, sourceRef.locatorType)} · {sourceRef.locator}</div>
+            <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
+              <span>Source {sourceRef.sourceId}</span>
+              <span>Raw Material {sourceRef.rawMaterialId}</span>
+              <span>Parsed Document {sourceRef.parsedDocumentId}</span>
+            </div>
             <div className="text-muted-foreground">{sourceRef.excerpt}</div>
           </div>
         ))}
@@ -825,7 +843,7 @@ function SuggestionRelationBlock({ suggestion }: { suggestion: DraftWikiNodeSugg
         ) : suggestion.relationCandidates.map((candidate) => (
           <div key={`${candidate.targetTitle}-${candidate.relationType}`} className="text-sm">
             <div>{labelFromMap(relationTypeLabels, candidate.relationType)} · {candidate.targetTitle}</div>
-            <div className="text-muted-foreground">来源 {candidate.source} · 可信度 {formatConfidence(candidate.confidence)}</div>
+            <div className="text-muted-foreground">来源 {labelFromMap(relationCandidateSourceLabels, candidate.source)} · 可信度 {formatConfidence(candidate.confidence)}</div>
           </div>
         ))}
       </div>

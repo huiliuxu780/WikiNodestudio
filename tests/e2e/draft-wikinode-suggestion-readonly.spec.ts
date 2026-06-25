@@ -130,4 +130,25 @@ test.describe("Draft WikiNode Suggestion read-only review", () => {
     await expect(page.getByText("收费政策")).toBeVisible()
     await expect(page.getByText("不会创建 WikiNode、发布、索引或批量转换")).toBeVisible()
   })
+
+  test("renders suggestion detail with explicit evidence boundaries and no write actions", async ({ page }) => {
+    await page.goto("/draft-wikinode-suggestions/sug-api-only")
+
+    await expect(page.getByRole("heading", { name: "WikiNode 建议详情" })).toBeVisible()
+    await expect(page.getByText("只读查看 Draft WikiNode Suggestion")).toBeVisible()
+    await expect(page.getByText("API Only WikiNode 建议").first()).toBeVisible()
+    await expect(page.getByText("Source src-api-only", { exact: true }).first()).toBeVisible()
+    await expect(page.getByText("Raw Material rm-api-only", { exact: true }).first()).toBeVisible()
+    await expect(page.getByText("Parsed Document pd-api-only", { exact: true }).first()).toBeVisible()
+    await expect(page.getByText("Source Operation op-api-suggest-001")).toBeVisible()
+    await expect(page.getByText("来源证据推断")).toBeVisible()
+    await expect(page.getByText("不是已采纳的 WikiNode，不影响 Retrieval API 结果。")).toBeVisible()
+
+    await expect(page.getByRole("button", { name: "采纳" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "拒绝" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "生成建议" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "发布" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "索引" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "批量转换" })).toHaveCount(0)
+  })
 })

@@ -181,6 +181,12 @@ export const draftWikiNodeSuggestionConflictLabels: Record<string, string> = {
   accepted_before: "已采纳过相关建议",
 }
 
+export const relationCandidateSourceLabels: Record<string, string> = {
+  inferred_from_source_ref: "来源证据推断",
+  parsed_document_heading: "解析标题推断",
+  manual_review_note: "人工复核备注",
+}
+
 export const rawMaterialTypeLabels: Record<string, string> = {
   file: "文件",
   document_snapshot: "文档快照",
