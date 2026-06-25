@@ -3,6 +3,8 @@ package com.wikinode.studio.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.wikinode.studio.model.ParsedDocument;
+import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.WikiNode;
 import com.wikinode.studio.model.WikiNodeUpsertRequest;
 import java.util.List;
@@ -89,6 +91,36 @@ class JdbcWikiNodeRepositoryTest {
       .hasMessageContaining("slug");
   }
 
+  @Test
+  void loadsSourceRawMaterialAndParsedDocumentEvidenceChain() {
+    JdbcTemplate jdbcTemplate = jdbcTemplateWithSourceEvidence();
+    JdbcWikiNodeRepository repository = new JdbcWikiNodeRepository(jdbcTemplate);
+
+    assertThat(repository.listSources())
+      .anySatisfy(source -> {
+        assertThat(source.sourceId()).isEqualTo("src-feishu-cc");
+        assertThat(source.rawMaterialCount()).isEqualTo(2);
+      });
+
+    List<RawMaterial> rawMaterials = repository.listRawMaterialsForSource("src-feishu-cc");
+    assertThat(rawMaterials).extracting(RawMaterial::rawMaterialId).contains("rm-001");
+    assertThat(repository.findRawMaterial("rm-001")).hasValueSatisfying(rawMaterial -> {
+      assertThat(rawMaterial.sourceId()).isEqualTo("src-feishu-cc");
+      assertThat(rawMaterial.parseStatus()).isEqualTo("parsed");
+      assertThat(rawMaterial.parsedDocumentCount()).isEqualTo(1);
+    });
+
+    assertThat(repository.listParsedDocumentsForRawMaterial("rm-001"))
+      .extracting(ParsedDocument::parsedDocumentId)
+      .containsExactly("pd-001");
+    assertThat(repository.findParsedDocument("pd-001")).hasValueSatisfying(parsedDocument -> {
+      assertThat(parsedDocument.rawMaterialId()).isEqualTo("rm-001");
+      assertThat(parsedDocument.normalizedContent()).contains("保修政策");
+      assertThat(parsedDocument.sourceRefs()).hasSize(1);
+      assertThat(parsedDocument.sourceRefs().getFirst().locatorType()).isEqualTo("heading");
+    });
+  }
+
   private JdbcTemplate jdbcTemplate() {
     SingleConnectionDataSource dataSource = new SingleConnectionDataSource(
       "jdbc:h2:mem:wikinode-%s;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH".formatted(System.nanoTime()),
@@ -98,6 +130,21 @@ class JdbcWikiNodeRepositoryTest {
     );
     ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
       new ClassPathResource("db/migration/V1__create_wikinode_schema.sql")
+    );
+    populator.execute(dataSource);
+    return new JdbcTemplate(dataSource);
+  }
+
+  private JdbcTemplate jdbcTemplateWithSourceEvidence() {
+    SingleConnectionDataSource dataSource = new SingleConnectionDataSource(
+      "jdbc:h2:mem:wikinode-source-%s;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH".formatted(System.nanoTime()),
+      "sa",
+      "",
+      true
+    );
+    ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
+      new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
+      new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql")
     );
     populator.execute(dataSource);
     return new JdbcTemplate(dataSource);

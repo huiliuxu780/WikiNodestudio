@@ -1,9 +1,13 @@
 package com.wikinode.studio.repository;
 
+import com.wikinode.studio.model.ParsedDocument;
+import com.wikinode.studio.model.ParsedDocumentSourceRef;
+import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.SourceItem;
 import com.wikinode.studio.model.SourceRef;
 import com.wikinode.studio.model.WikiNode;
 import java.util.List;
+import java.util.Map;
 
 final class WikiNodeSeedData {
 
@@ -12,10 +16,70 @@ final class WikiNodeSeedData {
 
   static List<SourceItem> sources() {
     return List.of(
-      new SourceItem("src-feishu-cc", "feishu", "CC 售后政策飞书空间", "售后运营", "synced", "2026-06-18", 4),
-      new SourceItem("src-pdf-dishwasher", "pdf", "洗碗机培训 PDF", "产品培训", "synced", "2026-06-17", 2),
-      new SourceItem("src-excel-fee", "excel", "维修收费标准 Excel", "服务财务", "pending", "2026-06-16", 1),
-      new SourceItem("src-word-manual", "word", "产品说明书 Word", "产品资料", "synced", "2026-06-15", 1)
+      new SourceItem("src-feishu-cc", "feishu", "CC 售后政策飞书空间", "售后运营", "synced", "2026-06-18", 4, 2),
+      new SourceItem("src-pdf-dishwasher", "pdf", "洗碗机培训 PDF", "产品培训", "synced", "2026-06-17", 2, 1),
+      new SourceItem("src-excel-fee", "excel", "维修收费标准 Excel", "服务财务", "pending", "2026-06-16", 1, 1),
+      new SourceItem("src-word-manual", "word", "产品说明书 Word", "产品资料", "synced", "2026-06-15", 1, 1)
+    );
+  }
+
+  static List<RawMaterial> rawMaterials() {
+    return List.of(
+      new RawMaterial("rm-001", "src-feishu-cc", "售后政策空间快照", "document_snapshot", "2026.06", "2026-06-20T10:35:00+08:00", "sha256:rm001", "workspace", "workspace://snapshots/rm-001", "parsed", 1, "2026-06-20", "2026-06-20"),
+      new RawMaterial("rm-007", "src-feishu-cc", "投诉升级案例补充", "document_snapshot", "2026.06", "2026-06-22T09:00:00+08:00", "sha256:rm007", "workspace", "workspace://snapshots/rm-007", "parsing", 0, "2026-06-22", "2026-06-22"),
+      new RawMaterial("rm-002", "src-pdf-dishwasher", "洗碗机培训 PDF", "file", "2026.05", "2026-06-18T15:12:00+08:00", "sha256:rm002", "object_storage", "object://training/rm-002.pdf", "parsed", 1, "2026-06-18", "2026-06-18"),
+      new RawMaterial("rm-003", "src-excel-fee", "维修收费标准 Excel", "file", "2026.06", "2026-06-16T09:00:00+08:00", "sha256:rm003", "object_storage", "object://finance/rm-003.xlsx", "parsed", 1, "2026-06-16", "2026-06-16"),
+      new RawMaterial("rm-004", "src-word-manual", "产品说明书 Word", "file", "2026.05", "2026-06-12T18:20:00+08:00", "sha256:rm004", "object_storage", "object://manuals/rm-004.docx", "failed", 0, "2026-06-12", "2026-06-12")
+    );
+  }
+
+  static List<ParsedDocument> parsedDocuments() {
+    return List.of(
+      new ParsedDocument(
+        "pd-001",
+        "rm-001",
+        "src-feishu-cc",
+        "售后政策空间快照解析结果",
+        "markdown",
+        "# 保修政策\n\n保修期内维修不收取人工费，收费例外需要关联人为损坏判定规则。",
+        Map.of("language", "zh-CN", "businessDomain", "after_sales"),
+        List.of(new ParsedDocumentSourceRef("src-feishu-cc", "rm-001", "pd-001", "heading", "保修政策/收费例外", "保修期内维修不收取人工费", 0.92)),
+        "feishu_article_v1",
+        "parsed",
+        null,
+        "2026-06-20",
+        "2026-06-20"
+      ),
+      new ParsedDocument(
+        "pd-002",
+        "rm-002",
+        "src-pdf-dishwasher",
+        "洗碗机培训 PDF 解析结果",
+        "markdown",
+        "# 洗碗机培训\n\n排查时先确认电源、水路和错误码。",
+        Map.of("language", "zh-CN", "businessDomain", "product_support"),
+        List.of(new ParsedDocumentSourceRef("src-pdf-dishwasher", "rm-002", "pd-002", "page", "P-8", "先检查电源、水路和错误码", 0.88)),
+        "pdf_manual_article_v1",
+        "parsed",
+        null,
+        "2026-06-18",
+        "2026-06-18"
+      ),
+      new ParsedDocument(
+        "pd-003",
+        "rm-003",
+        "src-excel-fee",
+        "维修收费标准 Excel 解析结果",
+        "structured_table",
+        "| 项目 | 费用 |\n| --- | --- |\n| 上门检测 | 按服务单收费 |",
+        Map.of("language", "zh-CN", "businessDomain", "service_fee"),
+        List.of(new ParsedDocumentSourceRef("src-excel-fee", "rm-003", "pd-003", "row", "Sheet1:R2", "上门检测按服务单收费", 0.9)),
+        "excel_fee_table_v1",
+        "parsed",
+        null,
+        "2026-06-16",
+        "2026-06-16"
+      )
     );
   }
 

@@ -1,5 +1,13 @@
 version: 1
 decisions:
+  - id: D027
+    date: "2026-06-25"
+    title: "Implement approved read-only Source evidence backend contract"
+    rationale: "The user explicitly approved crossing Java, database, migration, and API stop-condition boundaries after IM026 defined the model contract. IM027 implements only read-only Source / Raw Material / Parsed Document persistence and GET APIs, keeping import, upload, parser execution, sync execution, permissions, frontend service wiring, dependencies, and write APIs out of scope."
+    related:
+      - IM027
+      - D026
+      - SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_MODEL_CONTRACT
   - id: D026
     date: "2026-06-25"
     title: "Define Source / Raw Material / Parsed Document read-only model contract before backend implementation"
