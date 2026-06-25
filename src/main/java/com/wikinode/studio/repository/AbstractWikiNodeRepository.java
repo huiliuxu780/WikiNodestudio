@@ -4,6 +4,7 @@ import com.wikinode.studio.model.GraphEdge;
 import com.wikinode.studio.model.GraphNode;
 import com.wikinode.studio.model.IndexStatusSummary;
 import com.wikinode.studio.model.ParsedDocument;
+import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
@@ -46,6 +47,8 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   protected abstract List<ParsedDocument> loadParsedDocuments();
 
   protected abstract List<SourceOperation> loadSourceOperations();
+
+  protected abstract List<ParserProfile> loadParserProfiles();
 
   @Override
   public List<WikiNode> listNodes() {
@@ -158,6 +161,11 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   @Override
   public Optional<SourceOperation> findSourceOperation(String operationId) {
     return loadSourceOperations().stream().filter(operation -> operation.operationId().equals(operationId)).findFirst();
+  }
+
+  @Override
+  public List<ParserProfile> listParserProfiles() {
+    return List.copyOf(loadParserProfiles());
   }
 
   @Override

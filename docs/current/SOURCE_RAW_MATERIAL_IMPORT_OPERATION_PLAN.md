@@ -31,6 +31,8 @@ Implemented by prior increments:
 - IM026: Source / Raw Material / Parsed Document model contract plan.
 - IM027: read-only backend model, migration, seed data, repository, and GET API.
 - IM028: frontend API alignment for existing read-only Source evidence pages.
+- IM030: read-only Source Operation logs, GET APIs, and Source / Raw Material operation log panels.
+- IM031: read-only Parser Profile registry, GET API, and Parser Engine profile panel.
 
 Current product behavior:
 
@@ -370,10 +372,10 @@ IM029 does not:
 
 ## 10. Recommended Next Task
 
-Recommended next task after IM029:
+Recommended next task after IM031:
 
 ```text
-IM030 Source Operation Read-only Logs
+IM032 File Upload Planning
 ```
 
-Start IM030 only after explicit approval, because it touches backend model, DB migration, API, frontend, and operation observability boundaries.
+Start IM032 as planning only unless the user explicitly expands scope. It must not add upload UI, storage writes, backend upload endpoints, parser execution, or dependencies.

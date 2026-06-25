@@ -2,6 +2,7 @@ package com.wikinode.studio.api;
 
 import com.wikinode.studio.model.IndexStatusSummary;
 import com.wikinode.studio.model.ParsedDocument;
+import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
@@ -163,6 +164,11 @@ public class WikiNodeController {
   public SourceOperation getSourceOperation(@PathVariable String operationId) {
     return repository.findSourceOperation(operationId)
       .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Source Operation not found"));
+  }
+
+  @GetMapping("/parser-profiles")
+  public List<ParserProfile> listParserProfiles() {
+    return repository.listParserProfiles();
   }
 
   @GetMapping("/index-status")

@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LinkList } from "@/components/wiki/link-list"
 import { useAsyncData } from "@/hooks/use-async-data"
+import { listParserProfiles } from "@/services/parser-profile-api-service"
 import {
   getRawMaterial,
   getSource,
@@ -26,6 +27,7 @@ import {
   listSourceOperationsForRawMaterial,
   listSourceOperationsForSource,
 } from "@/services/source-api-service"
+import type { ParserProfile } from "@/types/parser-profile"
 import type { ParsedDocument, RawMaterial } from "@/types/raw-material"
 import type { SourceItem } from "@/types/source"
 import type { SourceOperation } from "@/types/source-operation"
@@ -522,6 +524,47 @@ export function SystemVectorStorePage() {
   )
 }
 
+export function ParserEnginePage() {
+  const {
+    data: parserProfiles,
+    error,
+    isLoading,
+    reload,
+  } = useAsyncData(listParserProfiles, [])
+
+  return (
+    <PageScaffold title="解析引擎" description="查看允许使用的 Parser Profile；当前页面只读，不运行解析器。">
+      <ApiErrorNotice error={error} onRetry={reload} />
+      <Card>
+        <CardHeader>
+          <h2 className="text-base font-medium leading-snug">Parser Profile 只读注册表</h2>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <p className="text-muted-foreground">只展示允许使用的解析 Profile，不会运行解析器或加载插件。</p>
+          {isLoading ? (
+            <LoadingBlock text="正在加载 Parser Profile..." />
+          ) : parserProfiles.length === 0 ? (
+            <div className="rounded-md border border-dashed p-3 text-muted-foreground">
+              暂无 Parser Profile。解析执行、插件加载和上传不在当前范围内。
+            </div>
+          ) : (
+            <div className="grid gap-3 lg:grid-cols-2">
+              {parserProfiles.map((profile) => (
+                <ParserProfileCard key={profile.parserProfile} profile={profile} />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      <SimpleList items={[
+        "Parser Profile 是解析策略 allowlist，不是可执行插件入口。",
+        "Raw Material 需要匹配 Profile 后才可能进入后续已批准的解析流程。",
+        "当前不提供运行解析、加载插件、上传文件或重试操作。",
+      ]} />
+    </PageScaffold>
+  )
+}
+
 export function PageScaffold({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -636,6 +679,33 @@ function SourceOperationLogPanel({ operations, isLoading }: { operations: Source
         ))}
       </CardContent>
     </Card>
+  )
+}
+
+function ParserProfileCard({ profile }: { profile: ParserProfile }) {
+  return (
+    <div className="rounded-md border p-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge variant="outline">{profile.version}</Badge>
+        <Badge variant={profile.enabled ? "secondary" : "outline"}>{profile.enabled ? "已启用" : "已停用"}</Badge>
+      </div>
+      <div className="mt-2 font-medium">{profile.displayName}</div>
+      <div className="mt-1 text-xs text-muted-foreground">{profile.parserProfile}</div>
+      <div className="mt-3 grid gap-2 text-sm md:grid-cols-3">
+        <div>
+          <div className="text-xs text-muted-foreground">Raw Material</div>
+          <div className="mt-1">{profile.supportedRawMaterialTypes.map((type) => labelFromMap(rawMaterialTypeLabels, type)).join("、")}</div>
+        </div>
+        <div>
+          <div className="text-xs text-muted-foreground">Source</div>
+          <div className="mt-1">{profile.supportedSourceTypes.map((type) => labelFromMap(sourceTypeLabels, type)).join("、")}</div>
+        </div>
+        <div>
+          <div className="text-xs text-muted-foreground">输出格式</div>
+          <div className="mt-1">{labelFromMap(contentFormatLabels, profile.contentFormat)}</div>
+        </div>
+      </div>
+    </div>
   )
 }
 

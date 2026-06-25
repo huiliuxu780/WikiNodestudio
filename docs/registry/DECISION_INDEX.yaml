@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D031
+    date: "2026-06-25"
+    title: "Add read-only Parser Profile registry before parser execution"
+    rationale: "The user approved IM031 after IM030 merged. The implementation adds seed-backed Parser Profile registry data, GET-only API, and a read-only Parser Engine UI panel so future parser execution can depend on allowlisted profiles. It does not run parsers, load parser plugins, upload files, add dependencies, or add write APIs."
+    related:
+      - IM031
+      - D030
+      - SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN
+      - PARSER_PROFILE_READONLY_REGISTRY
   - id: D030
     date: "2026-06-25"
     title: "Add read-only Source Operation logs before execution capabilities"

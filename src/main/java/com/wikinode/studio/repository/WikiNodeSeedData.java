@@ -2,6 +2,7 @@ package com.wikinode.studio.repository;
 
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParsedDocumentSourceRef;
+import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.SourceItem;
 import com.wikinode.studio.model.SourceOperation;
@@ -124,6 +125,38 @@ final class WikiNodeSeedData {
         "2026-06-12T18:22:00+08:00",
         "Parser profile rejected this Raw Material in the read-only seed baseline.",
         "Unsupported document structure in seed evidence."
+      )
+    );
+  }
+
+  static List<ParserProfile> parserProfiles() {
+    return List.of(
+      new ParserProfile(
+        "feishu_article_v1",
+        "飞书文章解析 Profile",
+        List.of("document_snapshot"),
+        List.of("feishu"),
+        "markdown",
+        true,
+        "v1"
+      ),
+      new ParserProfile(
+        "pdf_manual_article_v1",
+        "PDF 手册解析 Profile",
+        List.of("file"),
+        List.of("pdf"),
+        "markdown",
+        true,
+        "v1"
+      ),
+      new ParserProfile(
+        "excel_fee_table_v1",
+        "Excel 收费表解析 Profile",
+        List.of("file", "table_extract"),
+        List.of("excel"),
+        "structured_table",
+        true,
+        "v1"
       )
     );
   }

@@ -133,6 +133,15 @@ if (JSON.stringify(sourceOperationDetail).includes("credential") || JSON.stringi
   throw new Error("GET /api/source-operations/{id}: FAIL response exposed forbidden internals")
 }
 
+const parserProfiles = await request("GET /api/parser-profiles", "/parser-profiles")
+if (!Array.isArray(parserProfiles) || !parserProfiles.some((profile) => profile.parserProfile === "feishu_article_v1" && profile.enabled === true)) {
+  throw new Error("GET /api/parser-profiles: FAIL expected Parser Profile registry")
+}
+
+if (JSON.stringify(parserProfiles).includes("credential") || JSON.stringify(parserProfiles).includes("secret") || JSON.stringify(parserProfiles).includes("plugin") || JSON.stringify(parserProfiles).includes("chunk")) {
+  throw new Error("GET /api/parser-profiles: FAIL response exposed forbidden internals")
+}
+
 const created = await request("POST /api/wiki-nodes", "/wiki-nodes", {
   method: "POST",
   body: JSON.stringify({
