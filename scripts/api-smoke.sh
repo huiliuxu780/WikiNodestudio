@@ -187,6 +187,26 @@ if (!Array.isArray(generatedScopedSuggestions) || !generatedScopedSuggestions.so
   throw new Error("GET /api/parsed-documents/{id}/draft-wikinode-suggestions: FAIL expected generated suggestion")
 }
 
+const rejectedSuggestion = await request("POST /api/draft-wikinode-suggestions/{id}/reject", "/draft-wikinode-suggestions/sug-002/reject", {
+  method: "POST",
+  body: JSON.stringify({
+    reviewNote: "API smoke 确认暂不进入 WikiNode。",
+  }),
+})
+
+if (rejectedSuggestion.suggestionId !== "sug-002" || !["rejected", "skipped"].includes(rejectedSuggestion.status)) {
+  throw new Error("POST /api/draft-wikinode-suggestions/{id}/reject: FAIL expected rejected or skipped result")
+}
+
+if (JSON.stringify(rejectedSuggestion).includes("nodeId") || JSON.stringify(rejectedSuggestion).includes("indexSegmentId") || JSON.stringify(rejectedSuggestion).includes("chunk")) {
+  throw new Error("POST /api/draft-wikinode-suggestions/{id}/reject: FAIL response exposed forbidden internals")
+}
+
+const rejectedSuggestionDetail = await request("GET /api/draft-wikinode-suggestions/{id}", "/draft-wikinode-suggestions/sug-002")
+if (rejectedSuggestionDetail.status !== "rejected" || rejectedSuggestionDetail.reviewNote !== "API smoke 确认暂不进入 WikiNode。") {
+  throw new Error("GET /api/draft-wikinode-suggestions/{id}: FAIL expected rejected suggestion")
+}
+
 const created = await request("POST /api/wiki-nodes", "/wiki-nodes", {
   method: "POST",
   body: JSON.stringify({

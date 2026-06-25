@@ -217,6 +217,49 @@ class WikiNodeApiContractTest {
   }
 
   @Test
+  void rejectsOneDraftWikiNodeSuggestionWithoutCreatingWikiNode() throws Exception {
+    String body = """
+      {
+        "reviewNote": "培训资料暂不进入 WikiNode。"
+      }
+      """;
+
+    HttpResponse<String> reject = post("/api/draft-wikinode-suggestions/sug-002/reject", body);
+    HttpResponse<String> detail = get("/api/draft-wikinode-suggestions/sug-002");
+
+    assertThat(reject.statusCode()).isEqualTo(200);
+    assertThat(reject.body()).contains("\"suggestionId\":\"sug-002\"");
+    assertThat(reject.body()).contains("\"status\":\"rejected\"");
+    assertThat(reject.body()).contains("\"summary\":\"已拒绝 WikiNode 建议。\"");
+    assertThat(reject.body()).contains("\"reviewNote\":\"培训资料暂不进入 WikiNode。\"");
+    assertThat(reject.body()).doesNotContain("\"nodeId\"");
+    assertThat(reject.body()).doesNotContain("\"indexSegmentId\"");
+    assertThat(reject.body()).doesNotContain("\"chunk\"");
+
+    assertThat(detail.statusCode()).isEqualTo(200);
+    assertThat(detail.body()).contains("\"status\":\"rejected\"");
+    assertThat(detail.body()).contains("\"reviewNote\":\"培训资料暂不进入 WikiNode。\"");
+    assertThat(detail.body()).contains("\"sourceRefs\"");
+    assertThat(detail.body()).contains("\"relationCandidates\"");
+    assertThat(detail.body()).doesNotContain("\"published\":true");
+    assertThat(detail.body()).doesNotContain("\"indexSegmentId\"");
+  }
+
+  @Test
+  void rejectsDraftWikiNodeSuggestionRequiresReviewNote() throws Exception {
+    String body = """
+      {
+        "reviewNote": " "
+      }
+      """;
+
+    HttpResponse<String> reject = post("/api/draft-wikinode-suggestions/sug-001/reject", body);
+
+    assertThat(reject.statusCode()).isEqualTo(400);
+    assertThat(reject.body()).contains("拒绝原因不能为空");
+  }
+
+  @Test
   void retrievalReturnsWikiNodeObjectsNotChunks() throws Exception {
     String body = """
       {

@@ -175,11 +175,11 @@ test.describe("Draft WikiNode Suggestion read-only review", () => {
     await expect(page.getByRole("button", { name: "批量转换" })).toHaveCount(0)
   })
 
-  test("renders suggestion detail with explicit evidence boundaries and no write actions", async ({ page }) => {
+  test("renders suggestion detail with explicit evidence boundaries and no accept actions", async ({ page }) => {
     await page.goto("/draft-wikinode-suggestions/sug-api-only")
 
     await expect(page.getByRole("heading", { name: "WikiNode 建议详情" })).toBeVisible()
-    await expect(page.getByText("只读查看 Draft WikiNode Suggestion")).toBeVisible()
+    await expect(page.getByText(/查看 Draft WikiNode Suggestion，并允许单条拒绝建议/)).toBeVisible()
     await expect(page.getByText("API Only WikiNode 建议").first()).toBeVisible()
     await expect(page.getByText("Source src-api-only", { exact: true }).first()).toBeVisible()
     await expect(page.getByText("Raw Material rm-api-only", { exact: true }).first()).toBeVisible()
@@ -189,8 +189,47 @@ test.describe("Draft WikiNode Suggestion read-only review", () => {
     await expect(page.getByText("不是已采纳的 WikiNode，不影响 Retrieval API 结果。")).toBeVisible()
 
     await expect(page.getByRole("button", { name: "采纳" })).toHaveCount(0)
-    await expect(page.getByRole("button", { name: "拒绝" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "拒绝建议" })).toBeVisible()
     await expect(page.getByRole("button", { name: "生成建议" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "发布" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "索引" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "批量转换" })).toHaveCount(0)
+  })
+
+  test("rejects one suggestion with a review note without creating WikiNode", async ({ page }) => {
+    let activeSuggestion = { ...apiSuggestion }
+    await page.route("**/api/draft-wikinode-suggestions/sug-api-only/reject", async (route) => {
+      expect(route.request().method()).toBe("POST")
+      const payload = await route.request().postDataJSON()
+      activeSuggestion = {
+        ...activeSuggestion,
+        status: "rejected",
+        reviewNote: payload.reviewNote,
+        updatedAt: "2026-06-25",
+      }
+      return route.fulfill({
+        json: {
+          suggestionId: "sug-api-only",
+          status: "rejected",
+          summary: "已拒绝 WikiNode 建议。",
+          reviewNote: payload.reviewNote,
+        },
+      })
+    })
+    await page.route("**/api/draft-wikinode-suggestions/sug-api-only", async (route) => {
+      return route.fulfill({ json: activeSuggestion })
+    })
+
+    await page.goto("/draft-wikinode-suggestions/sug-api-only")
+
+    await page.getByLabel("拒绝原因").fill("证据不足，暂不进入 WikiNode。")
+    await page.getByRole("button", { name: "拒绝建议" }).click()
+
+    await expect(page.getByText("已拒绝 WikiNode 建议。")).toBeVisible()
+    await expect(page.getByText("当前状态为已拒绝，不能再次拒绝。")).toBeVisible()
+    await expect(page.getByText("证据不足，暂不进入 WikiNode。")).toBeVisible()
+    await expect(page.getByText("拒绝只会更新当前建议的审核状态，不会创建 WikiNode、发布、索引或批量转换。")).toBeVisible()
+    await expect(page.getByRole("button", { name: "采纳" })).toHaveCount(0)
     await expect(page.getByRole("button", { name: "发布" })).toHaveCount(0)
     await expect(page.getByRole("button", { name: "索引" })).toHaveCount(0)
     await expect(page.getByRole("button", { name: "批量转换" })).toHaveCount(0)

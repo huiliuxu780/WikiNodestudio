@@ -33,3 +33,14 @@ export type DraftWikiNodeSuggestion = {
   createdAt: string
   updatedAt: string
 }
+
+export type DraftWikiNodeSuggestionRejectRequest = {
+  reviewNote: string
+}
+
+export type DraftWikiNodeSuggestionReviewResult = {
+  suggestionId: string
+  status: "rejected" | "skipped" | "failed"
+  summary: string
+  reviewNote?: string | null
+}
