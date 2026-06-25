@@ -1,5 +1,15 @@
 version: 1
 decisions:
+  - id: D035
+    date: "2026-06-25"
+    title: "Plan Draft WikiNode Suggestion read-only contract before implementation"
+    rationale: "IM035 decides that Draft WikiNode Suggestion should be treated as a first-class future read-only model and review surface before any generation, accept/reject, or WikiNode creation workflow exists. It defines candidate fields, relationships, read-only API candidates, Source Operation coupling, duplicate/conflict visibility, deferred write APIs, migration direction, and stop conditions while keeping Java, database, API, frontend, suggestion generation, accept/reject, WikiNode creation, publishing, indexing, vector sync, parser execution, permissions, dependencies, and external AI integration out of scope."
+    related:
+      - IM035
+      - D034
+      - DRAFT_WIKINODE_SUGGESTION_READONLY_CONTRACT_PLAN
+      - DRAFT_WIKINODE_SUGGESTION_PLAN
+      - SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN
   - id: D034
     date: "2026-06-25"
     title: "Plan Draft WikiNode suggestion boundaries before WikiNode creation"

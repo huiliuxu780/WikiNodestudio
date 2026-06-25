@@ -358,3 +358,5 @@ IM035 Draft WikiNode Suggestion Read-only Contract Planning
 ```
 
 IM035 should remain planning-only unless the user explicitly expands scope. It should decide whether suggestions require a first-class persistence model and read-only review surface before any write endpoint, accept action, or WikiNode creation path is implemented.
+
+Detailed follow-up plan: `docs/current/DRAFT_WIKINODE_SUGGESTION_READONLY_CONTRACT_PLAN.md`.
