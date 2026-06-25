@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import {
   Table,
   TableBody,
@@ -22,7 +23,7 @@ export function IndexSegmentTable({ segments }: { segments: IndexSegment[] }) {
   const [objectType, setObjectType] = useState("all")
   const [indexStatus, setIndexStatus] = useState("all")
   const [segmentType, setSegmentType] = useState("all")
-  const [selectedSegmentId, setSelectedSegmentId] = useState(segments[0]?.segmentId)
+  const [previewSegment, setPreviewSegment] = useState<IndexSegment | undefined>()
 
   const objectTypeOptions = useMemo(() => getUniqueValues(segments.map((segment) => segment.objectType)), [segments])
   const indexStatusOptions = useMemo(() => getUniqueValues(segments.map((segment) => segment.indexStatus)), [segments])
@@ -54,11 +55,8 @@ export function IndexSegmentTable({ segments }: { segments: IndexSegment[] }) {
     })
   }, [indexStatus, objectType, query, segmentType, segments])
 
-  const selectedSegment =
-    filteredSegments.find((segment) => segment.segmentId === selectedSegmentId) ?? filteredSegments[0]
-
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+    <>
       <div className="flex min-w-0 flex-col gap-3">
         <div className="grid gap-3 rounded-lg border bg-background p-3 md:grid-cols-[minmax(220px,1fr)_180px_180px_180px_auto]">
           <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
@@ -90,7 +88,7 @@ export function IndexSegmentTable({ segments }: { segments: IndexSegment[] }) {
         </div>
 
         <div className="overflow-hidden rounded-lg border">
-          <Table>
+          <Table className="min-w-[1120px]">
             <TableHeader>
               <TableRow>
                 <TableHead>片段 ID</TableHead>
@@ -102,6 +100,7 @@ export function IndexSegmentTable({ segments }: { segments: IndexSegment[] }) {
                 <TableHead>索引状态</TableHead>
                 <TableHead>向量文档 ID</TableHead>
                 <TableHead>召回次数</TableHead>
+                <TableHead>操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -109,28 +108,34 @@ export function IndexSegmentTable({ segments }: { segments: IndexSegment[] }) {
                 <TableRow
                   key={segment.segmentId}
                   data-testid="index-segment-row"
-                  className="cursor-pointer"
-                  onClick={() => setSelectedSegmentId(segment.segmentId)}
                 >
                   <TableCell className="font-medium">{segment.segmentId}</TableCell>
                   <TableCell>{segment.nodeTitle}</TableCell>
                   <TableCell>{labelFromMap(objectTypeLabels, segment.objectType ?? "Article")}</TableCell>
                   <TableCell>{labelFromMap(subtypeLabels, segment.subtype ?? commonLabels.none)}</TableCell>
                   <TableCell><Badge variant="outline">{segment.segmentType}</Badge></TableCell>
-                  <TableCell className="max-w-sm text-muted-foreground">{segment.contentPreview}</TableCell>
+                  <TableCell className="max-w-[340px] truncate text-muted-foreground">{segment.contentPreview}</TableCell>
                   <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <IndexStatusBadge status={segment.indexStatus} />
-                      <span className="text-xs text-muted-foreground">{indexStatusLabels[segment.indexStatus]}</span>
-                    </div>
+                    <IndexStatusBadge status={segment.indexStatus} />
                   </TableCell>
                   <TableCell>{segment.vectorDocId ?? "-"}</TableCell>
                   <TableCell>{segment.retrievalHits}</TableCell>
+                  <TableCell>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      aria-label={`查看 ${segment.segmentId}`}
+                      onClick={() => setPreviewSegment(segment)}
+                    >
+                      查看
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
               {!filteredSegments.length ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="py-8 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={10} className="py-8 text-center text-sm text-muted-foreground">
                     暂无符合当前筛选条件的 Index Segment。
                   </TableCell>
                 </TableRow>
@@ -140,18 +145,28 @@ export function IndexSegmentTable({ segments }: { segments: IndexSegment[] }) {
         </div>
       </div>
 
-      <SegmentPreview segment={selectedSegment} />
-    </div>
+      <Sheet open={Boolean(previewSegment)} onOpenChange={(open) => {
+        if (!open) setPreviewSegment(undefined)
+      }}>
+        <SheetContent className="w-[min(760px,92vw)] overflow-y-auto sm:max-w-2xl">
+          <SheetHeader>
+            <SheetTitle>片段详情</SheetTitle>
+            <SheetDescription>
+              {previewSegment ? `${previewSegment.segmentId} · ${previewSegment.nodeTitle}` : "查看 Index Segment 证据"}
+            </SheetDescription>
+          </SheetHeader>
+          <div className="px-4 pb-4">
+            <SegmentPreview segment={previewSegment} />
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
   )
 }
 
 function SegmentPreview({ segment }: { segment?: IndexSegment }) {
   if (!segment) {
-    return (
-      <Card data-testid="index-segment-preview">
-        <CardContent className="p-4 text-sm text-muted-foreground">请选择一个 Index Segment 查看召回证据。</CardContent>
-      </Card>
-    )
+    return null
   }
 
   return (
@@ -160,12 +175,6 @@ function SegmentPreview({ segment }: { segment?: IndexSegment }) {
         <CardTitle className="text-base">片段预览</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-sm">
-        <div className="rounded-md border bg-muted/20 p-3 text-muted-foreground">
-          父级 WikiNode / Knowledge Object 是业务可管理对象；这里展示进入同步前的 Index Segment 证据。
-        </div>
-        <div className="rounded-md border bg-muted/20 p-3 text-muted-foreground">
-          当前只展示本地验收数据，不执行 embedding 或真实向量库同步。
-        </div>
         <InfoRow label="片段标题" value={segment.title ?? segment.segmentId} />
         <InfoRow label="Index Segment 来源 WikiNode" value={segment.nodeTitle} />
         <InfoRow label="父级 WikiNode / Knowledge Object" value={segment.nodeTitle} />
