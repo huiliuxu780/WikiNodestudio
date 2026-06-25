@@ -5,10 +5,15 @@ test.describe("Index Segment Knowledge Object experience", () => {
     await page.goto("/index-segments")
 
     await expect(page.getByText("平台管理的是 WikiNode 发布前的 Index Segment，不管理外部向量库内部片段。")).toBeVisible()
+    await expect(page.getByTestId("index-segment-preview")).toHaveCount(0)
+    await expect(page.locator("main").last()).not.toContainText("当前只展示本地验收数据")
+
+    await page.getByRole("button", { name: "查看 SEG-001" }).click()
+    await expect(page.getByRole("dialog", { name: "片段详情" })).toBeVisible()
     await expect(page.getByTestId("index-segment-preview")).toContainText("Index Segment 来源 WikiNode")
     await expect(page.getByTestId("index-segment-preview")).toContainText("内容证据")
     await expect(page.getByTestId("index-segment-preview")).toContainText("来源证据范围")
-    await expect(page.getByTestId("index-segment-preview")).toContainText("当前只展示本地验收数据，不执行 embedding 或真实向量库同步。")
+    await expect(page.getByTestId("index-segment-preview")).not.toContainText("当前只展示本地验收数据")
     await expect(page.locator("main").last()).not.toContainText(/Chunk Management|Vector DB Management|raw chunk/i)
 
     await page.goto("/index-segments/strategy")
@@ -31,11 +36,15 @@ test.describe("Index Segment Knowledge Object experience", () => {
 
     await page.getByLabel("搜索 Index Segment").fill("WM14U")
     await expect(page.getByTestId("index-segment-row").filter({ hasText: "西门子 WM14U 洗衣机" }).first()).toBeVisible()
+    await expect(page.getByTestId("index-segment-preview")).toHaveCount(0)
+
+    await page.getByTestId("index-segment-row").filter({ hasText: "西门子 WM14U 洗衣机" }).first().getByRole("button", { name: /查看 SEG-/ }).click()
     await expect(page.getByTestId("index-segment-preview")).toContainText("父级 WikiNode / Knowledge Object")
     await expect(page.getByTestId("index-segment-preview")).toContainText("产品知识")
     await expect(page.getByTestId("index-segment-preview")).toContainText("产品型号")
     await expect(page.getByTestId("index-segment-preview")).toContainText("db_product_master_v1")
     await expect(page.getByTestId("index-segment-preview")).toContainText("来源类型 数据库")
+    await page.keyboard.press("Escape")
 
     await page.getByLabel("Knowledge Object 类型").selectOption("Product")
     await expect(page.getByTestId("index-segment-row").filter({ hasText: "西门子 WM14U 洗衣机" }).first()).toBeVisible()
