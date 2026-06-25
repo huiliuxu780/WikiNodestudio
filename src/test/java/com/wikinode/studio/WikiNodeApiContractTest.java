@@ -260,6 +260,70 @@ class WikiNodeApiContractTest {
   }
 
   @Test
+  void retriesOneDraftWikiNodeSuggestionAndReplacesTheOldSuggestion() throws Exception {
+    String body = """
+      {
+        "reviewNote": "当前建议范围不准，基于同一 Parsed Document 重新生成。"
+      }
+      """;
+
+    HttpResponse<String> retry = post("/api/draft-wikinode-suggestions/sug-002/retry", body);
+    HttpResponse<String> oldDetail = get("/api/draft-wikinode-suggestions/sug-002");
+    HttpResponse<String> newDetail = get("/api/draft-wikinode-suggestions/sug-pd-002-retry-1");
+
+    assertThat(retry.statusCode()).isEqualTo(200);
+    assertThat(retry.body()).contains("\"suggestionId\":\"sug-002\"");
+    assertThat(retry.body()).contains("\"status\":\"superseded\"");
+    assertThat(retry.body()).contains("\"replacementSuggestionId\":\"sug-pd-002-retry-1\"");
+    assertThat(retry.body()).contains("\"replacementStatus\":\"draft\"");
+    assertThat(retry.body()).contains("\"summary\":\"已重新生成 WikiNode 建议，旧建议已标记为被新建议替代。\"");
+    assertThat(retry.body()).doesNotContain("\"nodeId\"");
+    assertThat(retry.body()).doesNotContain("\"indexSegmentId\"");
+    assertThat(retry.body()).doesNotContain("\"chunk\"");
+
+    assertThat(oldDetail.statusCode()).isEqualTo(200);
+    assertThat(oldDetail.body()).contains("\"status\":\"superseded\"");
+    assertThat(oldDetail.body()).contains("\"reviewNote\":\"当前建议范围不准，基于同一 Parsed Document 重新生成。\"");
+    assertThat(oldDetail.body()).contains("\"matchedSuggestionIds\":[\"sug-pd-002-retry-1\"]");
+
+    assertThat(newDetail.statusCode()).isEqualTo(200);
+    assertThat(newDetail.body()).contains("\"suggestionId\":\"sug-pd-002-retry-1\"");
+    assertThat(newDetail.body()).contains("\"status\":\"draft\"");
+    assertThat(newDetail.body()).contains("\"matchedSuggestionIds\":[\"sug-002\"]");
+    assertThat(newDetail.body()).contains("\"operationId\":\"op-pd-002-retry-");
+    assertThat(newDetail.body()).contains("\"sourceRefs\"");
+    assertThat(newDetail.body()).contains("\"relationCandidates\"");
+    assertThat(newDetail.body()).doesNotContain("\"published\":true");
+    assertThat(newDetail.body()).doesNotContain("\"indexSegmentId\"");
+  }
+
+  @Test
+  void skipsDraftWikiNodeSuggestionRetryAfterAccept() throws Exception {
+    String acceptBody = """
+      {
+        "reviewNote": "确认进入草稿 WikiNode，后续人工编辑。"
+      }
+      """;
+    String retryBody = """
+      {
+        "reviewNote": "已采纳后不允许重新生成。"
+      }
+      """;
+
+    HttpResponse<String> accept = post("/api/draft-wikinode-suggestions/sug-002/accept", acceptBody);
+    HttpResponse<String> retry = post("/api/draft-wikinode-suggestions/sug-002/retry", retryBody);
+
+    assertThat(accept.statusCode()).isEqualTo(200);
+    assertThat(retry.statusCode()).isEqualTo(200);
+    assertThat(retry.body()).contains("\"suggestionId\":\"sug-002\"");
+    assertThat(retry.body()).contains("\"status\":\"skipped\"");
+    assertThat(retry.body()).contains("\"summary\":\"已采纳的 WikiNode 建议不能重新生成。\"");
+    assertThat(retry.body()).contains("\"replacementSuggestionId\":null");
+    assertThat(retry.body()).doesNotContain("\"indexSegmentId\"");
+    assertThat(retry.body()).doesNotContain("\"chunk\"");
+  }
+
+  @Test
   void acceptsOneDraftWikiNodeSuggestionAsDraftWikiNodeWithoutPublishingOrIndexing() throws Exception {
     String body = """
       {

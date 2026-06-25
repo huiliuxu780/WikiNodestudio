@@ -14,6 +14,8 @@ import com.wikinode.studio.model.DraftWikiNodeSuggestionAcceptResult;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationRequest;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationResult;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionRejectRequest;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionRetryRequest;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionRetryResult;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionReviewResult;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
@@ -407,6 +409,99 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   }
 
   @Override
+  public DraftWikiNodeSuggestionRetryResult retryDraftWikiNodeSuggestion(
+    String suggestionId,
+    DraftWikiNodeSuggestionRetryRequest request
+  ) {
+    String reviewNote = request == null ? "" : Optional.ofNullable(request.reviewNote()).orElse("").trim();
+    if (reviewNote.isBlank()) {
+      throw new IllegalArgumentException("重新生成原因不能为空。");
+    }
+
+    DraftWikiNodeSuggestion suggestion = findDraftWikiNodeSuggestion(suggestionId)
+      .orElseThrow(() -> new IllegalArgumentException("未找到 WikiNode 建议。"));
+    if ("accepted".equals(suggestion.status())) {
+      return new DraftWikiNodeSuggestionRetryResult(
+        suggestion.suggestionId(),
+        "skipped",
+        "已采纳的 WikiNode 建议不能重新生成。",
+        suggestion.reviewNote(),
+        null,
+        null,
+        null
+      );
+    }
+    if ("superseded".equals(suggestion.status())) {
+      String replacementSuggestionId = suggestion.matchedSuggestionIds().isEmpty() ? null : suggestion.matchedSuggestionIds().getFirst();
+      return new DraftWikiNodeSuggestionRetryResult(
+        suggestion.suggestionId(),
+        "skipped",
+        "该 WikiNode 建议已被新建议替代。",
+        suggestion.reviewNote(),
+        replacementSuggestionId,
+        replacementSuggestionId == null ? null : "draft",
+        null
+      );
+    }
+
+    ParsedDocument parsedDocument = findParsedDocument(suggestion.parsedDocumentId())
+      .orElseThrow(() -> new IllegalArgumentException("未找到可用于重新生成建议的 Parsed Document。"));
+    if (!"parsed".equals(parsedDocument.parseStatus())) {
+      return new DraftWikiNodeSuggestionRetryResult(
+        suggestion.suggestionId(),
+        "skipped",
+        "Parsed Document 尚未解析完成，不能重新生成 WikiNode 建议。",
+        suggestion.reviewNote(),
+        null,
+        null,
+        null
+      );
+    }
+
+    String operationId = retryOperationIdFor(parsedDocument);
+    DraftWikiNodeSuggestion replacement = buildReplacementDraftWikiNodeSuggestion(parsedDocument, operationId, suggestion);
+    DraftWikiNodeSuggestion superseded = new DraftWikiNodeSuggestion(
+      suggestion.suggestionId(),
+      suggestion.parsedDocumentId(),
+      suggestion.rawMaterialId(),
+      suggestion.sourceId(),
+      suggestion.operationId(),
+      suggestion.title(),
+      suggestion.objectType(),
+      suggestion.subtype(),
+      suggestion.contentDraft(),
+      suggestion.metadataDraft(),
+      suggestion.sourceRefs(),
+      suggestion.relationCandidates(),
+      suggestion.confidence(),
+      "superseded",
+      reviewNote,
+      suggestion.conflictStatus(),
+      suggestion.conflictReasons(),
+      suggestion.matchedWikiNodeIds(),
+      List.of(replacement.suggestionId()),
+      suggestion.sourceRefCount(),
+      suggestion.relationCandidateCount(),
+      suggestion.createdAt(),
+      today()
+    );
+
+    insertSourceOperation(sourceOperation(parsedDocument, operationId, "succeeded", "已重新生成 WikiNode 建议。", null));
+    insertDraftWikiNodeSuggestion(superseded);
+    insertDraftWikiNodeSuggestion(replacement);
+
+    return new DraftWikiNodeSuggestionRetryResult(
+      superseded.suggestionId(),
+      superseded.status(),
+      "已重新生成 WikiNode 建议，旧建议已标记为被新建议替代。",
+      superseded.reviewNote(),
+      replacement.suggestionId(),
+      replacement.status(),
+      operationId
+    );
+  }
+
+  @Override
   public WikiGraphOverview graphOverview() {
     return new WikiGraphOverview(
       listNodes().stream().map(this::graphNode).toList(),
@@ -493,6 +588,45 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       List.of(),
       List.of(),
       parsedDocument.sourceRefs().size(),
+      relationCandidates.size(),
+      today(),
+      today()
+    );
+  }
+
+  private DraftWikiNodeSuggestion buildReplacementDraftWikiNodeSuggestion(
+    ParsedDocument parsedDocument,
+    String operationId,
+    DraftWikiNodeSuggestion sourceSuggestion
+  ) {
+    DraftWikiNodeSuggestion suggestion = buildDraftWikiNodeSuggestion(parsedDocument, operationId);
+    List<ParsedDocumentSourceRef> sourceRefs = suggestion.sourceRefs().isEmpty()
+      ? sourceSuggestion.sourceRefs()
+      : suggestion.sourceRefs();
+    List<DraftWikiNodeRelationCandidate> relationCandidates = suggestion.relationCandidates().isEmpty()
+      ? sourceSuggestion.relationCandidates()
+      : suggestion.relationCandidates();
+    return new DraftWikiNodeSuggestion(
+      retrySuggestionIdFor(parsedDocument),
+      suggestion.parsedDocumentId(),
+      suggestion.rawMaterialId(),
+      suggestion.sourceId(),
+      suggestion.operationId(),
+      suggestion.title(),
+      suggestion.objectType(),
+      suggestion.subtype(),
+      suggestion.contentDraft(),
+      suggestion.metadataDraft(),
+      sourceRefs,
+      relationCandidates,
+      suggestion.confidence(),
+      suggestion.status(),
+      null,
+      suggestion.conflictStatus(),
+      suggestion.conflictReasons(),
+      suggestion.matchedWikiNodeIds(),
+      List.of(sourceSuggestion.suggestionId()),
+      sourceRefs.size(),
       relationCandidates.size(),
       today(),
       today()
@@ -608,8 +742,20 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
     return "op-%s-suggest-%s".formatted(parsedDocument.parsedDocumentId(), System.currentTimeMillis());
   }
 
+  private String retryOperationIdFor(ParsedDocument parsedDocument) {
+    return "op-%s-retry-%s".formatted(parsedDocument.parsedDocumentId(), System.currentTimeMillis());
+  }
+
   private String suggestionIdFor(ParsedDocument parsedDocument) {
     return "sug-%s".formatted(parsedDocument.parsedDocumentId());
+  }
+
+  private String retrySuggestionIdFor(ParsedDocument parsedDocument) {
+    long retryCount = loadDraftWikiNodeSuggestions().stream()
+      .filter(suggestion -> parsedDocument.parsedDocumentId().equals(suggestion.parsedDocumentId()))
+      .filter(suggestion -> suggestion.suggestionId().startsWith("sug-%s-retry-".formatted(parsedDocument.parsedDocumentId())))
+      .count();
+    return "sug-%s-retry-%d".formatted(parsedDocument.parsedDocumentId(), retryCount + 1);
   }
 
   private String suggestedTitle(ParsedDocument parsedDocument) {

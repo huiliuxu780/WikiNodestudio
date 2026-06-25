@@ -14,6 +14,7 @@ import { WikiNodeListPage } from "@/pages/wiki-node-list-page"
 import {
   BacklinksPage,
   DraftWikiNodeSuggestionDetailPage,
+  DraftWikiNodeSuggestionReviewConsolePage,
   GenericSkeletonPage,
   IndexSegmentListPage,
   KnowledgeBaseDetailPage,
@@ -55,6 +56,7 @@ export const router = createBrowserRouter([
       { path: "/raw-materials", element: <RawMaterialListPage /> },
       { path: "/raw-materials/:rawMaterialId", element: <RawMaterialDetailPage /> },
       { path: "/raw-materials/:rawMaterialId/parsed-result", element: <ParsedResultPreviewPage /> },
+      { path: "/draft-wikinode-suggestions", element: <DraftWikiNodeSuggestionReviewConsolePage /> },
       { path: "/draft-wikinode-suggestions/:suggestionId", element: <DraftWikiNodeSuggestionDetailPage /> },
       { path: "/backlinks", element: <BacklinksPage /> },
       { path: "/impact-analysis", element: <GenericSkeletonPage title="影响分析" /> },

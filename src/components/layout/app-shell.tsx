@@ -25,6 +25,7 @@ const routeLabels: Record<string, string> = {
   "retrieval-test": "检索测试",
   sources: "知识来源",
   "raw-materials": "原始材料",
+  "draft-wikinode-suggestions": "WikiNode 建议",
   "index-segments": "Index Segment",
   publishing: "发布与索引",
   "index-status": "索引状态",

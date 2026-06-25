@@ -12,6 +12,8 @@ import com.wikinode.studio.model.DraftWikiNodeSuggestionAcceptResult;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationRequest;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationResult;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionRejectRequest;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionRetryRequest;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionRetryResult;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionReviewResult;
 import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.WikiNode;
@@ -377,6 +379,68 @@ class JdbcWikiNodeRepositoryTest {
     ))
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("拒绝原因不能为空");
+  }
+
+  @Test
+  void retriesDraftWikiNodeSuggestionAndKeepsReplacementEvidence() {
+    JdbcTemplate jdbcTemplate = jdbcTemplateWithDraftWikiNodeSuggestions();
+    JdbcWikiNodeRepository repository = new JdbcWikiNodeRepository(jdbcTemplate);
+
+    DraftWikiNodeSuggestionRetryResult result = repository.retryDraftWikiNodeSuggestion(
+      "sug-002",
+      new DraftWikiNodeSuggestionRetryRequest("当前建议范围不准，基于同一 Parsed Document 重新生成。")
+    );
+
+    assertThat(result.suggestionId()).isEqualTo("sug-002");
+    assertThat(result.status()).isEqualTo("superseded");
+    assertThat(result.replacementSuggestionId()).isEqualTo("sug-pd-002-retry-1");
+    assertThat(result.replacementStatus()).isEqualTo("draft");
+    assertThat(result.operationId()).startsWith("op-pd-002-retry-");
+    assertThat(repository.findSourceOperation(result.operationId()))
+      .hasValueSatisfying(operation -> {
+        assertThat(operation.operationType()).isEqualTo("suggest_wikinode");
+        assertThat(operation.parsedDocumentId()).isEqualTo("pd-002");
+        assertThat(operation.status()).isEqualTo("succeeded");
+        assertThat(operation.summary()).isEqualTo("已重新生成 WikiNode 建议。");
+      });
+
+    assertThat(repository.findDraftWikiNodeSuggestion("sug-002"))
+      .hasValueSatisfying(suggestion -> {
+        assertThat(suggestion.status()).isEqualTo("superseded");
+        assertThat(suggestion.reviewNote()).isEqualTo("当前建议范围不准，基于同一 Parsed Document 重新生成。");
+        assertThat(suggestion.matchedSuggestionIds()).containsExactly("sug-pd-002-retry-1");
+        assertThat(suggestion.sourceRefs()).hasSize(1);
+        assertThat(suggestion.relationCandidates()).hasSize(1);
+      });
+    assertThat(repository.findDraftWikiNodeSuggestion("sug-pd-002-retry-1"))
+      .hasValueSatisfying(suggestion -> {
+        assertThat(suggestion.status()).isEqualTo("draft");
+        assertThat(suggestion.operationId()).isEqualTo(result.operationId());
+        assertThat(suggestion.matchedSuggestionIds()).containsExactly("sug-002");
+        assertThat(suggestion.sourceRefs()).hasSize(1);
+        assertThat(suggestion.relationCandidates()).hasSize(1);
+      });
+  }
+
+  @Test
+  void skipsRetryForAcceptedDraftWikiNodeSuggestion() {
+    JdbcTemplate jdbcTemplate = jdbcTemplateWithDraftWikiNodeSuggestions();
+    JdbcWikiNodeRepository repository = new JdbcWikiNodeRepository(jdbcTemplate);
+    repository.acceptDraftWikiNodeSuggestion(
+      "sug-002",
+      new DraftWikiNodeSuggestionAcceptRequest("确认进入草稿 WikiNode，后续人工编辑。")
+    );
+
+    DraftWikiNodeSuggestionRetryResult result = repository.retryDraftWikiNodeSuggestion(
+      "sug-002",
+      new DraftWikiNodeSuggestionRetryRequest("已采纳后不允许重新生成。")
+    );
+
+    assertThat(result.status()).isEqualTo("skipped");
+    assertThat(result.summary()).isEqualTo("已采纳的 WikiNode 建议不能重新生成。");
+    assertThat(result.replacementSuggestionId()).isNull();
+    assertThat(repository.findDraftWikiNodeSuggestion("sug-002"))
+      .hasValueSatisfying(suggestion -> assertThat(suggestion.status()).isEqualTo("accepted"));
   }
 
   @Test
