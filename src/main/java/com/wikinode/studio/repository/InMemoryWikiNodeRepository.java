@@ -1,6 +1,7 @@
 package com.wikinode.studio.repository;
 
 import com.wikinode.studio.model.SourceItem;
+import com.wikinode.studio.model.DraftWikiNodeSuggestion;
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
@@ -23,6 +24,7 @@ public class InMemoryWikiNodeRepository extends AbstractWikiNodeRepository {
   private final List<ParsedDocument> parsedDocuments = WikiNodeSeedData.parsedDocuments();
   private final List<SourceOperation> sourceOperations = WikiNodeSeedData.sourceOperations();
   private final List<ParserProfile> parserProfiles = WikiNodeSeedData.parserProfiles();
+  private final List<DraftWikiNodeSuggestion> draftWikiNodeSuggestions = WikiNodeSeedData.draftWikiNodeSuggestions();
 
   public InMemoryWikiNodeRepository() {
     WikiNodeSeedData.nodes().forEach(node -> nodes.put(node.nodeId(), node));
@@ -77,5 +79,10 @@ public class InMemoryWikiNodeRepository extends AbstractWikiNodeRepository {
   @Override
   protected List<ParserProfile> loadParserProfiles() {
     return parserProfiles;
+  }
+
+  @Override
+  protected List<DraftWikiNodeSuggestion> loadDraftWikiNodeSuggestions() {
+    return draftWikiNodeSuggestions;
   }
 }

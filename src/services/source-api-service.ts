@@ -2,6 +2,7 @@ import { apiGet, withMockFallback } from "@/services/api-client"
 import { mockRawMaterials } from "@/data/mock-raw-materials"
 import { mockSources } from "@/data/mock-sources"
 import { listWikiNodes } from "@/services/wiki-node-api-service"
+import type { DraftWikiNodeSuggestion } from "@/types/draft-wikinode-suggestion"
 import type { ParsedDocument, RawMaterial } from "@/types/raw-material"
 import type { SourceItem } from "@/types/source"
 import type { SourceOperation } from "@/types/source-operation"
@@ -73,6 +74,27 @@ export function getParsedDocument(parsedDocumentId: string) {
   return withMockFallback(
     apiGet<ParsedDocument>(`/parsed-documents/${parsedDocumentId}`),
     () => mockParsedDocuments.find((parsedDocument) => parsedDocument.parsedDocumentId === parsedDocumentId) ?? mockParsedDocuments[0]
+  )
+}
+
+export function listDraftWikiNodeSuggestionsForRawMaterial(rawMaterialId: string) {
+  return withMockFallback(
+    apiGet<DraftWikiNodeSuggestion[]>(`/raw-materials/${rawMaterialId}/draft-wikinode-suggestions`),
+    () => mockDraftWikiNodeSuggestions.filter((suggestion) => suggestion.rawMaterialId === rawMaterialId)
+  )
+}
+
+export function listDraftWikiNodeSuggestionsForParsedDocument(parsedDocumentId: string) {
+  return withMockFallback(
+    apiGet<DraftWikiNodeSuggestion[]>(`/parsed-documents/${parsedDocumentId}/draft-wikinode-suggestions`),
+    () => mockDraftWikiNodeSuggestions.filter((suggestion) => suggestion.parsedDocumentId === parsedDocumentId)
+  )
+}
+
+export function getDraftWikiNodeSuggestion(suggestionId: string) {
+  return withMockFallback(
+    apiGet<DraftWikiNodeSuggestion>(`/draft-wikinode-suggestions/${suggestionId}`),
+    () => mockDraftWikiNodeSuggestions.find((suggestion) => suggestion.suggestionId === suggestionId) ?? mockDraftWikiNodeSuggestions[0]
   )
 }
 
@@ -203,5 +225,90 @@ const mockSourceOperations: SourceOperation[] = [
     finishedAt: "2026-06-12T18:22:00+08:00",
     summary: "Parser profile rejected this Raw Material in the read-only seed baseline.",
     errorSummary: "Unsupported document structure in seed evidence.",
+  },
+]
+
+const mockDraftWikiNodeSuggestions: DraftWikiNodeSuggestion[] = [
+  {
+    suggestionId: "sug-001",
+    parsedDocumentId: "pd-001",
+    rawMaterialId: "rm-001",
+    sourceId: "src-feishu-cc",
+    operationId: "op-src-feishu-suggest-001",
+    title: "保修期内维修服务政策",
+    objectType: "Article",
+    subtype: "service_fee_policy",
+    contentDraft: "# 保修期内维修服务政策\n\n保修期内维修不收取人工费，收费例外需要关联人为损坏判定规则。\n\n该内容仍是待审核 WikiNode 建议，不会自动发布或索引。",
+    metadataDraft: {
+      language: "zh-CN",
+      businessDomain: "after_sales",
+    },
+    sourceRefs: [{
+      sourceId: "src-feishu-cc",
+      rawMaterialId: "rm-001",
+      parsedDocumentId: "pd-001",
+      locatorType: "heading",
+      locator: "保修政策/收费例外",
+      excerpt: "保修期内维修不收取人工费",
+      confidence: 0.92,
+    }],
+    relationCandidates: [{
+      targetTitle: "收费政策",
+      relationType: "references",
+      source: "inferred_from_source_ref",
+      confidence: 0.74,
+    }],
+    confidence: 0.88,
+    status: "draft",
+    reviewNote: null,
+    conflictStatus: "title_match",
+    conflictReasons: ["标题可能重复"],
+    matchedWikiNodeIds: ["wn-001"],
+    matchedSuggestionIds: [],
+    sourceRefCount: 1,
+    relationCandidateCount: 1,
+    createdAt: "2026-06-20",
+    updatedAt: "2026-06-20",
+  },
+  {
+    suggestionId: "sug-002",
+    parsedDocumentId: "pd-002",
+    rawMaterialId: "rm-002",
+    sourceId: "src-pdf-dishwasher",
+    operationId: "op-pdf-suggest-001",
+    title: "洗碗机基础排查建议",
+    objectType: "Procedure",
+    subtype: "troubleshooting_flow",
+    contentDraft: "# 洗碗机基础排查建议\n\n排查时先确认电源、水路和错误码。\n\n该内容仍需人工复核后才能进入 WikiNode。",
+    metadataDraft: {
+      language: "zh-CN",
+      businessDomain: "product_support",
+    },
+    sourceRefs: [{
+      sourceId: "src-pdf-dishwasher",
+      rawMaterialId: "rm-002",
+      parsedDocumentId: "pd-002",
+      locatorType: "page",
+      locator: "P-8",
+      excerpt: "先检查电源、水路和错误码",
+      confidence: 0.88,
+    }],
+    relationCandidates: [{
+      targetTitle: "保修期内维修服务政策",
+      relationType: "references",
+      source: "inferred_from_source_ref",
+      confidence: 0.62,
+    }],
+    confidence: 0.76,
+    status: "needs_review",
+    reviewNote: "需要产品培训负责人复核标题和适用范围。",
+    conflictStatus: "none",
+    conflictReasons: [],
+    matchedWikiNodeIds: [],
+    matchedSuggestionIds: [],
+    sourceRefCount: 1,
+    relationCandidateCount: 1,
+    createdAt: "2026-06-18",
+    updatedAt: "2026-06-18",
   },
 ]

@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
+import com.wikinode.studio.model.DraftWikiNodeSuggestion;
 import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.WikiNode;
 import com.wikinode.studio.model.WikiNodeUpsertRequest;
@@ -167,6 +168,42 @@ class JdbcWikiNodeRepositoryTest {
       });
   }
 
+  @Test
+  void loadsDraftWikiNodeSuggestionReadOnlyContract() {
+    JdbcTemplate jdbcTemplate = jdbcTemplateWithDraftWikiNodeSuggestions();
+    JdbcWikiNodeRepository repository = new JdbcWikiNodeRepository(jdbcTemplate);
+
+    assertThat(repository.listDraftWikiNodeSuggestions())
+      .extracting(DraftWikiNodeSuggestion::suggestionId)
+      .contains("sug-001", "sug-002");
+
+    assertThat(repository.listDraftWikiNodeSuggestionsForParsedDocument("pd-001"))
+      .extracting(DraftWikiNodeSuggestion::suggestionId)
+      .containsExactly("sug-001");
+
+    assertThat(repository.listDraftWikiNodeSuggestionsForRawMaterial("rm-001"))
+      .extracting(DraftWikiNodeSuggestion::suggestionId)
+      .containsExactly("sug-001");
+
+    assertThat(repository.findDraftWikiNodeSuggestion("sug-001"))
+      .hasValueSatisfying(suggestion -> {
+        assertThat(suggestion.parsedDocumentId()).isEqualTo("pd-001");
+        assertThat(suggestion.rawMaterialId()).isEqualTo("rm-001");
+        assertThat(suggestion.sourceId()).isEqualTo("src-feishu-cc");
+        assertThat(suggestion.operationId()).isEqualTo("op-src-feishu-suggest-001");
+        assertThat(suggestion.title()).isEqualTo("保修期内维修服务政策");
+        assertThat(suggestion.objectType()).isEqualTo("Article");
+        assertThat(suggestion.subtype()).isEqualTo("service_fee_policy");
+        assertThat(suggestion.sourceRefs()).hasSize(1);
+        assertThat(suggestion.relationCandidates()).hasSize(1);
+        assertThat(suggestion.sourceRefCount()).isEqualTo(1);
+        assertThat(suggestion.relationCandidateCount()).isEqualTo(1);
+        assertThat(suggestion.conflictStatus()).isEqualTo("title_match");
+        assertThat(suggestion.matchedWikiNodeIds()).containsExactly("wn-001");
+        assertThat(suggestion.matchedSuggestionIds()).isEmpty();
+      });
+  }
+
   private JdbcTemplate jdbcTemplate() {
     SingleConnectionDataSource dataSource = new SingleConnectionDataSource(
       "jdbc:h2:mem:wikinode-%s;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH".formatted(System.nanoTime()),
@@ -224,6 +261,24 @@ class JdbcWikiNodeRepositoryTest {
       new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql"),
       new ClassPathResource("db/migration/V4__create_source_operation_schema.sql"),
       new ClassPathResource("db/migration/V5__create_parser_profile_schema.sql")
+    );
+    populator.execute(dataSource);
+    return new JdbcTemplate(dataSource);
+  }
+
+  private JdbcTemplate jdbcTemplateWithDraftWikiNodeSuggestions() {
+    SingleConnectionDataSource dataSource = new SingleConnectionDataSource(
+      "jdbc:h2:mem:wikinode-suggestion-%s;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH".formatted(System.nanoTime()),
+      "sa",
+      "",
+      true
+    );
+    ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
+      new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
+      new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql"),
+      new ClassPathResource("db/migration/V4__create_source_operation_schema.sql"),
+      new ClassPathResource("db/migration/V5__create_parser_profile_schema.sql"),
+      new ClassPathResource("db/migration/V6__create_draft_wikinode_suggestion_schema.sql")
     );
     populator.execute(dataSource);
     return new JdbcTemplate(dataSource);

@@ -4,6 +4,8 @@ import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParsedDocumentSourceRef;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
+import com.wikinode.studio.model.DraftWikiNodeRelationCandidate;
+import com.wikinode.studio.model.DraftWikiNodeSuggestion;
 import com.wikinode.studio.model.SourceItem;
 import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.SourceRef;
@@ -255,6 +257,50 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
     );
   }
 
+  @Override
+  protected List<DraftWikiNodeSuggestion> loadDraftWikiNodeSuggestions() {
+    return jdbcTemplate.query(
+      """
+      select suggestion_id, parsed_document_id, raw_material_id, source_id, operation_id, title,
+             object_type, subtype, content_draft, metadata_language, metadata_business_domain,
+             confidence, status, review_note, conflict_status, conflict_reasons,
+             matched_wiki_node_ids, matched_suggestion_ids, created_at, updated_at
+      from draft_wikinode_suggestions
+      order by created_at, suggestion_id
+      """,
+      (resultSet, rowNumber) -> {
+        String suggestionId = resultSet.getString("suggestion_id");
+        List<ParsedDocumentSourceRef> sourceRefs = loadDraftWikiNodeSuggestionSourceRefs(suggestionId);
+        List<DraftWikiNodeRelationCandidate> relationCandidates = loadDraftWikiNodeRelationCandidates(suggestionId);
+        return new DraftWikiNodeSuggestion(
+          suggestionId,
+          resultSet.getString("parsed_document_id"),
+          resultSet.getString("raw_material_id"),
+          resultSet.getString("source_id"),
+          resultSet.getString("operation_id"),
+          resultSet.getString("title"),
+          resultSet.getString("object_type"),
+          resultSet.getString("subtype"),
+          resultSet.getString("content_draft"),
+          suggestionMetadata(resultSet),
+          sourceRefs,
+          relationCandidates,
+          resultSet.getDouble("confidence"),
+          resultSet.getString("status"),
+          resultSet.getString("review_note"),
+          resultSet.getString("conflict_status"),
+          splitCsv(resultSet.getString("conflict_reasons")),
+          splitCsv(resultSet.getString("matched_wiki_node_ids")),
+          splitCsv(resultSet.getString("matched_suggestion_ids")),
+          sourceRefs.size(),
+          relationCandidates.size(),
+          resultSet.getString("created_at"),
+          resultSet.getString("updated_at")
+        );
+      }
+    );
+  }
+
   private WikiNode mapNode(ResultSet resultSet) throws SQLException {
     String nodeId = resultSet.getString("node_id");
     return new WikiNode(
@@ -330,6 +376,52 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
     return Map.of(
       "language", resultSet.getString("metadata_language"),
       "businessDomain", resultSet.getString("metadata_business_domain")
+    );
+  }
+
+  private Map<String, String> suggestionMetadata(ResultSet resultSet) throws SQLException {
+    return Map.of(
+      "language", resultSet.getString("metadata_language"),
+      "businessDomain", resultSet.getString("metadata_business_domain")
+    );
+  }
+
+  private List<ParsedDocumentSourceRef> loadDraftWikiNodeSuggestionSourceRefs(String suggestionId) {
+    return jdbcTemplate.query(
+      """
+      select source_id, raw_material_id, parsed_document_id, locator_type, locator, excerpt, confidence
+      from draft_wikinode_suggestion_source_refs
+      where suggestion_id = ?
+      order by position
+      """,
+      (resultSet, rowNumber) -> new ParsedDocumentSourceRef(
+        resultSet.getString("source_id"),
+        resultSet.getString("raw_material_id"),
+        resultSet.getString("parsed_document_id"),
+        resultSet.getString("locator_type"),
+        resultSet.getString("locator"),
+        resultSet.getString("excerpt"),
+        resultSet.getDouble("confidence")
+      ),
+      suggestionId
+    );
+  }
+
+  private List<DraftWikiNodeRelationCandidate> loadDraftWikiNodeRelationCandidates(String suggestionId) {
+    return jdbcTemplate.query(
+      """
+      select target_title, relation_type, source, confidence
+      from draft_wikinode_relation_candidates
+      where suggestion_id = ?
+      order by position
+      """,
+      (resultSet, rowNumber) -> new DraftWikiNodeRelationCandidate(
+        resultSet.getString("target_title"),
+        resultSet.getString("relation_type"),
+        resultSet.getString("source"),
+        resultSet.getDouble("confidence")
+      ),
+      suggestionId
     );
   }
 

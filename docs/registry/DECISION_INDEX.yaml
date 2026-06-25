@@ -1,5 +1,15 @@
 version: 1
 decisions:
+  - id: D036
+    date: "2026-06-25"
+    title: "Implement Draft WikiNode Suggestion as a read-only review model"
+    rationale: "The user explicitly approved IM036 after IM035 defined the read-only contract. The implementation adds seeded Draft WikiNode Suggestion persistence, Java read-only models, repository reads, GET APIs, frontend read-only review panels, and API/repository/Playwright coverage while keeping suggestion generation, accept/reject, WikiNode creation, publishing, indexing, vector sync, parser execution, external AI, permissions, batch conversion, package changes, and dependencies out of scope."
+    related:
+      - IM036
+      - D035
+      - DRAFT_WIKINODE_SUGGESTION_READONLY_CONTRACT_PLAN
+      - DRAFT_WIKINODE_SUGGESTION_READONLY_MODEL
+      - SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN
   - id: D035
     date: "2026-06-25"
     title: "Plan Draft WikiNode Suggestion read-only contract before implementation"

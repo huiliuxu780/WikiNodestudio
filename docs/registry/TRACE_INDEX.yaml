@@ -77,6 +77,19 @@ phase2_plans:
     parent_plan: docs/current/DRAFT_WIKINODE_SUGGESTION_PLAN.md
     operation_plan: SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN
     parsed_document_contract: SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_MODEL_CONTRACT
+  DRAFT_WIKINODE_SUGGESTION_READONLY_MODEL:
+    decision: D036
+    contract: DRAFT_WIKINODE_SUGGESTION_READONLY_CONTRACT_PLAN
+    model: src/main/java/com/wikinode/studio/model/DraftWikiNodeSuggestion.java
+    relation_candidate_model: src/main/java/com/wikinode/studio/model/DraftWikiNodeRelationCandidate.java
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    repository: src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
+    migration: src/main/resources/db/migration/V6__create_draft_wikinode_suggestion_schema.sql
+    frontend_service: src/services/source-api-service.ts
+    frontend_page: src/pages/skeleton-pages.tsx
+    api_contract_test: src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+    repository_test: src/test/java/com/wikinode/studio/repository/JdbcWikiNodeRepositoryTest.java
+    playwright: tests/e2e/draft-wikinode-suggestion-readonly.spec.ts
   SOURCE_OPERATION_READONLY_LOGS:
     decision: D030
     plan: docs/current/SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN.md
@@ -187,3 +200,6 @@ tasks:
   IM035:
     decision: D035
     plan: DRAFT_WIKINODE_SUGGESTION_READONLY_CONTRACT_PLAN
+  IM036:
+    decision: D036
+    implementation: DRAFT_WIKINODE_SUGGESTION_READONLY_MODEL

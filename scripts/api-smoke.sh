@@ -142,6 +142,30 @@ if (JSON.stringify(parserProfiles).includes("credential") || JSON.stringify(pars
   throw new Error("GET /api/parser-profiles: FAIL response exposed forbidden internals")
 }
 
+const suggestions = await request("GET /api/draft-wikinode-suggestions", "/draft-wikinode-suggestions")
+if (!Array.isArray(suggestions) || !suggestions.some((suggestion) => suggestion.suggestionId === "sug-001" && suggestion.status === "draft")) {
+  throw new Error("GET /api/draft-wikinode-suggestions: FAIL expected Draft WikiNode Suggestion list")
+}
+
+const suggestionDetail = await request("GET /api/draft-wikinode-suggestions/{id}", "/draft-wikinode-suggestions/sug-001")
+if (suggestionDetail.parsedDocumentId !== "pd-001" || !Array.isArray(suggestionDetail.sourceRefs) || !Array.isArray(suggestionDetail.relationCandidates)) {
+  throw new Error("GET /api/draft-wikinode-suggestions/{id}: FAIL expected sourceRefs and relationCandidates")
+}
+
+if (JSON.stringify(suggestionDetail).includes("indexSegmentId") || JSON.stringify(suggestionDetail).includes("signedUrl") || JSON.stringify(suggestionDetail).includes("chunk")) {
+  throw new Error("GET /api/draft-wikinode-suggestions/{id}: FAIL response exposed forbidden internals")
+}
+
+const parsedDocumentSuggestions = await request("GET /api/parsed-documents/{id}/draft-wikinode-suggestions", "/parsed-documents/pd-001/draft-wikinode-suggestions")
+if (!Array.isArray(parsedDocumentSuggestions) || !parsedDocumentSuggestions.some((suggestion) => suggestion.suggestionId === "sug-001")) {
+  throw new Error("GET /api/parsed-documents/{id}/draft-wikinode-suggestions: FAIL expected scoped suggestions")
+}
+
+const rawMaterialSuggestions = await request("GET /api/raw-materials/{id}/draft-wikinode-suggestions", "/raw-materials/rm-001/draft-wikinode-suggestions")
+if (!Array.isArray(rawMaterialSuggestions) || !rawMaterialSuggestions.some((suggestion) => suggestion.suggestionId === "sug-001")) {
+  throw new Error("GET /api/raw-materials/{id}/draft-wikinode-suggestions: FAIL expected scoped suggestions")
+}
+
 const created = await request("POST /api/wiki-nodes", "/wiki-nodes", {
   method: "POST",
   body: JSON.stringify({

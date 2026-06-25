@@ -4,6 +4,7 @@ import com.wikinode.studio.model.IndexStatusSummary;
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
+import com.wikinode.studio.model.DraftWikiNodeSuggestion;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
@@ -58,6 +59,14 @@ public interface WikiNodeRepository {
   Optional<SourceOperation> findSourceOperation(String operationId);
 
   List<ParserProfile> listParserProfiles();
+
+  List<DraftWikiNodeSuggestion> listDraftWikiNodeSuggestions();
+
+  List<DraftWikiNodeSuggestion> listDraftWikiNodeSuggestionsForParsedDocument(String parsedDocumentId);
+
+  List<DraftWikiNodeSuggestion> listDraftWikiNodeSuggestionsForRawMaterial(String rawMaterialId);
+
+  Optional<DraftWikiNodeSuggestion> findDraftWikiNodeSuggestion(String suggestionId);
 
   IndexStatusSummary indexStatus();
 }
