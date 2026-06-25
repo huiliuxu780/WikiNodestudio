@@ -3,7 +3,8 @@ export type SourceItem = {
   sourceType: "feishu" | "pdf" | "word" | "excel" | "web" | "manual" | "api" | "database" | "legacy_kb"
   title: string
   owner: string
-  syncStatus: "synced" | "pending" | "failed"
+  syncStatus: "not_configured" | "pending" | "synced" | "failed" | "disabled"
   lastSyncedAt: string
   generatedNodes: number
+  rawMaterialCount: number
 }

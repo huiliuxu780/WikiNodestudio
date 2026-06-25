@@ -5,11 +5,10 @@ import type { KnowledgeMetadata, KnowledgeRelation } from "@/types/wiki"
 import { mockIndexSegments } from "@/data/mock-index-segments"
 import { mockKnowledgeBases } from "@/data/mock-knowledge-bases"
 import { mockQualityIssues } from "@/data/mock-quality-issues"
-import { mockRawMaterials } from "@/data/mock-raw-materials"
 import { mockRetrievalLogs } from "@/data/mock-retrieval"
-import { mockSources } from "@/data/mock-sources"
 import { mockUsers } from "@/data/mock-users"
 import { mockWikiNodes } from "@/data/mock-wiki-nodes"
+import { ApiErrorNotice } from "@/components/api-error-notice"
 import { PageHeader } from "@/components/layout/page-header"
 import { SegmentDebugPanel } from "@/components/segments/segment-debug-panel"
 import { SegmentStrategyCard } from "@/components/segments/segment-strategy-card"
@@ -17,14 +16,27 @@ import { IndexSegmentTable } from "@/components/segments/index-segment-table"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LinkList } from "@/components/wiki/link-list"
+import { useAsyncData } from "@/hooks/use-async-data"
 import {
+  getRawMaterial,
+  getSource,
+  listParsedDocumentsForRawMaterial,
+  listRawMaterials,
+  listRawMaterialsForSource,
+} from "@/services/source-api-service"
+import type { ParsedDocument, RawMaterial } from "@/types/raw-material"
+import type { SourceItem } from "@/types/source"
+import {
+  contentFormatLabels,
   indexStatusLabels,
   labelFromMap,
   healthLabels,
+  locatorTypeLabels,
   metadataLabels,
   nodeTypeLabels,
   objectTypeLabels,
   parseStatusLabels,
+  rawMaterialTypeLabels,
   relationTypeLabels,
   sourceTypeLabels,
   storageProviderLabels,
@@ -122,17 +134,34 @@ export function KnowledgeBaseSettingsPage() {
 
 export function SourceDetailPage() {
   const { sourceId } = useParams()
-  const source = mockSources.find((item) => item.sourceId === sourceId) ?? mockSources[0]
-  const relatedRawMaterials = mockRawMaterials.filter((item) => item.sourceId === source.sourceId)
+  const activeSourceId = sourceId ?? ""
+  const {
+    data: source,
+    error: sourceError,
+    isLoading: isSourceLoading,
+    reload: reloadSource,
+  } = useAsyncData<SourceItem | null>(() => activeSourceId ? getSource(activeSourceId) : Promise.resolve(null), null, [activeSourceId])
+  const {
+    data: relatedRawMaterials,
+    error: rawMaterialsError,
+    isLoading: isRawMaterialsLoading,
+    reload: reloadRawMaterials,
+  } = useAsyncData(() => activeSourceId ? listRawMaterialsForSource(activeSourceId) : Promise.resolve([]), [], [activeSourceId])
 
   return (
-    <PageScaffold title="知识来源详情" description={`${source.title}。当前页面只展示来源配置和生成 WikiNode 的验收基线。`}>
-      <SummaryGrid items={[
-        ["来源类型", labelFromMap(sourceTypeLabels, source.sourceType)],
-        ["负责人", source.owner],
-        ["同步状态", labelFromMap(syncStatusLabels, source.syncStatus)],
-        ["生成 WikiNode", String(source.generatedNodes)],
-      ]} />
+    <PageScaffold title="知识来源详情" description={source ? `${source.title}。当前页面只展示来源配置和生成 WikiNode 的验收基线。` : "查看 Source 到 Raw Material 的只读证据链。"}>
+      <ApiErrorNotice error={sourceError} onRetry={reloadSource} />
+      <ApiErrorNotice error={rawMaterialsError} onRetry={reloadRawMaterials} />
+      {isSourceLoading ? <LoadingBlock text="正在加载知识来源..." /> : null}
+      {source ? (
+        <SummaryGrid items={[
+          ["来源类型", labelFromMap(sourceTypeLabels, source.sourceType)],
+          ["负责人", source.owner],
+          ["同步状态", labelFromMap(syncStatusLabels, source.syncStatus)],
+          ["Raw Material", `${source.rawMaterialCount} 个`],
+          ["生成 WikiNode", String(source.generatedNodes)],
+        ]} />
+      ) : null}
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -160,14 +189,16 @@ export function SourceDetailPage() {
           <CardTitle className="text-base">关联 Raw Material</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-2 md:grid-cols-2">
-          {relatedRawMaterials.length === 0 ? (
+          {isRawMaterialsLoading ? (
+            <LoadingBlock text="正在加载 Raw Material..." />
+          ) : relatedRawMaterials.length === 0 ? (
             <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
               当前 Source 暂无关联 Raw Material。真实同步和快照生成不在本轮范围内。
             </div>
           ) : relatedRawMaterials.map((raw) => (
             <Link key={raw.rawMaterialId} to={`/raw-materials/${raw.rawMaterialId}`} className="rounded-md border p-3 text-sm hover:bg-muted/40">
               <div className="font-medium">{raw.title}</div>
-              <div className="mt-1 text-muted-foreground">{raw.rawMaterialId} · {labelFromMap(parseStatusLabels, raw.parseStatus)}</div>
+              <div className="mt-1 text-muted-foreground">{raw.rawMaterialId} · {rawMaterialDisplayType(raw)} · {labelFromMap(parseStatusLabels, raw.parseStatus)}</div>
             </Link>
           ))}
         </CardContent>
@@ -182,8 +213,16 @@ export function SourceDetailPage() {
 }
 
 export function RawMaterialListPage() {
+  const {
+    data: rawMaterials,
+    error,
+    isLoading,
+    reload,
+  } = useAsyncData(listRawMaterials, [])
+
   return (
     <PageScaffold title="原始材料" description="查看 Source 进入 WikiNode 标准化之前保留的原始快照；当前不提供真实上传或解析执行。">
+      <ApiErrorNotice error={error} onRetry={reload} />
       <Card>
         <CardHeader>
           <CardTitle className="text-base">快照清单</CardTitle>
@@ -195,7 +234,7 @@ export function RawMaterialListPage() {
           </div>
           <div className="rounded-md border border-dashed px-3 py-2">
             <div className="font-medium">当前只读：不会上传、下载、重新解析或访问真实存储。</div>
-            <p className="mt-1 text-muted-foreground">点击条目只进入本地样例详情页。</p>
+            <p className="mt-1 text-muted-foreground">点击条目只进入后端只读详情页。</p>
           </div>
         </CardContent>
       </Card>
@@ -206,10 +245,14 @@ export function RawMaterialListPage() {
       ]} />
       <Card>
         <CardContent className="grid gap-2 p-4 md:grid-cols-2 xl:grid-cols-3">
-          {mockRawMaterials.map((item) => (
+          {isLoading ? (
+            <LoadingBlock text="正在加载 Raw Material..." />
+          ) : rawMaterials.length === 0 ? (
+            <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">暂无 Raw Material。真实上传和同步不在当前范围内。</div>
+          ) : rawMaterials.map((item) => (
             <Link key={item.rawMaterialId} to={`/raw-materials/${item.rawMaterialId}`} className="rounded-md border bg-muted/20 px-3 py-2 text-sm hover:bg-muted/40">
               <div className="font-medium">{item.title}</div>
-              <div className="mt-1 text-muted-foreground">{item.rawMaterialId} · {item.fileType} · {labelFromMap(parseStatusLabels, item.parseStatus)}</div>
+              <div className="mt-1 text-muted-foreground">{item.rawMaterialId} · {rawMaterialDisplayType(item)} · {labelFromMap(parseStatusLabels, item.parseStatus)}</div>
             </Link>
           ))}
         </CardContent>
@@ -220,17 +263,39 @@ export function RawMaterialListPage() {
 
 export function RawMaterialDetailPage() {
   const { rawMaterialId } = useParams()
-  const raw = mockRawMaterials.find((item) => item.rawMaterialId === rawMaterialId) ?? mockRawMaterials[0]
-  const source = mockSources.find((item) => item.sourceId === raw.sourceId)
+  const activeRawMaterialId = rawMaterialId ?? ""
+  const {
+    data: raw,
+    error: rawError,
+    isLoading: isRawLoading,
+    reload: reloadRaw,
+  } = useAsyncData<RawMaterial | null>(() => activeRawMaterialId ? getRawMaterial(activeRawMaterialId) : Promise.resolve(null), null, [activeRawMaterialId])
+  const {
+    data: source,
+    error: sourceError,
+    reload: reloadSource,
+  } = useAsyncData<SourceItem | null>(() => raw?.sourceId ? getSource(raw.sourceId) : Promise.resolve(null), null, [raw?.sourceId])
+  const {
+    data: parsedDocuments,
+    error: parsedDocumentsError,
+    reload: reloadParsedDocuments,
+  } = useAsyncData(() => activeRawMaterialId ? listParsedDocumentsForRawMaterial(activeRawMaterialId) : Promise.resolve([]), [], [activeRawMaterialId])
 
   return (
-    <PageScaffold title="原始材料详情" description={raw.title}>
-      <SummaryGrid items={[
-        ["文件类型", raw.fileType],
-        ["存储位置", labelFromMap(storageProviderLabels, raw.storageProvider)],
-        ["解析状态", labelFromMap(parseStatusLabels, raw.parseStatus)],
-        ["解析文档", raw.parsedDocumentId ?? "尚未生成"],
-      ]} />
+    <PageScaffold title="原始材料详情" description={raw?.title ?? "查看 Raw Material 到 Parsed Document 的只读证据链。"}>
+      <ApiErrorNotice error={rawError} onRetry={reloadRaw} />
+      <ApiErrorNotice error={sourceError} onRetry={reloadSource} />
+      <ApiErrorNotice error={parsedDocumentsError} onRetry={reloadParsedDocuments} />
+      {isRawLoading ? <LoadingBlock text="正在加载 Raw Material..." /> : null}
+      {raw ? (
+        <SummaryGrid items={[
+          ["材料类型", rawMaterialDisplayType(raw)],
+          ["来源版本", raw.sourceVersion ?? "无"],
+          ["存储位置", labelFromMap(storageProviderLabels, raw.storageProvider)],
+          ["解析状态", labelFromMap(parseStatusLabels, raw.parseStatus)],
+          ["Parsed Document", `${raw.parsedDocumentCount} 个`],
+        ]} />
+      ) : null}
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -255,7 +320,7 @@ export function RawMaterialDetailPage() {
             ) : (
               <div className="rounded-md border border-dashed p-3 text-muted-foreground">未找到关联 Source。</div>
             )}
-            {raw.parsedDocumentId ? (
+            {raw && parsedDocuments.length > 0 ? (
               <Link to={`/raw-materials/${raw.rawMaterialId}/parsed-result`} className="inline-flex text-sm font-medium text-primary hover:underline">
                 查看解析结果
               </Link>
@@ -277,11 +342,30 @@ export function RawMaterialDetailPage() {
 
 export function ParsedResultPreviewPage() {
   const { rawMaterialId } = useParams()
-  const raw = mockRawMaterials.find((item) => item.rawMaterialId === rawMaterialId) ?? mockRawMaterials[0]
-  const source = mockSources.find((item) => item.sourceId === raw.sourceId)
+  const activeRawMaterialId = rawMaterialId ?? ""
+  const {
+    data: raw,
+    error: rawError,
+    reload: reloadRaw,
+  } = useAsyncData<RawMaterial | null>(() => activeRawMaterialId ? getRawMaterial(activeRawMaterialId) : Promise.resolve(null), null, [activeRawMaterialId])
+  const {
+    data: parsedDocuments,
+    error: parsedDocumentsError,
+    isLoading: isParsedDocumentsLoading,
+    reload: reloadParsedDocuments,
+  } = useAsyncData(() => activeRawMaterialId ? listParsedDocumentsForRawMaterial(activeRawMaterialId) : Promise.resolve([]), [], [activeRawMaterialId])
+  const parsedDocument = parsedDocuments[0] ?? null
+  const {
+    data: source,
+    error: sourceError,
+    reload: reloadSource,
+  } = useAsyncData<SourceItem | null>(() => raw?.sourceId ? getSource(raw.sourceId) : Promise.resolve(null), null, [raw?.sourceId])
 
   return (
     <PageScaffold title="解析结果预览" description="查看进入 WikiNode 标准化之前的内容形态和来源证据；当前不运行真实解析器。">
+      <ApiErrorNotice error={rawError} onRetry={reloadRaw} />
+      <ApiErrorNotice error={parsedDocumentsError} onRetry={reloadParsedDocuments} />
+      <ApiErrorNotice error={sourceError} onRetry={reloadSource} />
       <div className="grid gap-4 lg:grid-cols-3">
         <Card>
           <CardHeader>
@@ -289,6 +373,7 @@ export function ParsedResultPreviewPage() {
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             <Badge variant="outline">标准化预览</Badge>
+            {parsedDocument ? <p className="font-medium text-foreground">{parsedDocument.title}</p> : null}
             <p>Parsed Document 是 Raw Material 解析后的标准化内容，还不是最终 WikiNode。</p>
           </CardContent>
         </Card>
@@ -297,7 +382,7 @@ export function ParsedResultPreviewPage() {
             <CardTitle className="text-base">标准化内容结构</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
-            <p>标题层级、段落、表格、图片引用和抽取元数据会在这里预览。</p>
+            <p>{parsedDocument ? labelFromMap(contentFormatLabels, parsedDocument.contentFormat) : "标题层级、段落、表格、图片引用和抽取元数据会在这里预览。"}</p>
             <p>后续转换为 WikiNode 前仍需人工治理。</p>
           </CardContent>
         </Card>
@@ -306,11 +391,13 @@ export function ParsedResultPreviewPage() {
             <CardTitle className="text-base">可回溯证据</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
-            <p>{source?.title ?? "未知 Source"} / {raw.title}</p>
+            <p>{source?.title ?? "未知 Source"} / {raw?.title ?? "未知 Raw Material"}</p>
             <p>当前只展示样例来源证据，不访问真实存储。</p>
           </CardContent>
         </Card>
       </div>
+      {isParsedDocumentsLoading ? <LoadingBlock text="正在加载 Parsed Document..." /> : null}
+      {parsedDocument ? <ParsedDocumentPreview parsedDocument={parsedDocument} /> : null}
       <SimpleList items={[
         "Parsed Document 是解析后的标准化内容预览。",
         "当前不运行 PDF / Word / 网页 / 数据库 / API 解析。",
@@ -446,6 +533,53 @@ function SimpleList({ items }: { items: string[] }) {
       </CardContent>
     </Card>
   )
+}
+
+function LoadingBlock({ text }: { text: string }) {
+  return (
+    <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+      {text}
+    </div>
+  )
+}
+
+function ParsedDocumentPreview({ parsedDocument }: { parsedDocument: ParsedDocument }) {
+  return (
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.8fr)]">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{parsedDocument.title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <pre className="max-h-[360px] overflow-auto whitespace-pre-wrap rounded-md border bg-muted/20 p-3 text-sm leading-6">
+            {parsedDocument.normalizedContent}
+          </pre>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">来源证据</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-2 text-sm">
+          {parsedDocument.sourceRefs.length === 0 ? (
+            <div className="rounded-md border border-dashed p-3 text-muted-foreground">暂无来源证据。</div>
+          ) : parsedDocument.sourceRefs.map((sourceRef) => (
+            <div key={`${sourceRef.parsedDocumentId}-${sourceRef.locator}`} className="rounded-md border p-3">
+              <div className="font-medium">{labelFromMap(locatorTypeLabels, sourceRef.locatorType)} · {sourceRef.locator}</div>
+              <div className="mt-1 text-muted-foreground">{sourceRef.excerpt}</div>
+              {sourceRef.confidence === undefined ? null : (
+                <div className="mt-1 text-xs text-muted-foreground">可信度 {Math.round(sourceRef.confidence * 100)}%</div>
+              )}
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+function rawMaterialDisplayType(rawMaterial: RawMaterial) {
+  return rawMaterial.fileType ?? labelFromMap(rawMaterialTypeLabels, rawMaterial.rawMaterialType)
 }
 
 function formatMetadataSummary(metadata: KnowledgeMetadata | undefined) {

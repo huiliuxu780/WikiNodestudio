@@ -9,6 +9,7 @@ export const mockSources: SourceItem[] = [
     syncStatus: "synced",
     lastSyncedAt: "2026-06-20 10:35",
     generatedNodes: 4,
+    rawMaterialCount: 2,
   },
   {
     sourceId: "src-pdf-dishwasher",
@@ -18,6 +19,7 @@ export const mockSources: SourceItem[] = [
     syncStatus: "synced",
     lastSyncedAt: "2026-06-18 15:12",
     generatedNodes: 2,
+    rawMaterialCount: 1,
   },
   {
     sourceId: "src-excel-fee",
@@ -27,6 +29,7 @@ export const mockSources: SourceItem[] = [
     syncStatus: "pending",
     lastSyncedAt: "2026-06-16 09:00",
     generatedNodes: 1,
+    rawMaterialCount: 1,
   },
   {
     sourceId: "src-word-manual",
@@ -36,6 +39,7 @@ export const mockSources: SourceItem[] = [
     syncStatus: "failed",
     lastSyncedAt: "2026-06-12 18:20",
     generatedNodes: 1,
+    rawMaterialCount: 1,
   },
   {
     sourceId: "src-web-faq",
@@ -45,6 +49,7 @@ export const mockSources: SourceItem[] = [
     syncStatus: "synced",
     lastSyncedAt: "2026-06-21 11:45",
     generatedNodes: 2,
+    rawMaterialCount: 2,
   },
   {
     sourceId: "src-legacy-kb",
@@ -54,5 +59,6 @@ export const mockSources: SourceItem[] = [
     syncStatus: "synced",
     lastSyncedAt: "2026-06-19 17:25",
     generatedNodes: 3,
+    rawMaterialCount: 1,
   },
 ]

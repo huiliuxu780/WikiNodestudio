@@ -1,9 +1,14 @@
 import { expect, test } from "@playwright/test"
+import { mockSourceEvidenceApi } from "./source-api-fixtures"
 
 const forbiddenProductTerms = /Chunk Management|Chat API|Chatbot|Agent Platform|Workflow Builder|Vector DB Management/i
 const forbiddenActions = /创建 Source|导入 Source|上传文件|开始同步|重新解析|执行解析|下载原文件/i
 
 test.describe("Source / Raw Material / Parsed Document acceptance", () => {
+  test.beforeEach(async ({ page }) => {
+    await mockSourceEvidenceApi(page)
+  })
+
   test("Sources page explains the upstream read-only evidence chain", async ({ page }) => {
     await page.goto("/sources")
 

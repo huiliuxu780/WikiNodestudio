@@ -131,16 +131,49 @@ export const sourceTypeLabels: Record<string, string> = {
 }
 
 export const syncStatusLabels: Record<string, string> = {
+  not_configured: "未配置",
   synced: "已同步",
   pending: "待同步",
   failed: "同步失败",
+  disabled: "已停用",
 }
 
 export const parseStatusLabels: Record<string, string> = {
   not_parsed: "未解析",
+  queued: "等待解析",
   parsing: "解析中",
   parsed: "解析完成",
   failed: "解析失败",
+  skipped: "已跳过",
+}
+
+export const rawMaterialTypeLabels: Record<string, string> = {
+  file: "文件",
+  document_snapshot: "文档快照",
+  html_snapshot: "网页快照",
+  table_extract: "表格抽取",
+  manual_record: "手工记录",
+  api_payload: "API 数据",
+  database_rowset: "数据库结果集",
+}
+
+export const contentFormatLabels: Record<string, string> = {
+  markdown: "Markdown",
+  structured_table: "结构化表格",
+  json: "JSON",
+  plain_text: "纯文本",
+  mixed: "混合内容",
+}
+
+export const locatorTypeLabels: Record<string, string> = {
+  paragraph: "段落",
+  page: "页码",
+  row: "行",
+  cell: "单元格",
+  heading: "标题",
+  range: "范围",
+  timestamp: "时间点",
+  record: "记录",
 }
 
 export const userRoleLabels: Record<string, string> = {
@@ -166,6 +199,8 @@ export const healthLabels: Record<string, string> = {
 export const storageProviderLabels: Record<string, string> = {
   workspace: "工作区快照",
   "object-storage": "对象存储",
+  object_storage: "对象存储",
+  external_reference: "外部引用",
 }
 
 export const retrievalStatusLabels: Record<string, string> = {
