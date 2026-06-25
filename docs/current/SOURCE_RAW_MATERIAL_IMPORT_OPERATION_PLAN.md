@@ -39,6 +39,7 @@ Implemented by prior increments:
 - IM035: Draft WikiNode Suggestion read-only contract planning for first-class suggestion model shape, read-only APIs, review surfaces, Source Operation coupling, duplicate/conflict visibility, deferred write APIs, and future migration boundaries.
 - IM036: Draft WikiNode Suggestion read-only implementation for seeded persistence, GET APIs, frontend review panels, and tests without generation or accept/reject actions.
 - IM037: Draft WikiNode Suggestion read-only acceptance sweep for detail-page evidence boundaries, relation-candidate source labels, and no-write-action browser coverage.
+- IM039: Draft WikiNode Suggestion write-boundary planning for generation, accept, reject, retry, duplicate/conflict, Source Operation, API, frontend, persistence, and stop-condition sequencing without implementation.
 
 Current product behavior:
 
@@ -464,3 +465,43 @@ Forbidden:
 - No accept/reject workflow.
 - No WikiNode creation or update.
 - No publish, index, vector sync, parser execution, external AI, permissions, approval workflow, or batch conversion.
+
+### IM039 - Draft WikiNode Suggestion Write Boundary Planning
+
+Type: planning only.
+
+Goal:
+
+- Define the safe implementation sequence and hard boundaries before any Draft WikiNode Suggestion write action exists.
+- Detailed plan: `docs/current/DRAFT_WIKINODE_SUGGESTION_WRITE_BOUNDARY_PLAN.md`.
+
+Must define:
+
+- Generate suggestion boundary.
+- Accept boundary.
+- Reject boundary.
+- Retry and batch deferral.
+- Source Operation lifecycle.
+- Duplicate and conflict policy.
+- API candidates and forbidden response fields.
+- Frontend action wording and disabled/loading/success/failure expectations.
+- Persistence and migration stop conditions.
+
+Forbidden:
+
+- No Java code.
+- No database migration.
+- No API route.
+- No frontend button.
+- No suggestion generation.
+- No accept/reject workflow.
+- No WikiNode creation or update.
+- No publish, index, vector sync, parser execution, external AI, permissions, approval workflow, or batch conversion.
+
+Recommended next task after IM039:
+
+```text
+IM040 Draft WikiNode Suggestion Generate Operation
+```
+
+IM040 should implement only one deterministic one-record Parsed Document to Draft WikiNode Suggestion generation path after explicit approval. It must not include accept/reject, WikiNode creation/update, publish, index, vector sync, parser execution, external AI, permissions, approval workflow, or batch conversion.

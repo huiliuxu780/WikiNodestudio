@@ -97,6 +97,13 @@ phase2_plans:
     frontend_page: src/pages/skeleton-pages.tsx
     display_labels: src/utils/display-labels.ts
     playwright: tests/e2e/draft-wikinode-suggestion-readonly.spec.ts
+  DRAFT_WIKINODE_SUGGESTION_WRITE_BOUNDARY_PLAN:
+    decision: D039
+    file: docs/current/DRAFT_WIKINODE_SUGGESTION_WRITE_BOUNDARY_PLAN.md
+    parent_plan: DRAFT_WIKINODE_SUGGESTION_PLAN
+    read_only_contract: DRAFT_WIKINODE_SUGGESTION_READONLY_CONTRACT_PLAN
+    read_only_model: DRAFT_WIKINODE_SUGGESTION_READONLY_MODEL
+    operation_plan: SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN
   SOURCE_OPERATION_READONLY_LOGS:
     decision: D030
     plan: docs/current/SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN.md
@@ -213,3 +220,6 @@ tasks:
   IM037:
     decision: D037
     acceptance: DRAFT_WIKINODE_SUGGESTION_READONLY_ACCEPTANCE_SWEEP
+  IM039:
+    decision: D039
+    plan: DRAFT_WIKINODE_SUGGESTION_WRITE_BOUNDARY_PLAN

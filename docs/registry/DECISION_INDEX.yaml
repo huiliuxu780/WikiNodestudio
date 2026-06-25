@@ -1,5 +1,16 @@
 version: 1
 decisions:
+  - id: D039
+    date: "2026-06-25"
+    title: "Plan Draft WikiNode Suggestion write boundaries before implementation"
+    rationale: "The user approved IM039 after IM036/IM037 established the read-only Draft WikiNode Suggestion model and review surface. IM039 separates generation, rejection, acceptance, retry, and batch conversion into distinct future tasks, recommends deterministic one-record generation first, and keeps Java, database, API, frontend action buttons, suggestion generation, accept/reject, WikiNode creation/update, publishing, indexing, vector sync, parser execution, external AI, permissions, approval workflow, batch conversion, package changes, and dependencies out of scope."
+    related:
+      - IM039
+      - IM037
+      - IM036
+      - DRAFT_WIKINODE_SUGGESTION_WRITE_BOUNDARY_PLAN
+      - DRAFT_WIKINODE_SUGGESTION_READONLY_CONTRACT_PLAN
+      - DRAFT_WIKINODE_SUGGESTION_READONLY_MODEL
   - id: D037
     date: "2026-06-25"
     title: "Keep Draft WikiNode Suggestion acceptance sweep read-only"
