@@ -49,6 +49,11 @@ phase2_plans:
     service: src/services/source-api-service.ts
     source_page: src/pages/sources-page.tsx
     detail_pages: src/pages/skeleton-pages.tsx
+  SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN:
+    decision: D029
+    file: docs/current/SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN.md
+    previous_frontend_alignment: SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_FRONTEND_API_ALIGNMENT
+    previous_backend_contract: SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_READONLY_BACKEND
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
@@ -112,3 +117,6 @@ tasks:
     api_alignment_test: tests/e2e/source-raw-material-api-alignment.spec.ts
     acceptance_test: tests/e2e/source-raw-material-acceptance.spec.ts
     route_fixture: tests/e2e/source-api-fixtures.ts
+  IM029:
+    decision: D029
+    plan: SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN
