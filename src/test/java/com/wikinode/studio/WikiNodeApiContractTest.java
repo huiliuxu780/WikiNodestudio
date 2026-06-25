@@ -59,6 +59,40 @@ class WikiNodeApiContractTest {
   }
 
   @Test
+  void exposesSourceRawMaterialAndParsedDocumentReadOnlyEvidenceChain() throws Exception {
+    HttpResponse<String> sources = get("/api/sources");
+    HttpResponse<String> sourceDetail = get("/api/sources/src-feishu-cc");
+    HttpResponse<String> sourceRawMaterials = get("/api/sources/src-feishu-cc/raw-materials");
+    HttpResponse<String> rawMaterials = get("/api/raw-materials");
+    HttpResponse<String> rawMaterialDetail = get("/api/raw-materials/rm-001");
+    HttpResponse<String> parsedDocuments = get("/api/raw-materials/rm-001/parsed-documents");
+    HttpResponse<String> parsedDocumentDetail = get("/api/parsed-documents/pd-001");
+
+    assertThat(sources.statusCode()).isEqualTo(200);
+    assertThat(sources.body()).contains("\"sourceId\":\"src-feishu-cc\"");
+    assertThat(sources.body()).contains("\"rawMaterialCount\":");
+    assertThat(sourceDetail.statusCode()).isEqualTo(200);
+    assertThat(sourceDetail.body()).contains("\"sourceType\":\"feishu\"");
+
+    assertThat(sourceRawMaterials.statusCode()).isEqualTo(200);
+    assertThat(sourceRawMaterials.body()).contains("\"rawMaterialId\":\"rm-001\"");
+    assertThat(rawMaterials.statusCode()).isEqualTo(200);
+    assertThat(rawMaterials.body()).contains("\"parseStatus\":\"parsed\"");
+    assertThat(rawMaterialDetail.statusCode()).isEqualTo(200);
+    assertThat(rawMaterialDetail.body()).contains("\"sourceId\":\"src-feishu-cc\"");
+    assertThat(rawMaterialDetail.body()).contains("\"parsedDocumentCount\":1");
+
+    assertThat(parsedDocuments.statusCode()).isEqualTo(200);
+    assertThat(parsedDocuments.body()).contains("\"parsedDocumentId\":\"pd-001\"");
+    assertThat(parsedDocumentDetail.statusCode()).isEqualTo(200);
+    assertThat(parsedDocumentDetail.body()).contains("\"normalizedContent\"");
+    assertThat(parsedDocumentDetail.body()).contains("\"sourceRefs\"");
+    assertThat(parsedDocumentDetail.body()).contains("\"locatorType\":\"heading\"");
+    assertThat(parsedDocumentDetail.body()).doesNotContain("\"chunk\"");
+    assertThat(parsedDocumentDetail.body()).doesNotContain("\"document\":{\"");
+  }
+
+  @Test
   void retrievalReturnsWikiNodeObjectsNotChunks() throws Exception {
     String body = """
       {

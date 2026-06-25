@@ -1,6 +1,8 @@
 package com.wikinode.studio.api;
 
 import com.wikinode.studio.model.IndexStatusSummary;
+import com.wikinode.studio.model.ParsedDocument;
+import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
@@ -109,6 +111,41 @@ public class WikiNodeController {
     return repository.listSources();
   }
 
+  @GetMapping("/sources/{sourceId}")
+  public SourceItem getSource(@PathVariable String sourceId) {
+    return repository.findSource(sourceId)
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Source not found"));
+  }
+
+  @GetMapping("/sources/{sourceId}/raw-materials")
+  public List<RawMaterial> listSourceRawMaterials(@PathVariable String sourceId) {
+    ensureSourceExists(sourceId);
+    return repository.listRawMaterialsForSource(sourceId);
+  }
+
+  @GetMapping("/raw-materials")
+  public List<RawMaterial> listRawMaterials() {
+    return repository.listRawMaterials();
+  }
+
+  @GetMapping("/raw-materials/{rawMaterialId}")
+  public RawMaterial getRawMaterial(@PathVariable String rawMaterialId) {
+    return repository.findRawMaterial(rawMaterialId)
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Raw Material not found"));
+  }
+
+  @GetMapping("/raw-materials/{rawMaterialId}/parsed-documents")
+  public List<ParsedDocument> listRawMaterialParsedDocuments(@PathVariable String rawMaterialId) {
+    ensureRawMaterialExists(rawMaterialId);
+    return repository.listParsedDocumentsForRawMaterial(rawMaterialId);
+  }
+
+  @GetMapping("/parsed-documents/{parsedDocumentId}")
+  public ParsedDocument getParsedDocument(@PathVariable String parsedDocumentId) {
+    return repository.findParsedDocument(parsedDocumentId)
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parsed Document not found"));
+  }
+
   @GetMapping("/index-status")
   public IndexStatusSummary getIndexStatus() {
     return repository.indexStatus();
@@ -117,6 +154,18 @@ public class WikiNodeController {
   private void ensureNodeExists(String id) {
     if (repository.findNode(id).isEmpty()) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "WikiNode not found");
+    }
+  }
+
+  private void ensureSourceExists(String sourceId) {
+    if (repository.findSource(sourceId).isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Source not found");
+    }
+  }
+
+  private void ensureRawMaterialExists(String rawMaterialId) {
+    if (repository.findRawMaterial(rawMaterialId).isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Raw Material not found");
     }
   }
 }

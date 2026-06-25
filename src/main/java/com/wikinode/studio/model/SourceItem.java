@@ -7,6 +7,7 @@ public record SourceItem(
   String owner,
   String syncStatus,
   String lastSyncedAt,
-  int generatedNodes
+  int generatedNodes,
+  int rawMaterialCount
 ) {
 }

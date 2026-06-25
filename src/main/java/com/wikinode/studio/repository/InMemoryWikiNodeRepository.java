@@ -1,6 +1,8 @@
 package com.wikinode.studio.repository;
 
 import com.wikinode.studio.model.SourceItem;
+import com.wikinode.studio.model.ParsedDocument;
+import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.WikiNode;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,6 +17,8 @@ public class InMemoryWikiNodeRepository extends AbstractWikiNodeRepository {
 
   private final Map<String, WikiNode> nodes = new LinkedHashMap<>();
   private final List<SourceItem> sources = WikiNodeSeedData.sources();
+  private final List<RawMaterial> rawMaterials = WikiNodeSeedData.rawMaterials();
+  private final List<ParsedDocument> parsedDocuments = WikiNodeSeedData.parsedDocuments();
 
   public InMemoryWikiNodeRepository() {
     WikiNodeSeedData.nodes().forEach(node -> nodes.put(node.nodeId(), node));
@@ -49,5 +53,15 @@ public class InMemoryWikiNodeRepository extends AbstractWikiNodeRepository {
   @Override
   protected List<SourceItem> loadSources() {
     return sources;
+  }
+
+  @Override
+  protected List<RawMaterial> loadRawMaterials() {
+    return rawMaterials;
+  }
+
+  @Override
+  protected List<ParsedDocument> loadParsedDocuments() {
+    return parsedDocuments;
   }
 }

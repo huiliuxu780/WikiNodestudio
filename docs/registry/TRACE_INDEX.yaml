@@ -37,6 +37,12 @@ phase2_plans:
     file: docs/current/SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_MODEL_CONTRACT_PLAN.md
     parent_plan: docs/current/SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_PHASE2_PLAN.md
     model_spec: docs/current/KNOWLEDGE_OBJECT_MODEL_SPEC.md
+  SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_READONLY_BACKEND:
+    decision: D027
+    contract: docs/current/SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_MODEL_CONTRACT_PLAN.md
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    repository: src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
+    migration: src/main/resources/db/migration/V3__create_source_evidence_schema.sql
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
@@ -87,3 +93,10 @@ tasks:
     guideline: docs/quality/frontend-ux-guidelines.md
     labels: src/utils/display-labels.ts
     smoke: tests/e2e/mvp-smoke.spec.ts
+  IM027:
+    decision: D027
+    contract: SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_MODEL_CONTRACT
+    implementation: SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_READONLY_BACKEND
+    api_contract_test: src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+    repository_test: src/test/java/com/wikinode/studio/repository/JdbcWikiNodeRepositoryTest.java
+    api_smoke: scripts/api-smoke.sh

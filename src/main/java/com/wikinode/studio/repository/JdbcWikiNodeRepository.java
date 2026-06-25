@@ -1,11 +1,15 @@
 package com.wikinode.studio.repository;
 
+import com.wikinode.studio.model.ParsedDocument;
+import com.wikinode.studio.model.ParsedDocumentSourceRef;
+import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.SourceItem;
 import com.wikinode.studio.model.SourceRef;
 import com.wikinode.studio.model.WikiNode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DuplicateKeyException;
@@ -124,9 +128,10 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
   protected List<SourceItem> loadSources() {
     return jdbcTemplate.query(
       """
-      select source_id, source_type, title, owner, sync_status, last_synced_at, generated_nodes
-      from source_items
-      order by source_id
+      select s.source_id, s.source_type, s.title, s.owner, s.sync_status, s.last_synced_at, s.generated_nodes,
+             (select count(*) from raw_materials rm where rm.source_id = s.source_id) as raw_material_count
+      from source_items s
+      order by s.source_id
       """,
       (resultSet, rowNumber) -> new SourceItem(
         resultSet.getString("source_id"),
@@ -135,8 +140,69 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
         resultSet.getString("owner"),
         resultSet.getString("sync_status"),
         resultSet.getString("last_synced_at"),
-        resultSet.getInt("generated_nodes")
+        resultSet.getInt("generated_nodes"),
+        resultSet.getInt("raw_material_count")
       )
+    );
+  }
+
+  @Override
+  protected List<RawMaterial> loadRawMaterials() {
+    return jdbcTemplate.query(
+      """
+      select rm.raw_material_id, rm.source_id, rm.title, rm.raw_material_type, rm.source_version,
+             rm.captured_at, rm.content_hash, rm.storage_provider, rm.storage_ref, rm.parse_status,
+             (select count(*) from parsed_documents pd where pd.raw_material_id = rm.raw_material_id) as parsed_document_count,
+             rm.created_at, rm.updated_at
+      from raw_materials rm
+      order by rm.created_at, rm.raw_material_id
+      """,
+      (resultSet, rowNumber) -> new RawMaterial(
+        resultSet.getString("raw_material_id"),
+        resultSet.getString("source_id"),
+        resultSet.getString("title"),
+        resultSet.getString("raw_material_type"),
+        resultSet.getString("source_version"),
+        resultSet.getString("captured_at"),
+        resultSet.getString("content_hash"),
+        resultSet.getString("storage_provider"),
+        resultSet.getString("storage_ref"),
+        resultSet.getString("parse_status"),
+        resultSet.getInt("parsed_document_count"),
+        resultSet.getString("created_at"),
+        resultSet.getString("updated_at")
+      )
+    );
+  }
+
+  @Override
+  protected List<ParsedDocument> loadParsedDocuments() {
+    return jdbcTemplate.query(
+      """
+      select parsed_document_id, raw_material_id, source_id, title, content_format, normalized_content,
+             metadata_language, metadata_business_domain, parser_profile, parse_status, parse_error_summary,
+             created_at, updated_at
+      from parsed_documents
+      order by created_at, parsed_document_id
+      """,
+      (resultSet, rowNumber) -> {
+        String parsedDocumentId = resultSet.getString("parsed_document_id");
+        return new ParsedDocument(
+          parsedDocumentId,
+          resultSet.getString("raw_material_id"),
+          resultSet.getString("source_id"),
+          resultSet.getString("title"),
+          resultSet.getString("content_format"),
+          resultSet.getString("normalized_content"),
+          metadata(resultSet),
+          loadParsedDocumentSourceRefs(parsedDocumentId),
+          resultSet.getString("parser_profile"),
+          resultSet.getString("parse_status"),
+          resultSet.getString("parse_error_summary"),
+          resultSet.getString("created_at"),
+          resultSet.getString("updated_at")
+        );
+      }
     );
   }
 
@@ -187,6 +253,34 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
         resultSet.getString("version")
       ),
       nodeId
+    );
+  }
+
+  private List<ParsedDocumentSourceRef> loadParsedDocumentSourceRefs(String parsedDocumentId) {
+    return jdbcTemplate.query(
+      """
+      select source_id, raw_material_id, parsed_document_id, locator_type, locator, excerpt, confidence
+      from parsed_document_source_refs
+      where parsed_document_id = ?
+      order by position
+      """,
+      (resultSet, rowNumber) -> new ParsedDocumentSourceRef(
+        resultSet.getString("source_id"),
+        resultSet.getString("raw_material_id"),
+        resultSet.getString("parsed_document_id"),
+        resultSet.getString("locator_type"),
+        resultSet.getString("locator"),
+        resultSet.getString("excerpt"),
+        resultSet.getDouble("confidence")
+      ),
+      parsedDocumentId
+    );
+  }
+
+  private Map<String, String> metadata(ResultSet resultSet) throws SQLException {
+    return Map.of(
+      "language", resultSet.getString("metadata_language"),
+      "businessDomain", resultSet.getString("metadata_business_domain")
     );
   }
 

@@ -3,6 +3,8 @@ package com.wikinode.studio.repository;
 import com.wikinode.studio.model.GraphEdge;
 import com.wikinode.studio.model.GraphNode;
 import com.wikinode.studio.model.IndexStatusSummary;
+import com.wikinode.studio.model.ParsedDocument;
+import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
@@ -37,6 +39,10 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   protected abstract void replaceNode(String nodeId, WikiNode node);
 
   protected abstract List<SourceItem> loadSources();
+
+  protected abstract List<RawMaterial> loadRawMaterials();
+
+  protected abstract List<ParsedDocument> loadParsedDocuments();
 
   @Override
   public List<WikiNode> listNodes() {
@@ -104,6 +110,36 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   @Override
   public List<SourceItem> listSources() {
     return List.copyOf(loadSources());
+  }
+
+  @Override
+  public Optional<SourceItem> findSource(String sourceId) {
+    return loadSources().stream().filter(source -> source.sourceId().equals(sourceId)).findFirst();
+  }
+
+  @Override
+  public List<RawMaterial> listRawMaterials() {
+    return List.copyOf(loadRawMaterials());
+  }
+
+  @Override
+  public List<RawMaterial> listRawMaterialsForSource(String sourceId) {
+    return loadRawMaterials().stream().filter(rawMaterial -> rawMaterial.sourceId().equals(sourceId)).toList();
+  }
+
+  @Override
+  public Optional<RawMaterial> findRawMaterial(String rawMaterialId) {
+    return loadRawMaterials().stream().filter(rawMaterial -> rawMaterial.rawMaterialId().equals(rawMaterialId)).findFirst();
+  }
+
+  @Override
+  public List<ParsedDocument> listParsedDocumentsForRawMaterial(String rawMaterialId) {
+    return loadParsedDocuments().stream().filter(parsedDocument -> parsedDocument.rawMaterialId().equals(rawMaterialId)).toList();
+  }
+
+  @Override
+  public Optional<ParsedDocument> findParsedDocument(String parsedDocumentId) {
+    return loadParsedDocuments().stream().filter(parsedDocument -> parsedDocument.parsedDocumentId().equals(parsedDocumentId)).findFirst();
   }
 
   @Override

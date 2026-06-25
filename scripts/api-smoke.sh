@@ -75,6 +75,45 @@ if (!Array.isArray(nodes) || nodes.length < 5) {
 
 await request("GET /api/wiki-nodes/{id}", "/wiki-nodes/wn-001")
 
+const sources = await request("GET /api/sources", "/sources")
+if (!Array.isArray(sources) || !sources.some((source) => source.sourceId === "src-feishu-cc" && source.rawMaterialCount >= 1)) {
+  throw new Error("GET /api/sources: FAIL expected source rawMaterialCount")
+}
+
+const sourceDetail = await request("GET /api/sources/{id}", "/sources/src-feishu-cc")
+if (sourceDetail.sourceType !== "feishu") {
+  throw new Error("GET /api/sources/{id}: FAIL expected Source detail")
+}
+
+const sourceRawMaterials = await request("GET /api/sources/{id}/raw-materials", "/sources/src-feishu-cc/raw-materials")
+if (!Array.isArray(sourceRawMaterials) || !sourceRawMaterials.some((rawMaterial) => rawMaterial.rawMaterialId === "rm-001")) {
+  throw new Error("GET /api/sources/{id}/raw-materials: FAIL expected Raw Material list")
+}
+
+const rawMaterials = await request("GET /api/raw-materials", "/raw-materials")
+if (!Array.isArray(rawMaterials) || !rawMaterials.some((rawMaterial) => rawMaterial.parseStatus === "parsed")) {
+  throw new Error("GET /api/raw-materials: FAIL expected parsed Raw Material")
+}
+
+const rawMaterialDetail = await request("GET /api/raw-materials/{id}", "/raw-materials/rm-001")
+if (rawMaterialDetail.sourceId !== "src-feishu-cc" || rawMaterialDetail.parsedDocumentCount < 1) {
+  throw new Error("GET /api/raw-materials/{id}: FAIL expected parsed document count")
+}
+
+const parsedDocuments = await request("GET /api/raw-materials/{id}/parsed-documents", "/raw-materials/rm-001/parsed-documents")
+if (!Array.isArray(parsedDocuments) || !parsedDocuments.some((parsedDocument) => parsedDocument.parsedDocumentId === "pd-001")) {
+  throw new Error("GET /api/raw-materials/{id}/parsed-documents: FAIL expected Parsed Document list")
+}
+
+const parsedDocumentDetail = await request("GET /api/parsed-documents/{id}", "/parsed-documents/pd-001")
+if (!parsedDocumentDetail.normalizedContent || !Array.isArray(parsedDocumentDetail.sourceRefs)) {
+  throw new Error("GET /api/parsed-documents/{id}: FAIL expected normalized content and source refs")
+}
+
+if (Object.prototype.hasOwnProperty.call(parsedDocumentDetail, "chunk")) {
+  throw new Error("GET /api/parsed-documents/{id}: FAIL response exposed chunk")
+}
+
 const created = await request("POST /api/wiki-nodes", "/wiki-nodes", {
   method: "POST",
   body: JSON.stringify({
