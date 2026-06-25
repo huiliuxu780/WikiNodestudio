@@ -28,6 +28,8 @@ product_docs:
   CURRENT_DONE_REPORT_TEMPLATE:
     file: docs/current/DONE_REPORT_TEMPLATE.md
     source: /Users/mac/Desktop/任务 2 文档.md
+  IMPLEMENTATION_SLICE_PRINCIPLES:
+    file: docs/current/IMPLEMENTATION_SLICE_PRINCIPLES.md
 phase2_plans:
   SOURCE_RAW_MATERIAL_PARSED_DOCUMENT:
     file: docs/current/SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_PHASE2_PLAN.md
@@ -110,6 +112,22 @@ phase2_plans:
     api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
     request_model: src/main/java/com/wikinode/studio/model/DraftWikiNodeSuggestionGenerationRequest.java
     response_model: src/main/java/com/wikinode/studio/model/DraftWikiNodeSuggestionGenerationResult.java
+    repository: src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
+    jdbc_repository: src/main/java/com/wikinode/studio/repository/JdbcWikiNodeRepository.java
+    frontend_service: src/services/source-api-service.ts
+    frontend_page: src/pages/skeleton-pages.tsx
+    api_contract_test: src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+    repository_test: src/test/java/com/wikinode/studio/repository/JdbcWikiNodeRepositoryTest.java
+    api_smoke: scripts/api-smoke.sh
+    playwright: tests/e2e/draft-wikinode-suggestion-readonly.spec.ts
+  DRAFT_WIKINODE_SUGGESTION_REVIEW_REJECT_OPERATION:
+    decision: D041
+    slice_principles: IMPLEMENTATION_SLICE_PRINCIPLES
+    plan: DRAFT_WIKINODE_SUGGESTION_WRITE_BOUNDARY_PLAN
+    operation_plan: SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    request_model: src/main/java/com/wikinode/studio/model/DraftWikiNodeSuggestionRejectRequest.java
+    response_model: src/main/java/com/wikinode/studio/model/DraftWikiNodeSuggestionReviewResult.java
     repository: src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
     jdbc_repository: src/main/java/com/wikinode/studio/repository/JdbcWikiNodeRepository.java
     frontend_service: src/services/source-api-service.ts
@@ -240,3 +258,6 @@ tasks:
   IM040:
     decision: D040
     implementation: DRAFT_WIKINODE_SUGGESTION_GENERATE_OPERATION
+  IM041:
+    decision: D041
+    implementation: DRAFT_WIKINODE_SUGGESTION_REVIEW_REJECT_OPERATION

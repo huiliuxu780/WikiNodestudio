@@ -7,6 +7,8 @@ import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.DraftWikiNodeSuggestion;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationRequest;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationResult;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionRejectRequest;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionReviewResult;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
@@ -197,6 +199,21 @@ public class WikiNodeController {
     @RequestBody(required = false) DraftWikiNodeSuggestionGenerationRequest request
   ) {
     return repository.generateDraftWikiNodeSuggestion(parsedDocumentId, request);
+  }
+
+  @PostMapping("/draft-wikinode-suggestions/{suggestionId}/reject")
+  public DraftWikiNodeSuggestionReviewResult rejectDraftWikiNodeSuggestion(
+    @PathVariable String suggestionId,
+    @RequestBody(required = false) DraftWikiNodeSuggestionRejectRequest request
+  ) {
+    try {
+      return repository.rejectDraftWikiNodeSuggestion(suggestionId, request);
+    } catch (IllegalArgumentException error) {
+      HttpStatus status = repository.findDraftWikiNodeSuggestion(suggestionId).isEmpty()
+        ? HttpStatus.NOT_FOUND
+        : HttpStatus.BAD_REQUEST;
+      throw new ResponseStatusException(status, error.getMessage());
+    }
   }
 
   @GetMapping("/raw-materials/{rawMaterialId}/draft-wikinode-suggestions")

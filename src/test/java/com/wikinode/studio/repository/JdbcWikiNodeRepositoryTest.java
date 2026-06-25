@@ -9,6 +9,8 @@ import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.DraftWikiNodeSuggestion;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationRequest;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationResult;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionRejectRequest;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionReviewResult;
 import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.WikiNode;
 import com.wikinode.studio.model.WikiNodeUpsertRequest;
@@ -334,6 +336,45 @@ class JdbcWikiNodeRepositoryTest {
     assertThat(result.status()).isEqualTo("skipped");
     assertThat(result.summary()).isEqualTo("缺少 SourceRef 证据，不能生成 WikiNode 建议。");
     assertThat(repository.listDraftWikiNodeSuggestionsForParsedDocument("pd-no-source-ref")).isEmpty();
+  }
+
+  @Test
+  void rejectsDraftWikiNodeSuggestionWithReviewNoteAndKeepsEvidence() {
+    JdbcTemplate jdbcTemplate = jdbcTemplateWithDraftWikiNodeSuggestions();
+    JdbcWikiNodeRepository repository = new JdbcWikiNodeRepository(jdbcTemplate);
+
+    DraftWikiNodeSuggestionReviewResult result = repository.rejectDraftWikiNodeSuggestion(
+      "sug-002",
+      new DraftWikiNodeSuggestionRejectRequest("培训资料暂不进入 WikiNode。")
+    );
+
+    assertThat(result.suggestionId()).isEqualTo("sug-002");
+    assertThat(result.status()).isEqualTo("rejected");
+    assertThat(result.summary()).isEqualTo("已拒绝 WikiNode 建议。");
+    assertThat(result.reviewNote()).isEqualTo("培训资料暂不进入 WikiNode。");
+
+    assertThat(repository.findDraftWikiNodeSuggestion("sug-002"))
+      .hasValueSatisfying(suggestion -> {
+        assertThat(suggestion.status()).isEqualTo("rejected");
+        assertThat(suggestion.reviewNote()).isEqualTo("培训资料暂不进入 WikiNode。");
+        assertThat(suggestion.sourceRefs()).hasSize(1);
+        assertThat(suggestion.relationCandidates()).hasSize(1);
+        assertThat(suggestion.parsedDocumentId()).isEqualTo("pd-002");
+        assertThat(suggestion.rawMaterialId()).isEqualTo("rm-002");
+      });
+  }
+
+  @Test
+  void rejectDraftWikiNodeSuggestionRequiresReviewNote() {
+    JdbcTemplate jdbcTemplate = jdbcTemplateWithDraftWikiNodeSuggestions();
+    JdbcWikiNodeRepository repository = new JdbcWikiNodeRepository(jdbcTemplate);
+
+    assertThatThrownBy(() -> repository.rejectDraftWikiNodeSuggestion(
+      "sug-001",
+      new DraftWikiNodeSuggestionRejectRequest(" ")
+    ))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("拒绝原因不能为空");
   }
 
   private JdbcTemplate jdbcTemplate() {

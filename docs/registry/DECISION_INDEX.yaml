@@ -1,5 +1,17 @@
 version: 1
 decisions:
+  - id: D041
+    date: "2026-06-25"
+    title: "Implement Draft WikiNode Suggestion reject operation as a coherent review slice"
+    rationale: "The user challenged over-fragmented IM slicing and requested a principle document plus continued development. IM041 defines the slicing principle that IM tasks should deliver PM-verifiable product capabilities, then implements the low-risk single-record Draft WikiNode Suggestion reject operation with required review note, safe API response, frontend detail-page action, API smoke, repository/API contract tests, and Playwright coverage while keeping accept, WikiNode creation or update, WikiLink creation, publishing, indexing, Index Segment generation, vector sync, parser execution, external AI, LLM prompts, permissions, approval workflow, batch conversion, migrations, dependencies, package changes, and lockfile changes out of scope."
+    related:
+      - IM041
+      - D040
+      - D039
+      - IMPLEMENTATION_SLICE_PRINCIPLES
+      - DRAFT_WIKINODE_SUGGESTION_REVIEW_REJECT_OPERATION
+      - DRAFT_WIKINODE_SUGGESTION_WRITE_BOUNDARY_PLAN
+      - SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN
   - id: D040
     date: "2026-06-25"
     title: "Implement single Draft WikiNode Suggestion generation operation"

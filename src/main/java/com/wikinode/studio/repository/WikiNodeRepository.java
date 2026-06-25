@@ -7,6 +7,8 @@ import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.DraftWikiNodeSuggestion;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationRequest;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationResult;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionRejectRequest;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionReviewResult;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
@@ -73,6 +75,11 @@ public interface WikiNodeRepository {
   DraftWikiNodeSuggestionGenerationResult generateDraftWikiNodeSuggestion(
     String parsedDocumentId,
     DraftWikiNodeSuggestionGenerationRequest request
+  );
+
+  DraftWikiNodeSuggestionReviewResult rejectDraftWikiNodeSuggestion(
+    String suggestionId,
+    DraftWikiNodeSuggestionRejectRequest request
   );
 
   IndexStatusSummary indexStatus();

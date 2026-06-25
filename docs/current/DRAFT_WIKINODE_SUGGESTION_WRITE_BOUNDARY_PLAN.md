@@ -68,7 +68,7 @@ The future write surface must be split into separate approved tasks.
 
 ## 5. Recommended Implementation Sequence
 
-The next implementation should not start with accept/reject.
+The sequence should avoid over-fragmented IM tasks while keeping hard boundaries separate.
 
 Recommended sequence:
 
@@ -76,14 +76,17 @@ Recommended sequence:
    - Add one write API that creates or skips a Draft WikiNode Suggestion from one Parsed Document.
    - Produce Source Operation evidence.
    - Keep accept/reject absent.
-2. `IM041 Draft WikiNode Suggestion Review Decision Planning`
-   - Plan accept/reject semantics, review notes, permission hooks, and rollback before any UI action exists.
-3. `IM042 Draft WikiNode Suggestion Reject Operation`
-   - Implement rejection only, because it is safer than creating WikiNodes.
-4. `IM043 Draft WikiNode Suggestion Accept To Draft WikiNode Planning`
-   - Plan exact WikiNode write semantics before accepting suggestions can create data.
-5. `IM044 Draft WikiNode Suggestion Accept To Draft WikiNode`
-   - Implement accept only after creation/update semantics are fixed.
+2. `IM041 Draft WikiNode Suggestion Review Decision and Reject Operation`
+   - Document task slicing principles.
+   - Implement single-suggestion rejection with required review note.
+   - Keep accept and WikiNode creation absent.
+3. `IM042 Draft WikiNode Suggestion Accept To Draft WikiNode`
+   - Plan and implement exact WikiNode write semantics in one approved task only if the hard write boundary is explicitly accepted.
+   - Keep publish, index, vector sync, and batch conversion absent.
+4. `IM043 Draft WikiNode Suggestion Review Flow Acceptance Sweep`
+   - Polish the review flow after generation, reject, and accept are stable.
+
+Planning-only IMs should be reserved for high-risk boundaries such as accept-to-WikiNode, permissions, batch operations, external integrations, or schema expansion. Low-risk review-state changes may combine boundary clarification and implementation when they use existing fields and remain single-record.
 
 ## 6. Generate Suggestion Boundary
 
@@ -200,12 +203,45 @@ Forbidden response fields:
 - parser stack traces
 - internal exception names
 
-### 9.2 Deferred Review APIs
+### 9.2 Review APIs
+
+Rejection may be implemented as a single-record review-state operation after explicit approval:
+
+```http
+POST /api/draft-wikinode-suggestions/{suggestionId}/reject
+```
+
+Request body:
+
+```json
+{
+  "reviewNote": "证据不足，暂不进入 WikiNode。"
+}
+```
+
+Success response:
+
+```json
+{
+  "suggestionId": "sug-001",
+  "status": "rejected",
+  "summary": "已拒绝 WikiNode 建议。",
+  "reviewNote": "证据不足，暂不进入 WikiNode。"
+}
+```
+
+Forbidden response fields:
+
+- `nodeId`
+- `wikiLinkId`
+- `indexSegmentId`
+- raw vector chunks
+- storage credentials
+- signed URLs
 
 These APIs remain deferred until separately planned and approved:
 
 ```http
-POST /api/draft-wikinode-suggestions/{suggestionId}/reject
 POST /api/draft-wikinode-suggestions/{suggestionId}/accept
 POST /api/draft-wikinode-suggestions/{suggestionId}/retry
 POST /api/draft-wikinode-suggestions/batch

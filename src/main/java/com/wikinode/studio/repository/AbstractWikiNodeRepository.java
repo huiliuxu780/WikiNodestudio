@@ -11,6 +11,8 @@ import com.wikinode.studio.model.DraftWikiNodeRelationCandidate;
 import com.wikinode.studio.model.DraftWikiNodeSuggestion;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationRequest;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationResult;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionRejectRequest;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionReviewResult;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
@@ -241,6 +243,70 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       "succeeded",
       "已生成待审核 WikiNode 建议。",
       suggestion.suggestionId()
+    );
+  }
+
+  @Override
+  public DraftWikiNodeSuggestionReviewResult rejectDraftWikiNodeSuggestion(
+    String suggestionId,
+    DraftWikiNodeSuggestionRejectRequest request
+  ) {
+    String reviewNote = request == null ? "" : Optional.ofNullable(request.reviewNote()).orElse("").trim();
+    if (reviewNote.isBlank()) {
+      throw new IllegalArgumentException("拒绝原因不能为空。");
+    }
+
+    DraftWikiNodeSuggestion suggestion = findDraftWikiNodeSuggestion(suggestionId)
+      .orElseThrow(() -> new IllegalArgumentException("未找到 WikiNode 建议。"));
+    if ("rejected".equals(suggestion.status())) {
+      return new DraftWikiNodeSuggestionReviewResult(
+        suggestion.suggestionId(),
+        "skipped",
+        "该 WikiNode 建议已被拒绝。",
+        suggestion.reviewNote()
+      );
+    }
+    if (!Set.of("draft", "needs_review").contains(suggestion.status())) {
+      return new DraftWikiNodeSuggestionReviewResult(
+        suggestion.suggestionId(),
+        "skipped",
+        "当前状态不能拒绝该 WikiNode 建议。",
+        suggestion.reviewNote()
+      );
+    }
+
+    DraftWikiNodeSuggestion rejected = new DraftWikiNodeSuggestion(
+      suggestion.suggestionId(),
+      suggestion.parsedDocumentId(),
+      suggestion.rawMaterialId(),
+      suggestion.sourceId(),
+      suggestion.operationId(),
+      suggestion.title(),
+      suggestion.objectType(),
+      suggestion.subtype(),
+      suggestion.contentDraft(),
+      suggestion.metadataDraft(),
+      suggestion.sourceRefs(),
+      suggestion.relationCandidates(),
+      suggestion.confidence(),
+      "rejected",
+      reviewNote,
+      suggestion.conflictStatus(),
+      suggestion.conflictReasons(),
+      suggestion.matchedWikiNodeIds(),
+      suggestion.matchedSuggestionIds(),
+      suggestion.sourceRefCount(),
+      suggestion.relationCandidateCount(),
+      suggestion.createdAt(),
+      today()
+    );
+    insertDraftWikiNodeSuggestion(rejected);
+
+    return new DraftWikiNodeSuggestionReviewResult(
+      rejected.suggestionId(),
+      rejected.status(),
+      "已拒绝 WikiNode 建议。",
+      rejected.reviewNote()
     );
   }
 

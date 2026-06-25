@@ -2,7 +2,11 @@ import { apiGet, apiPost, withMockFallback } from "@/services/api-client"
 import { mockRawMaterials } from "@/data/mock-raw-materials"
 import { mockSources } from "@/data/mock-sources"
 import { listWikiNodes } from "@/services/wiki-node-api-service"
-import type { DraftWikiNodeSuggestion } from "@/types/draft-wikinode-suggestion"
+import type {
+  DraftWikiNodeSuggestion,
+  DraftWikiNodeSuggestionRejectRequest,
+  DraftWikiNodeSuggestionReviewResult,
+} from "@/types/draft-wikinode-suggestion"
 import type { ParsedDocument, RawMaterial } from "@/types/raw-material"
 import type { SourceItem } from "@/types/source"
 import type { SourceOperation } from "@/types/source-operation"
@@ -123,6 +127,21 @@ export function generateDraftWikiNodeSuggestion(
       status: "skipped",
       summary: "当前 Mock fallback 不执行真实 WikiNode 建议生成。",
       suggestionId: null,
+    })
+  )
+}
+
+export function rejectDraftWikiNodeSuggestion(
+  suggestionId: string,
+  request: DraftWikiNodeSuggestionRejectRequest
+) {
+  return withMockFallback(
+    apiPost<DraftWikiNodeSuggestionReviewResult>(`/draft-wikinode-suggestions/${suggestionId}/reject`, request),
+    (): DraftWikiNodeSuggestionReviewResult => ({
+      suggestionId,
+      status: "skipped",
+      summary: "当前 Mock fallback 不执行真实 WikiNode 建议拒绝操作。",
+      reviewNote: request.reviewNote,
     })
   )
 }

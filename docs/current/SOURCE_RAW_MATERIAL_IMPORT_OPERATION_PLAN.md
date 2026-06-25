@@ -41,6 +41,7 @@ Implemented by prior increments:
 - IM037: Draft WikiNode Suggestion read-only acceptance sweep for detail-page evidence boundaries, relation-candidate source labels, and no-write-action browser coverage.
 - IM039: Draft WikiNode Suggestion write-boundary planning for generation, accept, reject, retry, duplicate/conflict, Source Operation, API, frontend, persistence, and stop-condition sequencing without implementation.
 - IM040: single Parsed Document to Draft WikiNode Suggestion generation operation with Source Operation evidence, safe API response, frontend trigger, API smoke, and tests; no accept/reject, WikiNode creation/update, publish, index, vector sync, parser execution, AI, permissions, approval workflow, or batch conversion.
+- IM041: task-slicing principle plus single Draft WikiNode Suggestion reject operation with required review note; no accept, WikiNode creation/update, publish, index, vector sync, parser execution, AI, permissions, approval workflow, batch conversion, dependency, or migration change.
 
 Current product behavior:
 
@@ -537,4 +538,38 @@ Forbidden:
 - No external AI, LLM, prompts, credentials, or model provider integration.
 - No permissions or approval workflow.
 - No batch conversion.
+- No new dependencies, package changes, or lockfile changes.
+
+### IM041 - Draft WikiNode Suggestion Review Decision and Reject Operation
+
+Type: one-record review-state implementation plus slicing guidance.
+
+Goal:
+
+- Define the implementation slicing principle so future IM tasks are not split too small.
+- Implement a single-suggestion reject action for existing Draft WikiNode Suggestions.
+- Require a Chinese reviewer note and preserve all Source / Raw Material / Parsed Document / Source Operation evidence.
+
+Implemented scope:
+
+- `POST /api/draft-wikinode-suggestions/{suggestionId}/reject`.
+- Request body contains `reviewNote`.
+- Response contains `suggestionId`, `status`, `summary`, and `reviewNote`.
+- Existing suggestion status can move from `draft` or `needs_review` to `rejected`.
+- Suggestion detail page exposes only `拒绝建议` with a review note.
+- API, repository, Playwright, and API smoke coverage prove the operation does not create WikiNode, WikiLink, Index Segment, publish, index, vector sync, parser, AI, permission, approval, or batch records.
+
+Forbidden:
+
+- No accept workflow.
+- No WikiNode creation or update.
+- No WikiLink creation.
+- No publish or index.
+- No Index Segment generation.
+- No vector sync.
+- No parser execution.
+- No external AI, LLM, prompts, credentials, or model provider integration.
+- No permissions or approval workflow.
+- No batch conversion.
+- No database migration.
 - No new dependencies, package changes, or lockfile changes.

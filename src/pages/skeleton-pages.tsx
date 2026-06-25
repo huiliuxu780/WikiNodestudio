@@ -16,6 +16,8 @@ import { IndexSegmentTable } from "@/components/segments/index-segment-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { LinkList } from "@/components/wiki/link-list"
 import { useAsyncData } from "@/hooks/use-async-data"
 import { listParserProfiles } from "@/services/parser-profile-api-service"
@@ -31,6 +33,7 @@ import {
   listRawMaterialsForSource,
   listSourceOperationsForRawMaterial,
   listSourceOperationsForSource,
+  rejectDraftWikiNodeSuggestion,
 } from "@/services/source-api-service"
 import type { ParserProfile } from "@/types/parser-profile"
 import type { DraftWikiNodeSuggestion } from "@/types/draft-wikinode-suggestion"
@@ -506,6 +509,10 @@ export function ParsedResultPreviewPage() {
 export function DraftWikiNodeSuggestionDetailPage() {
   const { suggestionId } = useParams()
   const activeSuggestionId = suggestionId ?? ""
+  const [reviewNote, setReviewNote] = useState("")
+  const [reviewFeedback, setReviewFeedback] = useState("")
+  const [reviewError, setReviewError] = useState("")
+  const [isRejecting, setIsRejecting] = useState(false)
   const {
     data: suggestion,
     error,
@@ -513,8 +520,36 @@ export function DraftWikiNodeSuggestionDetailPage() {
     reload,
   } = useAsyncData<DraftWikiNodeSuggestion | null>(() => activeSuggestionId ? getDraftWikiNodeSuggestion(activeSuggestionId) : Promise.resolve(null), null, [activeSuggestionId])
 
+  const canRejectSuggestion = suggestion ? ["draft", "needs_review"].includes(suggestion.status) : false
+
+  async function handleRejectSuggestion() {
+    if (!activeSuggestionId) return
+    const cleanReviewNote = reviewNote.trim()
+    if (!cleanReviewNote) {
+      setReviewError("拒绝原因不能为空。")
+      setReviewFeedback("")
+      return
+    }
+
+    setIsRejecting(true)
+    setReviewError("")
+    setReviewFeedback("")
+    try {
+      const result = await rejectDraftWikiNodeSuggestion(activeSuggestionId, {
+        reviewNote: cleanReviewNote,
+      })
+      setReviewFeedback(result.summary)
+      setReviewNote("")
+      await reload()
+    } catch {
+      setReviewError("拒绝 WikiNode 建议失败，请稍后重试。")
+    } finally {
+      setIsRejecting(false)
+    }
+  }
+
   return (
-    <PageScaffold title="WikiNode 建议详情" description="只读查看 Draft WikiNode Suggestion；本页不会采纳、拒绝、发布、索引或批量转换。">
+    <PageScaffold title="WikiNode 建议详情" description="查看 Draft WikiNode Suggestion，并允许单条拒绝建议；本页不会采纳、创建 WikiNode、发布、索引或批量转换。">
       <ApiErrorNotice error={error} onRetry={reload} />
       {isLoading ? <LoadingBlock text="正在加载 WikiNode 建议..." /> : null}
       {suggestion ? (
@@ -532,13 +567,55 @@ export function DraftWikiNodeSuggestionDetailPage() {
           ]} />
           <Card>
             <CardContent className="space-y-3 p-4 text-sm text-muted-foreground">
-              <p>不是已采纳的 WikiNode，不影响 Retrieval API 结果。当前页面只读，不会生成、采纳、拒绝、发布、索引或批量转换。</p>
+              <p>不是已采纳的 WikiNode，不影响 Retrieval API 结果。拒绝只会更新当前建议的审核状态，不会创建 WikiNode、发布、索引或批量转换。</p>
               <div className="flex flex-wrap gap-2 text-xs">
                 <span className="rounded-md border px-2 py-1">Source {suggestion.sourceId}</span>
                 <span className="rounded-md border px-2 py-1">Raw Material {suggestion.rawMaterialId}</span>
                 <span className="rounded-md border px-2 py-1">Parsed Document {suggestion.parsedDocumentId}</span>
                 <span className="rounded-md border px-2 py-1">Source Operation {suggestion.operationId}</span>
               </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">审核处理</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              {canRejectSuggestion ? (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="draft-wikinode-suggestion-review-note">拒绝原因</Label>
+                    <Textarea
+                      id="draft-wikinode-suggestion-review-note"
+                      value={reviewNote}
+                      onChange={(event) => setReviewNote(event.target.value)}
+                      placeholder="说明为什么暂不进入 WikiNode。"
+                    />
+                  </div>
+                  <Button type="button" onClick={handleRejectSuggestion} disabled={isRejecting}>
+                    {isRejecting ? "正在拒绝..." : "拒绝建议"}
+                  </Button>
+                </>
+              ) : (
+                <div className="rounded-md border border-dashed p-3 text-muted-foreground">
+                  当前状态为{labelFromMap(draftWikiNodeSuggestionStatusLabels, suggestion.status)}，不能再次拒绝。
+                </div>
+              )}
+              {suggestion.reviewNote ? (
+                <div className="rounded-md border bg-muted/20 p-3 text-muted-foreground">
+                  当前审核备注：{suggestion.reviewNote}
+                </div>
+              ) : null}
+              {reviewFeedback ? (
+                <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-emerald-700">
+                  {reviewFeedback}
+                </div>
+              ) : null}
+              {reviewError ? (
+                <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-destructive">
+                  {reviewError}
+                </div>
+              ) : null}
             </CardContent>
           </Card>
           <DraftWikiNodeSuggestionPanel suggestions={[suggestion]} isLoading={false} mode="detail" />
