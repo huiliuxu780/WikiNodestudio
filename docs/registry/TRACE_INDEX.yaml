@@ -136,6 +136,21 @@ phase2_plans:
     repository_test: src/test/java/com/wikinode/studio/repository/JdbcWikiNodeRepositoryTest.java
     api_smoke: scripts/api-smoke.sh
     playwright: tests/e2e/draft-wikinode-suggestion-readonly.spec.ts
+  DRAFT_WIKINODE_SUGGESTION_ACCEPT_TO_DRAFT_WIKINODE:
+    decision: D042
+    plan: DRAFT_WIKINODE_SUGGESTION_WRITE_BOUNDARY_PLAN
+    operation_plan: SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    request_model: src/main/java/com/wikinode/studio/model/DraftWikiNodeSuggestionAcceptRequest.java
+    response_model: src/main/java/com/wikinode/studio/model/DraftWikiNodeSuggestionAcceptResult.java
+    repository: src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
+    jdbc_repository: src/main/java/com/wikinode/studio/repository/JdbcWikiNodeRepository.java
+    frontend_service: src/services/source-api-service.ts
+    frontend_page: src/pages/skeleton-pages.tsx
+    api_contract_test: src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+    repository_test: src/test/java/com/wikinode/studio/repository/JdbcWikiNodeRepositoryTest.java
+    api_smoke: scripts/api-smoke.sh
+    playwright: tests/e2e/draft-wikinode-suggestion-readonly.spec.ts
   SOURCE_OPERATION_READONLY_LOGS:
     decision: D030
     plan: docs/current/SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN.md
@@ -261,3 +276,6 @@ tasks:
   IM041:
     decision: D041
     implementation: DRAFT_WIKINODE_SUGGESTION_REVIEW_REJECT_OPERATION
+  IM042:
+    decision: D042
+    implementation: DRAFT_WIKINODE_SUGGESTION_ACCEPT_TO_DRAFT_WIKINODE

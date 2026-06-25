@@ -9,6 +9,8 @@ import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.DraftWikiNodeRelationCandidate;
 import com.wikinode.studio.model.DraftWikiNodeSuggestion;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionAcceptRequest;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionAcceptResult;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationRequest;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationResult;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionRejectRequest;
@@ -311,6 +313,100 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   }
 
   @Override
+  public DraftWikiNodeSuggestionAcceptResult acceptDraftWikiNodeSuggestion(
+    String suggestionId,
+    DraftWikiNodeSuggestionAcceptRequest request
+  ) {
+    String reviewNote = request == null ? "" : Optional.ofNullable(request.reviewNote()).orElse("").trim();
+    if (reviewNote.isBlank()) {
+      throw new IllegalArgumentException("采纳说明不能为空。");
+    }
+
+    DraftWikiNodeSuggestion suggestion = findDraftWikiNodeSuggestion(suggestionId)
+      .orElseThrow(() -> new IllegalArgumentException("未找到 WikiNode 建议。"));
+    if ("accepted".equals(suggestion.status())) {
+      String existingNodeId = suggestion.matchedWikiNodeIds().isEmpty() ? null : suggestion.matchedWikiNodeIds().getFirst();
+      return new DraftWikiNodeSuggestionAcceptResult(
+        suggestion.suggestionId(),
+        "skipped",
+        "该 WikiNode 建议已采纳。",
+        suggestion.reviewNote(),
+        existingNodeId,
+        existingNodeId == null ? null : "draft"
+      );
+    }
+    if (!Set.of("draft", "needs_review").contains(suggestion.status())) {
+      return new DraftWikiNodeSuggestionAcceptResult(
+        suggestion.suggestionId(),
+        "skipped",
+        "当前状态不能采纳该 WikiNode 建议。",
+        suggestion.reviewNote(),
+        null,
+        null
+      );
+    }
+    if (!"none".equals(suggestion.conflictStatus())) {
+      return new DraftWikiNodeSuggestionAcceptResult(
+        suggestion.suggestionId(),
+        "skipped",
+        "存在冲突，不能直接采纳为 WikiNode。",
+        suggestion.reviewNote(),
+        null,
+        null
+      );
+    }
+    if (loadNodes().stream().anyMatch(node -> suggestion.title().equals(node.title()))) {
+      return new DraftWikiNodeSuggestionAcceptResult(
+        suggestion.suggestionId(),
+        "skipped",
+        "已有 WikiNode 使用相同标题，不能直接采纳。",
+        suggestion.reviewNote(),
+        null,
+        null
+      );
+    }
+
+    String nodeId = acceptedNodeIdFor(suggestion);
+    WikiNode node = acceptedDraftWikiNode(suggestion, nodeId);
+    insertNode(node);
+    DraftWikiNodeSuggestion accepted = new DraftWikiNodeSuggestion(
+      suggestion.suggestionId(),
+      suggestion.parsedDocumentId(),
+      suggestion.rawMaterialId(),
+      suggestion.sourceId(),
+      suggestion.operationId(),
+      suggestion.title(),
+      suggestion.objectType(),
+      suggestion.subtype(),
+      suggestion.contentDraft(),
+      suggestion.metadataDraft(),
+      suggestion.sourceRefs(),
+      suggestion.relationCandidates(),
+      suggestion.confidence(),
+      "accepted",
+      reviewNote,
+      suggestion.conflictStatus(),
+      suggestion.conflictReasons(),
+      List.of(nodeId),
+      suggestion.matchedSuggestionIds(),
+      suggestion.sourceRefCount(),
+      suggestion.relationCandidateCount(),
+      suggestion.createdAt(),
+      today()
+    );
+    insertDraftWikiNodeSuggestion(accepted);
+
+    return new DraftWikiNodeSuggestionAcceptResult(
+      accepted.suggestionId(),
+      accepted.status(),
+      "已采纳为草稿 WikiNode。",
+      accepted.reviewNote(),
+      node.nodeId(),
+      node.status()
+    );
+  }
+
+  @Override
   public WikiGraphOverview graphOverview() {
     return new WikiGraphOverview(
       listNodes().stream().map(this::graphNode).toList(),
@@ -401,6 +497,88 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       today(),
       today()
     );
+  }
+
+  private WikiNode acceptedDraftWikiNode(DraftWikiNodeSuggestion suggestion, String nodeId) {
+    return new WikiNode(
+      nodeId,
+      nodeId,
+      suggestion.title(),
+      nodeTypeForSuggestion(suggestion),
+      summaryForSuggestion(suggestion),
+      suggestion.contentDraft(),
+      tagsForSuggestion(suggestion),
+      "draft",
+      sourceRefsForSuggestion(suggestion),
+      "not_indexed",
+      0,
+      0,
+      0,
+      today(),
+      today(),
+      null
+    );
+  }
+
+  private String acceptedNodeIdFor(DraftWikiNodeSuggestion suggestion) {
+    return "wn-from-%s".formatted(suggestion.suggestionId());
+  }
+
+  private String nodeTypeForSuggestion(DraftWikiNodeSuggestion suggestion) {
+    String subtype = Optional.ofNullable(suggestion.subtype()).orElse("");
+    if (subtype.contains("troubleshooting")) {
+      return "troubleshooting";
+    }
+    if (subtype.contains("procedure")) {
+      return "procedure";
+    }
+    if (subtype.contains("guide")) {
+      return "guide";
+    }
+    if (subtype.contains("fee")) {
+      return "fee_rule";
+    }
+    if (subtype.contains("regulation")) {
+      return "regulation";
+    }
+    if ("Procedure".equals(suggestion.objectType())) {
+      return "procedure";
+    }
+    if ("Rule".equals(suggestion.objectType())) {
+      return "fee_rule";
+    }
+    return "policy";
+  }
+
+  private String summaryForSuggestion(DraftWikiNodeSuggestion suggestion) {
+    return suggestion.contentDraft().lines()
+      .map(String::trim)
+      .filter(line -> !line.isBlank())
+      .filter(line -> !line.startsWith("#"))
+      .findFirst()
+      .orElse("由 WikiNode 建议采纳生成的草稿，等待人工编辑和发布。");
+  }
+
+  private List<String> tagsForSuggestion(DraftWikiNodeSuggestion suggestion) {
+    List<String> tags = new ArrayList<>();
+    tags.add("draft-suggestion");
+    if (suggestion.subtype() != null && !suggestion.subtype().isBlank()) {
+      tags.add(suggestion.subtype());
+    }
+    return tags;
+  }
+
+  private List<SourceRef> sourceRefsForSuggestion(DraftWikiNodeSuggestion suggestion) {
+    return suggestion.sourceRefs().stream()
+      .map(sourceRef -> new SourceRef(
+        sourceRef.sourceId(),
+        "parsed_document",
+        "Parsed Document %s".formatted(sourceRef.parsedDocumentId()),
+        null,
+        "%s:%s".formatted(sourceRef.locatorType(), sourceRef.locator()),
+        sourceRef.rawMaterialId()
+      ))
+      .toList();
   }
 
   private SourceOperation sourceOperation(

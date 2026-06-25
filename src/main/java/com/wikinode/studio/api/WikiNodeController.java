@@ -5,6 +5,8 @@ import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.DraftWikiNodeSuggestion;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionAcceptRequest;
+import com.wikinode.studio.model.DraftWikiNodeSuggestionAcceptResult;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationRequest;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionGenerationResult;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionRejectRequest;
@@ -208,6 +210,21 @@ public class WikiNodeController {
   ) {
     try {
       return repository.rejectDraftWikiNodeSuggestion(suggestionId, request);
+    } catch (IllegalArgumentException error) {
+      HttpStatus status = repository.findDraftWikiNodeSuggestion(suggestionId).isEmpty()
+        ? HttpStatus.NOT_FOUND
+        : HttpStatus.BAD_REQUEST;
+      throw new ResponseStatusException(status, error.getMessage());
+    }
+  }
+
+  @PostMapping("/draft-wikinode-suggestions/{suggestionId}/accept")
+  public DraftWikiNodeSuggestionAcceptResult acceptDraftWikiNodeSuggestion(
+    @PathVariable String suggestionId,
+    @RequestBody(required = false) DraftWikiNodeSuggestionAcceptRequest request
+  ) {
+    try {
+      return repository.acceptDraftWikiNodeSuggestion(suggestionId, request);
     } catch (IllegalArgumentException error) {
       HttpStatus status = repository.findDraftWikiNodeSuggestion(suggestionId).isEmpty()
         ? HttpStatus.NOT_FOUND

@@ -573,3 +573,37 @@ Forbidden:
 - No batch conversion.
 - No database migration.
 - No new dependencies, package changes, or lockfile changes.
+
+### IM042 - Draft WikiNode Suggestion Accept To Draft WikiNode
+
+Type: one-record review accept implementation.
+
+Goal:
+
+- Implement a single-suggestion accept action that creates one draft WikiNode from an existing Draft WikiNode Suggestion.
+- Require a Chinese reviewer note and preserve SourceRef evidence from Parsed Document into the created WikiNode.
+- Keep the created WikiNode as `draft` and `not_indexed`.
+
+Implemented scope:
+
+- `POST /api/draft-wikinode-suggestions/{suggestionId}/accept`.
+- Request body contains `reviewNote`.
+- Response contains `suggestionId`, `status`, safe `summary`, `reviewNote`, `nodeId`, and `nodeStatus`.
+- Only suggestions in `draft` or `needs_review` with `conflictStatus = none` can be accepted.
+- Suggestion status moves to `accepted` only after WikiNode insert succeeds.
+- Suggestion detail page exposes `采纳为草稿 WikiNode` only for non-conflicted reviewable suggestions and links to the created draft WikiNode after success.
+- API, repository, Playwright, and API smoke coverage prove the operation does not create WikiLink, Index Segment, publish, index, vector sync, parser, AI, permission, approval, or batch records.
+
+Forbidden:
+
+- No update existing WikiNode semantics.
+- No WikiLink creation.
+- No publish or index.
+- No Index Segment generation.
+- No vector sync.
+- No parser execution.
+- No external AI, LLM, prompts, credentials, or model provider integration.
+- No permissions or approval workflow.
+- No batch conversion.
+- No database migration.
+- No new dependencies, package changes, or lockfile changes.

@@ -175,20 +175,21 @@ test.describe("Draft WikiNode Suggestion read-only review", () => {
     await expect(page.getByRole("button", { name: "批量转换" })).toHaveCount(0)
   })
 
-  test("renders suggestion detail with explicit evidence boundaries and no accept actions", async ({ page }) => {
+  test("renders suggestion detail with explicit evidence boundaries and conflict-aware review actions", async ({ page }) => {
     await page.goto("/draft-wikinode-suggestions/sug-api-only")
 
     await expect(page.getByRole("heading", { name: "WikiNode 建议详情" })).toBeVisible()
-    await expect(page.getByText(/查看 Draft WikiNode Suggestion，并允许单条拒绝建议/)).toBeVisible()
+    await expect(page.getByText(/查看 Draft WikiNode Suggestion，并允许单条采纳或拒绝/)).toBeVisible()
     await expect(page.getByText("API Only WikiNode 建议").first()).toBeVisible()
     await expect(page.getByText("Source src-api-only", { exact: true }).first()).toBeVisible()
     await expect(page.getByText("Raw Material rm-api-only", { exact: true }).first()).toBeVisible()
     await expect(page.getByText("Parsed Document pd-api-only", { exact: true }).first()).toBeVisible()
     await expect(page.getByText("Source Operation op-api-suggest-001")).toBeVisible()
     await expect(page.getByText("来源证据推断")).toBeVisible()
-    await expect(page.getByText("不是已采纳的 WikiNode，不影响 Retrieval API 结果。")).toBeVisible()
+    await expect(page.getByText("采纳只会创建草稿 WikiNode，并保留来源证据；拒绝只会更新当前建议的审核状态。")).toBeVisible()
 
-    await expect(page.getByRole("button", { name: "采纳" })).toHaveCount(0)
+    await expect(page.getByText("存在冲突，不能直接采纳为 WikiNode。")).toBeVisible()
+    await expect(page.getByRole("button", { name: "采纳为草稿 WikiNode" })).toHaveCount(0)
     await expect(page.getByRole("button", { name: "拒绝建议" })).toBeVisible()
     await expect(page.getByRole("button", { name: "生成建议" })).toHaveCount(0)
     await expect(page.getByRole("button", { name: "发布" })).toHaveCount(0)
@@ -226,10 +227,56 @@ test.describe("Draft WikiNode Suggestion read-only review", () => {
     await page.getByRole("button", { name: "拒绝建议" }).click()
 
     await expect(page.getByText("已拒绝 WikiNode 建议。")).toBeVisible()
-    await expect(page.getByText("当前状态为已拒绝，不能再次拒绝。")).toBeVisible()
+    await expect(page.getByText("当前状态为已拒绝，不能继续采纳或拒绝。")).toBeVisible()
     await expect(page.getByText("证据不足，暂不进入 WikiNode。")).toBeVisible()
-    await expect(page.getByText("拒绝只会更新当前建议的审核状态，不会创建 WikiNode、发布、索引或批量转换。")).toBeVisible()
+    await expect(page.getByText("采纳只会创建草稿 WikiNode，并保留来源证据；拒绝只会更新当前建议的审核状态。")).toBeVisible()
     await expect(page.getByRole("button", { name: "采纳" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "发布" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "索引" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "批量转换" })).toHaveCount(0)
+  })
+
+  test("accepts one suggestion as draft WikiNode without publishing or indexing", async ({ page }) => {
+    let activeSuggestion = {
+      ...apiSuggestion,
+      conflictStatus: "none",
+      conflictReasons: [],
+      matchedWikiNodeIds: [],
+    }
+    await page.route("**/api/draft-wikinode-suggestions/sug-api-only/accept", async (route) => {
+      expect(route.request().method()).toBe("POST")
+      const payload = await route.request().postDataJSON()
+      activeSuggestion = {
+        ...activeSuggestion,
+        status: "accepted",
+        reviewNote: payload.reviewNote,
+        matchedWikiNodeIds: ["wn-from-sug-api-only"],
+        updatedAt: "2026-06-25",
+      }
+      return route.fulfill({
+        json: {
+          suggestionId: "sug-api-only",
+          status: "accepted",
+          summary: "已采纳为草稿 WikiNode。",
+          reviewNote: payload.reviewNote,
+          nodeId: "wn-from-sug-api-only",
+          nodeStatus: "draft",
+        },
+      })
+    })
+    await page.route("**/api/draft-wikinode-suggestions/sug-api-only", async (route) => {
+      return route.fulfill({ json: activeSuggestion })
+    })
+
+    await page.goto("/draft-wikinode-suggestions/sug-api-only")
+
+    await page.getByLabel("采纳说明").fill("确认进入草稿 WikiNode，后续人工编辑。")
+    await page.getByRole("button", { name: "采纳为草稿 WikiNode" }).click()
+
+    await expect(page.getByText("已采纳为草稿 WikiNode。")).toBeVisible()
+    await expect(page.getByText("当前状态为已采纳，不能继续采纳或拒绝。")).toBeVisible()
+    await expect(page.getByText("确认进入草稿 WikiNode，后续人工编辑。")).toBeVisible()
+    await expect(page.getByRole("link", { name: "打开草稿 WikiNode" })).toHaveAttribute("href", "/wiki-nodes/wn-from-sug-api-only")
     await expect(page.getByRole("button", { name: "发布" })).toHaveCount(0)
     await expect(page.getByRole("button", { name: "索引" })).toHaveCount(0)
     await expect(page.getByRole("button", { name: "批量转换" })).toHaveCount(0)

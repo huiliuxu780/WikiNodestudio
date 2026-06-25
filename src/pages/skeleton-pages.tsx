@@ -22,6 +22,7 @@ import { LinkList } from "@/components/wiki/link-list"
 import { useAsyncData } from "@/hooks/use-async-data"
 import { listParserProfiles } from "@/services/parser-profile-api-service"
 import {
+  acceptDraftWikiNodeSuggestion,
   getRawMaterial,
   getDraftWikiNodeSuggestion,
   getSource,
@@ -509,6 +510,11 @@ export function ParsedResultPreviewPage() {
 export function DraftWikiNodeSuggestionDetailPage() {
   const { suggestionId } = useParams()
   const activeSuggestionId = suggestionId ?? ""
+  const [acceptNote, setAcceptNote] = useState("")
+  const [acceptFeedback, setAcceptFeedback] = useState("")
+  const [acceptError, setAcceptError] = useState("")
+  const [acceptedNodeId, setAcceptedNodeId] = useState("")
+  const [isAccepting, setIsAccepting] = useState(false)
   const [reviewNote, setReviewNote] = useState("")
   const [reviewFeedback, setReviewFeedback] = useState("")
   const [reviewError, setReviewError] = useState("")
@@ -520,7 +526,35 @@ export function DraftWikiNodeSuggestionDetailPage() {
     reload,
   } = useAsyncData<DraftWikiNodeSuggestion | null>(() => activeSuggestionId ? getDraftWikiNodeSuggestion(activeSuggestionId) : Promise.resolve(null), null, [activeSuggestionId])
 
-  const canRejectSuggestion = suggestion ? ["draft", "needs_review"].includes(suggestion.status) : false
+  const canReviewSuggestion = suggestion ? ["draft", "needs_review"].includes(suggestion.status) : false
+  const canAcceptSuggestion = canReviewSuggestion && suggestion?.conflictStatus === "none"
+
+  async function handleAcceptSuggestion() {
+    if (!activeSuggestionId) return
+    const cleanAcceptNote = acceptNote.trim()
+    if (!cleanAcceptNote) {
+      setAcceptError("采纳说明不能为空。")
+      setAcceptFeedback("")
+      return
+    }
+
+    setIsAccepting(true)
+    setAcceptError("")
+    setAcceptFeedback("")
+    try {
+      const result = await acceptDraftWikiNodeSuggestion(activeSuggestionId, {
+        reviewNote: cleanAcceptNote,
+      })
+      setAcceptFeedback(result.summary)
+      setAcceptedNodeId(result.nodeId ?? "")
+      setAcceptNote("")
+      await reload()
+    } catch {
+      setAcceptError("采纳 WikiNode 建议失败，请稍后重试。")
+    } finally {
+      setIsAccepting(false)
+    }
+  }
 
   async function handleRejectSuggestion() {
     if (!activeSuggestionId) return
@@ -549,7 +583,7 @@ export function DraftWikiNodeSuggestionDetailPage() {
   }
 
   return (
-    <PageScaffold title="WikiNode 建议详情" description="查看 Draft WikiNode Suggestion，并允许单条拒绝建议；本页不会采纳、创建 WikiNode、发布、索引或批量转换。">
+    <PageScaffold title="WikiNode 建议详情" description="查看 Draft WikiNode Suggestion，并允许单条采纳或拒绝；本页不会发布、索引或批量转换。">
       <ApiErrorNotice error={error} onRetry={reload} />
       {isLoading ? <LoadingBlock text="正在加载 WikiNode 建议..." /> : null}
       {suggestion ? (
@@ -567,7 +601,7 @@ export function DraftWikiNodeSuggestionDetailPage() {
           ]} />
           <Card>
             <CardContent className="space-y-3 p-4 text-sm text-muted-foreground">
-              <p>不是已采纳的 WikiNode，不影响 Retrieval API 结果。拒绝只会更新当前建议的审核状态，不会创建 WikiNode、发布、索引或批量转换。</p>
+              <p>采纳只会创建草稿 WikiNode，并保留来源证据；拒绝只会更新当前建议的审核状态。本页不会发布、索引、创建 WikiLink 或批量转换。</p>
               <div className="flex flex-wrap gap-2 text-xs">
                 <span className="rounded-md border px-2 py-1">Source {suggestion.sourceId}</span>
                 <span className="rounded-md border px-2 py-1">Raw Material {suggestion.rawMaterialId}</span>
@@ -581,8 +615,26 @@ export function DraftWikiNodeSuggestionDetailPage() {
               <CardTitle className="text-base">审核处理</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
-              {canRejectSuggestion ? (
+              {canReviewSuggestion ? (
                 <>
+                  {canAcceptSuggestion ? (
+                    <div className="space-y-2 rounded-md border p-3">
+                      <Label htmlFor="draft-wikinode-suggestion-accept-note">采纳说明</Label>
+                      <Textarea
+                        id="draft-wikinode-suggestion-accept-note"
+                        value={acceptNote}
+                        onChange={(event) => setAcceptNote(event.target.value)}
+                        placeholder="说明为什么可以进入草稿 WikiNode。"
+                      />
+                      <Button type="button" onClick={handleAcceptSuggestion} disabled={isAccepting}>
+                        {isAccepting ? "正在采纳..." : "采纳为草稿 WikiNode"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="rounded-md border border-dashed p-3 text-muted-foreground">
+                      存在冲突，不能直接采纳为 WikiNode。
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="draft-wikinode-suggestion-review-note">拒绝原因</Label>
                     <Textarea
@@ -598,17 +650,32 @@ export function DraftWikiNodeSuggestionDetailPage() {
                 </>
               ) : (
                 <div className="rounded-md border border-dashed p-3 text-muted-foreground">
-                  当前状态为{labelFromMap(draftWikiNodeSuggestionStatusLabels, suggestion.status)}，不能再次拒绝。
+                  当前状态为{labelFromMap(draftWikiNodeSuggestionStatusLabels, suggestion.status)}，不能继续采纳或拒绝。
                 </div>
               )}
+              {acceptedNodeId ? (
+                <Link className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" to={`/wiki-nodes/${acceptedNodeId}`}>
+                  打开草稿 WikiNode
+                </Link>
+              ) : null}
               {suggestion.reviewNote ? (
                 <div className="rounded-md border bg-muted/20 p-3 text-muted-foreground">
                   当前审核备注：{suggestion.reviewNote}
                 </div>
               ) : null}
+              {acceptFeedback ? (
+                <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-emerald-700">
+                  {acceptFeedback}
+                </div>
+              ) : null}
               {reviewFeedback ? (
                 <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-emerald-700">
                   {reviewFeedback}
+                </div>
+              ) : null}
+              {acceptError ? (
+                <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-destructive">
+                  {acceptError}
                 </div>
               ) : null}
               {reviewError ? (

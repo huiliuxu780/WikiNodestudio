@@ -260,6 +260,62 @@ class WikiNodeApiContractTest {
   }
 
   @Test
+  void acceptsOneDraftWikiNodeSuggestionAsDraftWikiNodeWithoutPublishingOrIndexing() throws Exception {
+    String body = """
+      {
+        "reviewNote": "确认进入草稿 WikiNode，后续人工编辑。"
+      }
+      """;
+
+    HttpResponse<String> accept = post("/api/draft-wikinode-suggestions/sug-002/accept", body);
+    HttpResponse<String> detail = get("/api/draft-wikinode-suggestions/sug-002");
+    HttpResponse<String> node = get("/api/wiki-nodes/wn-from-sug-002");
+
+    assertThat(accept.statusCode()).isEqualTo(200);
+    assertThat(accept.body()).contains("\"suggestionId\":\"sug-002\"");
+    assertThat(accept.body()).contains("\"status\":\"accepted\"");
+    assertThat(accept.body()).contains("\"summary\":\"已采纳为草稿 WikiNode。\"");
+    assertThat(accept.body()).contains("\"reviewNote\":\"确认进入草稿 WikiNode，后续人工编辑。\"");
+    assertThat(accept.body()).contains("\"nodeId\":\"wn-from-sug-002\"");
+    assertThat(accept.body()).contains("\"nodeStatus\":\"draft\"");
+    assertThat(accept.body()).doesNotContain("\"wikiLinkId\"");
+    assertThat(accept.body()).doesNotContain("\"indexSegmentId\"");
+    assertThat(accept.body()).doesNotContain("\"chunk\"");
+
+    assertThat(detail.statusCode()).isEqualTo(200);
+    assertThat(detail.body()).contains("\"status\":\"accepted\"");
+    assertThat(detail.body()).contains("\"reviewNote\":\"确认进入草稿 WikiNode，后续人工编辑。\"");
+    assertThat(detail.body()).contains("\"matchedWikiNodeIds\":[\"wn-from-sug-002\"]");
+
+    assertThat(node.statusCode()).isEqualTo(200);
+    assertThat(node.body()).contains("\"nodeId\":\"wn-from-sug-002\"");
+    assertThat(node.body()).contains("\"title\":\"洗碗机基础排查建议\"");
+    assertThat(node.body()).contains("\"status\":\"draft\"");
+    assertThat(node.body()).contains("\"indexStatus\":\"not_indexed\"");
+    assertThat(node.body()).contains("\"sourceRefs\"");
+    assertThat(node.body()).doesNotContain("\"published\":true");
+    assertThat(node.body()).doesNotContain("\"indexSegmentId\"");
+  }
+
+  @Test
+  void skipsDraftWikiNodeSuggestionAcceptWhenConflictExists() throws Exception {
+    String body = """
+      {
+        "reviewNote": "尝试采纳冲突建议。"
+      }
+      """;
+
+    HttpResponse<String> accept = post("/api/draft-wikinode-suggestions/sug-001/accept", body);
+
+    assertThat(accept.statusCode()).isEqualTo(200);
+    assertThat(accept.body()).contains("\"suggestionId\":\"sug-001\"");
+    assertThat(accept.body()).contains("\"status\":\"skipped\"");
+    assertThat(accept.body()).contains("\"summary\":\"存在冲突，不能直接采纳为 WikiNode。\"");
+    assertThat(accept.body()).doesNotContain("\"nodeId\"");
+    assertThat(accept.body()).doesNotContain("\"indexSegmentId\"");
+  }
+
+  @Test
   void retrievalReturnsWikiNodeObjectsNotChunks() throws Exception {
     String body = """
       {
