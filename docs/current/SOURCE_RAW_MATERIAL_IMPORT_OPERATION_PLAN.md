@@ -36,6 +36,7 @@ Implemented by prior increments:
 - IM032: file upload constraints planning for MIME types, size limits, storage, security scan, errors, cleanup, and retry boundaries.
 - IM033: single Raw Material parse planning for Parser Profile selection, operation lifecycle, Parsed Document write semantics, safe errors, retry, and rollback boundaries.
 - IM034: draft WikiNode suggestion planning for eligibility, sourceRefs carry-forward, Source Operation lifecycle, duplicate/conflict rules, accept/reject boundaries, safe errors, retry, and rollback constraints.
+- IM035: Draft WikiNode Suggestion read-only contract planning for first-class suggestion model shape, read-only APIs, review surfaces, Source Operation coupling, duplicate/conflict visibility, deferred write APIs, and future migration boundaries.
 
 Current product behavior:
 
@@ -339,6 +340,37 @@ Forbidden:
 - No auto-index.
 - No batch conversion.
 
+### IM035 - Draft WikiNode Suggestion Read-only Contract Planning
+
+Type: planning only unless explicitly expanded.
+
+Goal:
+
+- Decide whether Draft WikiNode Suggestions need a first-class read-only model and review surface before any suggestion generation or accept/reject workflow.
+- Detailed plan: `docs/current/DRAFT_WIKINODE_SUGGESTION_READONLY_CONTRACT_PLAN.md`.
+
+Must define:
+
+- Candidate entity contract.
+- Relationship contract.
+- Read-only API candidates.
+- Read-only review surface.
+- Source Operation coupling.
+- Duplicate and conflict visibility.
+- Deferred write APIs.
+- Migration direction for future approval.
+
+Forbidden:
+
+- No Java model implementation.
+- No database migration.
+- No API route implementation.
+- No frontend route or action button.
+- No suggestion generation.
+- No accept/reject workflow.
+- No WikiNode creation.
+- No publish, index, vector sync, parser execution, external AI, permissions, or batch conversion.
+
 ## 8. Acceptance Gates For Future Operation Work
 
 Any future operation implementation must pass:
@@ -378,10 +410,10 @@ IM029 does not:
 
 ## 10. Recommended Next Task
 
-Recommended next task after IM034:
+Recommended next task after IM035:
 
 ```text
-IM035 Draft WikiNode Suggestion Read-only Contract Planning
+IM036 Draft WikiNode Suggestion Read-only Model Implementation
 ```
 
-Start IM035 as planning only unless the user explicitly expands scope. It must not add WikiNode creation, accept/reject actions, auto-publish, auto-index, batch conversion, parser execution, backend write APIs, or database migrations.
+Start IM036 only after explicit approval because it would cross Java, database, migration, API, and frontend read-only implementation boundaries. It must not add suggestion generation, accept/reject, WikiNode creation, publishing, indexing, vector sync, parser execution, external AI, permissions, or batch conversion.
