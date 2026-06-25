@@ -4,6 +4,8 @@ import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParsedDocumentSourceRef;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
+import com.wikinode.studio.model.DraftWikiNodeRelationCandidate;
+import com.wikinode.studio.model.DraftWikiNodeSuggestion;
 import com.wikinode.studio.model.SourceItem;
 import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.SourceRef;
@@ -114,6 +116,32 @@ final class WikiNodeSeedData {
         null
       ),
       new SourceOperation(
+        "op-src-feishu-suggest-001",
+        "suggest_wikinode",
+        "src-feishu-cc",
+        "rm-001",
+        "pd-001",
+        "succeeded",
+        "system",
+        "2026-06-20T10:38:00+08:00",
+        "2026-06-20T10:39:00+08:00",
+        "Created read-only Draft WikiNode Suggestion seed evidence.",
+        null
+      ),
+      new SourceOperation(
+        "op-pdf-suggest-001",
+        "suggest_wikinode",
+        "src-pdf-dishwasher",
+        "rm-002",
+        "pd-002",
+        "succeeded",
+        "system",
+        "2026-06-18T15:20:00+08:00",
+        "2026-06-18T15:21:00+08:00",
+        "Created read-only Draft WikiNode Suggestion seed evidence.",
+        null
+      ),
+      new SourceOperation(
         "op-word-parse-001",
         "parse_raw_material",
         "src-word-manual",
@@ -125,6 +153,61 @@ final class WikiNodeSeedData {
         "2026-06-12T18:22:00+08:00",
         "Parser profile rejected this Raw Material in the read-only seed baseline.",
         "Unsupported document structure in seed evidence."
+      )
+    );
+  }
+
+  static List<DraftWikiNodeSuggestion> draftWikiNodeSuggestions() {
+    return List.of(
+      new DraftWikiNodeSuggestion(
+        "sug-001",
+        "pd-001",
+        "rm-001",
+        "src-feishu-cc",
+        "op-src-feishu-suggest-001",
+        "保修期内维修服务政策",
+        "Article",
+        "service_fee_policy",
+        "# 保修期内维修服务政策\n\n保修期内维修不收取人工费，收费例外需要关联人为损坏判定规则。\n\n该内容仍是待审核 WikiNode 建议，不会自动发布或索引。",
+        Map.of("language", "zh-CN", "businessDomain", "after_sales"),
+        List.of(new ParsedDocumentSourceRef("src-feishu-cc", "rm-001", "pd-001", "heading", "保修政策/收费例外", "保修期内维修不收取人工费", 0.92)),
+        List.of(new DraftWikiNodeRelationCandidate("收费政策", "references", "inferred_from_source_ref", 0.74)),
+        0.88,
+        "draft",
+        null,
+        "title_match",
+        List.of("标题可能重复"),
+        List.of("wn-001"),
+        List.of(),
+        1,
+        1,
+        "2026-06-20",
+        "2026-06-20"
+      ),
+      new DraftWikiNodeSuggestion(
+        "sug-002",
+        "pd-002",
+        "rm-002",
+        "src-pdf-dishwasher",
+        "op-pdf-suggest-001",
+        "洗碗机基础排查建议",
+        "Procedure",
+        "troubleshooting_flow",
+        "# 洗碗机基础排查建议\n\n排查时先确认电源、水路和错误码。\n\n该内容仍需人工复核后才能进入 WikiNode。",
+        Map.of("language", "zh-CN", "businessDomain", "product_support"),
+        List.of(new ParsedDocumentSourceRef("src-pdf-dishwasher", "rm-002", "pd-002", "page", "P-8", "先检查电源、水路和错误码", 0.88)),
+        List.of(new DraftWikiNodeRelationCandidate("保修期内维修服务政策", "references", "inferred_from_source_ref", 0.62)),
+        0.76,
+        "needs_review",
+        "需要产品培训负责人复核标题和适用范围。",
+        "none",
+        List.of(),
+        List.of(),
+        List.of(),
+        1,
+        1,
+        "2026-06-18",
+        "2026-06-18"
       )
     );
   }

@@ -132,6 +132,39 @@ class WikiNodeApiContractTest {
   }
 
   @Test
+  void exposesDraftWikiNodeSuggestionsAsReadOnlyReviewEvidence() throws Exception {
+    HttpResponse<String> suggestions = get("/api/draft-wikinode-suggestions");
+    HttpResponse<String> detail = get("/api/draft-wikinode-suggestions/sug-001");
+    HttpResponse<String> parsedDocumentSuggestions = get("/api/parsed-documents/pd-001/draft-wikinode-suggestions");
+    HttpResponse<String> rawMaterialSuggestions = get("/api/raw-materials/rm-001/draft-wikinode-suggestions");
+
+    assertThat(suggestions.statusCode()).isEqualTo(200);
+    assertThat(suggestions.body()).contains("\"suggestionId\":\"sug-001\"");
+    assertThat(suggestions.body()).contains("\"title\":\"保修期内维修服务政策\"");
+    assertThat(suggestions.body()).contains("\"status\":\"draft\"");
+    assertThat(suggestions.body()).contains("\"sourceRefCount\":1");
+    assertThat(suggestions.body()).contains("\"relationCandidateCount\":1");
+
+    assertThat(detail.statusCode()).isEqualTo(200);
+    assertThat(detail.body()).contains("\"parsedDocumentId\":\"pd-001\"");
+    assertThat(detail.body()).contains("\"operationId\":\"op-src-feishu-suggest-001\"");
+    assertThat(detail.body()).contains("\"contentDraft\"");
+    assertThat(detail.body()).contains("\"sourceRefs\"");
+    assertThat(detail.body()).contains("\"relationCandidates\"");
+    assertThat(detail.body()).contains("\"conflictStatus\":\"title_match\"");
+    assertThat(detail.body()).contains("\"matchedWikiNodeIds\"");
+    assertThat(detail.body()).doesNotContain("\"published\":true");
+    assertThat(detail.body()).doesNotContain("\"indexSegmentId\"");
+    assertThat(detail.body()).doesNotContain("\"chunk\"");
+    assertThat(detail.body()).doesNotContain("\"signedUrl\"");
+
+    assertThat(parsedDocumentSuggestions.statusCode()).isEqualTo(200);
+    assertThat(parsedDocumentSuggestions.body()).contains("\"suggestionId\":\"sug-001\"");
+    assertThat(rawMaterialSuggestions.statusCode()).isEqualTo(200);
+    assertThat(rawMaterialSuggestions.body()).contains("\"suggestionId\":\"sug-001\"");
+  }
+
+  @Test
   void retrievalReturnsWikiNodeObjectsNotChunks() throws Exception {
     String body = """
       {

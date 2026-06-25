@@ -6,6 +6,7 @@ import com.wikinode.studio.model.IndexStatusSummary;
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
+import com.wikinode.studio.model.DraftWikiNodeSuggestion;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
@@ -49,6 +50,8 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   protected abstract List<SourceOperation> loadSourceOperations();
 
   protected abstract List<ParserProfile> loadParserProfiles();
+
+  protected abstract List<DraftWikiNodeSuggestion> loadDraftWikiNodeSuggestions();
 
   @Override
   public List<WikiNode> listNodes() {
@@ -166,6 +169,32 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   @Override
   public List<ParserProfile> listParserProfiles() {
     return List.copyOf(loadParserProfiles());
+  }
+
+  @Override
+  public List<DraftWikiNodeSuggestion> listDraftWikiNodeSuggestions() {
+    return List.copyOf(loadDraftWikiNodeSuggestions());
+  }
+
+  @Override
+  public List<DraftWikiNodeSuggestion> listDraftWikiNodeSuggestionsForParsedDocument(String parsedDocumentId) {
+    return loadDraftWikiNodeSuggestions().stream()
+      .filter(suggestion -> suggestion.parsedDocumentId().equals(parsedDocumentId))
+      .toList();
+  }
+
+  @Override
+  public List<DraftWikiNodeSuggestion> listDraftWikiNodeSuggestionsForRawMaterial(String rawMaterialId) {
+    return loadDraftWikiNodeSuggestions().stream()
+      .filter(suggestion -> suggestion.rawMaterialId().equals(rawMaterialId))
+      .toList();
+  }
+
+  @Override
+  public Optional<DraftWikiNodeSuggestion> findDraftWikiNodeSuggestion(String suggestionId) {
+    return loadDraftWikiNodeSuggestions().stream()
+      .filter(suggestion -> suggestion.suggestionId().equals(suggestionId))
+      .findFirst();
   }
 
   @Override

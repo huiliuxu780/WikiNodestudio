@@ -165,6 +165,22 @@ export const sourceOperationStatusLabels: Record<string, string> = {
   skipped: "已跳过",
 }
 
+export const draftWikiNodeSuggestionStatusLabels: Record<string, string> = {
+  draft: "待审核",
+  needs_review: "需要复核",
+  accepted: "已采纳",
+  rejected: "已拒绝",
+  superseded: "已替换",
+}
+
+export const draftWikiNodeSuggestionConflictLabels: Record<string, string> = {
+  none: "未发现冲突",
+  title_match: "标题可能重复",
+  source_ref_match: "证据来源可能重复",
+  existing_suggestion: "已存在待审核建议",
+  accepted_before: "已采纳过相关建议",
+}
+
 export const rawMaterialTypeLabels: Record<string, string> = {
   file: "文件",
   document_snapshot: "文档快照",

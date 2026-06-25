@@ -6,6 +6,10 @@ Date: 2026-06-25
 
 Status: planning baseline only.
 
+Implemented by:
+
+- IM036: read-only Draft WikiNode Suggestion model, migration seed, GET APIs, frontend review panels, and tests.
+
 ## 1. Purpose
 
 This document defines the minimum read-only contract for Draft WikiNode Suggestions before any executable suggestion, accept, reject, or WikiNode creation workflow exists.
@@ -351,7 +355,7 @@ Stop for explicit approval if implementation needs:
 ## 14. Recommended Next Task
 
 ```text
-IM036 Draft WikiNode Suggestion Read-only Model Implementation
+IM037 Draft WikiNode Suggestion Read-only Acceptance Sweep
 ```
 
-IM036 should only start after explicit approval because it would cross Java, database, migration, API, and frontend read-only implementation boundaries. It must remain read-only and must not add suggestion generation, accept/reject, WikiNode creation, publishing, indexing, vector sync, parser execution, external AI, permissions, or batch conversion.
+IM037 should remain acceptance and polish oriented unless the user explicitly expands scope. It should verify the read-only suggestion review path, status labels, evidence display, and operation boundaries without adding suggestion generation, accept/reject, WikiNode creation, publishing, indexing, vector sync, parser execution, external AI, permissions, or batch conversion.

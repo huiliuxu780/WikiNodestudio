@@ -4,6 +4,7 @@ import com.wikinode.studio.model.IndexStatusSummary;
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
+import com.wikinode.studio.model.DraftWikiNodeSuggestion;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
@@ -171,6 +172,29 @@ public class WikiNodeController {
     return repository.listParserProfiles();
   }
 
+  @GetMapping("/draft-wikinode-suggestions")
+  public List<DraftWikiNodeSuggestion> listDraftWikiNodeSuggestions() {
+    return repository.listDraftWikiNodeSuggestions();
+  }
+
+  @GetMapping("/draft-wikinode-suggestions/{suggestionId}")
+  public DraftWikiNodeSuggestion getDraftWikiNodeSuggestion(@PathVariable String suggestionId) {
+    return repository.findDraftWikiNodeSuggestion(suggestionId)
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Draft WikiNode Suggestion not found"));
+  }
+
+  @GetMapping("/parsed-documents/{parsedDocumentId}/draft-wikinode-suggestions")
+  public List<DraftWikiNodeSuggestion> listParsedDocumentDraftWikiNodeSuggestions(@PathVariable String parsedDocumentId) {
+    ensureParsedDocumentExists(parsedDocumentId);
+    return repository.listDraftWikiNodeSuggestionsForParsedDocument(parsedDocumentId);
+  }
+
+  @GetMapping("/raw-materials/{rawMaterialId}/draft-wikinode-suggestions")
+  public List<DraftWikiNodeSuggestion> listRawMaterialDraftWikiNodeSuggestions(@PathVariable String rawMaterialId) {
+    ensureRawMaterialExists(rawMaterialId);
+    return repository.listDraftWikiNodeSuggestionsForRawMaterial(rawMaterialId);
+  }
+
   @GetMapping("/index-status")
   public IndexStatusSummary getIndexStatus() {
     return repository.indexStatus();
@@ -191,6 +215,12 @@ public class WikiNodeController {
   private void ensureRawMaterialExists(String rawMaterialId) {
     if (repository.findRawMaterial(rawMaterialId).isEmpty()) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Raw Material not found");
+    }
+  }
+
+  private void ensureParsedDocumentExists(String parsedDocumentId) {
+    if (repository.findParsedDocument(parsedDocumentId).isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parsed Document not found");
     }
   }
 }

@@ -20,7 +20,10 @@ import { useAsyncData } from "@/hooks/use-async-data"
 import { listParserProfiles } from "@/services/parser-profile-api-service"
 import {
   getRawMaterial,
+  getDraftWikiNodeSuggestion,
   getSource,
+  listDraftWikiNodeSuggestionsForParsedDocument,
+  listDraftWikiNodeSuggestionsForRawMaterial,
   listParsedDocumentsForRawMaterial,
   listRawMaterials,
   listRawMaterialsForSource,
@@ -28,11 +31,14 @@ import {
   listSourceOperationsForSource,
 } from "@/services/source-api-service"
 import type { ParserProfile } from "@/types/parser-profile"
+import type { DraftWikiNodeSuggestion } from "@/types/draft-wikinode-suggestion"
 import type { ParsedDocument, RawMaterial } from "@/types/raw-material"
 import type { SourceItem } from "@/types/source"
 import type { SourceOperation } from "@/types/source-operation"
 import {
   contentFormatLabels,
+  draftWikiNodeSuggestionConflictLabels,
+  draftWikiNodeSuggestionStatusLabels,
   indexStatusLabels,
   labelFromMap,
   healthLabels,
@@ -301,6 +307,12 @@ export function RawMaterialDetailPage() {
     isLoading: isOperationsLoading,
     reload: reloadOperations,
   } = useAsyncData(() => activeRawMaterialId ? listSourceOperationsForRawMaterial(activeRawMaterialId) : Promise.resolve([]), [], [activeRawMaterialId])
+  const {
+    data: suggestions,
+    error: suggestionsError,
+    isLoading: isSuggestionsLoading,
+    reload: reloadSuggestions,
+  } = useAsyncData(() => activeRawMaterialId ? listDraftWikiNodeSuggestionsForRawMaterial(activeRawMaterialId) : Promise.resolve([]), [], [activeRawMaterialId])
 
   return (
     <PageScaffold title="原始材料详情" description={raw?.title ?? "查看 Raw Material 到 Parsed Document 的只读证据链。"}>
@@ -308,6 +320,7 @@ export function RawMaterialDetailPage() {
       <ApiErrorNotice error={sourceError} onRetry={reloadSource} />
       <ApiErrorNotice error={parsedDocumentsError} onRetry={reloadParsedDocuments} />
       <ApiErrorNotice error={operationsError} onRetry={reloadOperations} />
+      <ApiErrorNotice error={suggestionsError} onRetry={reloadSuggestions} />
       {isRawLoading ? <LoadingBlock text="正在加载 Raw Material..." /> : null}
       {raw ? (
         <SummaryGrid items={[
@@ -358,6 +371,7 @@ export function RawMaterialDetailPage() {
         "下载、重新解析和真实存储访问均未开放。",
         "真实文件存储、解析任务和访问控制留到后续阶段。",
       ]} />
+      <DraftWikiNodeSuggestionPanel suggestions={suggestions} isLoading={isSuggestionsLoading} mode="summary" />
       <SourceOperationLogPanel operations={operations} isLoading={isOperationsLoading} />
     </PageScaffold>
   )
@@ -383,12 +397,19 @@ export function ParsedResultPreviewPage() {
     error: sourceError,
     reload: reloadSource,
   } = useAsyncData<SourceItem | null>(() => raw?.sourceId ? getSource(raw.sourceId) : Promise.resolve(null), null, [raw?.sourceId])
+  const {
+    data: suggestions,
+    error: suggestionsError,
+    isLoading: isSuggestionsLoading,
+    reload: reloadSuggestions,
+  } = useAsyncData(() => parsedDocument?.parsedDocumentId ? listDraftWikiNodeSuggestionsForParsedDocument(parsedDocument.parsedDocumentId) : Promise.resolve([]), [], [parsedDocument?.parsedDocumentId])
 
   return (
     <PageScaffold title="解析结果预览" description="查看进入 WikiNode 标准化之前的内容形态和来源证据；当前不运行真实解析器。">
       <ApiErrorNotice error={rawError} onRetry={reloadRaw} />
       <ApiErrorNotice error={parsedDocumentsError} onRetry={reloadParsedDocuments} />
       <ApiErrorNotice error={sourceError} onRetry={reloadSource} />
+      <ApiErrorNotice error={suggestionsError} onRetry={reloadSuggestions} />
       <div className="grid gap-4 lg:grid-cols-3">
         <Card>
           <CardHeader>
@@ -421,12 +442,46 @@ export function ParsedResultPreviewPage() {
       </div>
       {isParsedDocumentsLoading ? <LoadingBlock text="正在加载 Parsed Document..." /> : null}
       {parsedDocument ? <ParsedDocumentPreview parsedDocument={parsedDocument} /> : null}
+      <DraftWikiNodeSuggestionPanel suggestions={suggestions} isLoading={isSuggestionsLoading} mode="detail" />
       <SimpleList items={[
         "Parsed Document 是解析后的标准化内容预览。",
         "当前不运行 PDF / Word / 网页 / 数据库 / API 解析。",
         "这里只说明进入 WikiNode 标准化之前的内容形态。",
       ]} />
       <SimpleList items={["标题层级", "段落来源证据", "表格抽取预览", "图片引用"]} />
+    </PageScaffold>
+  )
+}
+
+export function DraftWikiNodeSuggestionDetailPage() {
+  const { suggestionId } = useParams()
+  const activeSuggestionId = suggestionId ?? ""
+  const {
+    data: suggestion,
+    error,
+    isLoading,
+    reload,
+  } = useAsyncData<DraftWikiNodeSuggestion | null>(() => activeSuggestionId ? getDraftWikiNodeSuggestion(activeSuggestionId) : Promise.resolve(null), null, [activeSuggestionId])
+
+  return (
+    <PageScaffold title="WikiNode 建议详情" description="只读查看 Draft WikiNode Suggestion；本页不会采纳、拒绝、发布、索引或批量转换。">
+      <ApiErrorNotice error={error} onRetry={reload} />
+      {isLoading ? <LoadingBlock text="正在加载 WikiNode 建议..." /> : null}
+      {suggestion ? (
+        <>
+          <SummaryGrid items={[
+            ["建议标题", suggestion.title],
+            ["状态", labelFromMap(draftWikiNodeSuggestionStatusLabels, suggestion.status)],
+            ["Knowledge Object", labelFromMap(objectTypeLabels, suggestion.objectType)],
+            ["业务子类型", suggestion.subtype ? labelFromMap(subtypeLabels, suggestion.subtype) : "无"],
+            ["来源证据", `${suggestion.sourceRefCount} 条`],
+            ["关系候选", `${suggestion.relationCandidateCount} 条`],
+            ["冲突状态", labelFromMap(draftWikiNodeSuggestionConflictLabels, suggestion.conflictStatus)],
+            ["可信度", formatConfidence(suggestion.confidence)],
+          ]} />
+          <DraftWikiNodeSuggestionPanel suggestions={[suggestion]} isLoading={false} mode="detail" />
+        </>
+      ) : null}
     </PageScaffold>
   )
 }
@@ -682,6 +737,102 @@ function SourceOperationLogPanel({ operations, isLoading }: { operations: Source
   )
 }
 
+function DraftWikiNodeSuggestionPanel({
+  suggestions,
+  isLoading,
+  mode,
+}: {
+  suggestions: DraftWikiNodeSuggestion[]
+  isLoading: boolean
+  mode: "summary" | "detail"
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <h2 className="text-base font-medium leading-snug">WikiNode 建议</h2>
+      </CardHeader>
+      <CardContent className="space-y-3 text-sm">
+        <p className="text-muted-foreground">只读建议，不会创建 WikiNode、发布、索引或批量转换。</p>
+        {isLoading ? (
+          <LoadingBlock text="正在加载 WikiNode 建议..." />
+        ) : suggestions.length === 0 ? (
+          <div className="rounded-md border border-dashed p-3 text-muted-foreground">
+            暂无 WikiNode 建议。当前页面不会生成、采纳、拒绝或批量转换建议。
+          </div>
+        ) : suggestions.map((suggestion) => (
+          <div key={suggestion.suggestionId} className="rounded-md border p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline">{labelFromMap(objectTypeLabels, suggestion.objectType)}</Badge>
+              <Badge variant="secondary">{labelFromMap(draftWikiNodeSuggestionStatusLabels, suggestion.status)}</Badge>
+              <Badge variant={suggestion.conflictStatus === "none" ? "outline" : "destructive"}>
+                {labelFromMap(draftWikiNodeSuggestionConflictLabels, suggestion.conflictStatus)}
+              </Badge>
+            </div>
+            <Link to={`/draft-wikinode-suggestions/${suggestion.suggestionId}`} className="mt-2 block font-medium hover:underline">
+              {suggestion.title}
+            </Link>
+            <div className="mt-1 text-xs text-muted-foreground">
+              {suggestion.suggestionId} · Parsed Document {suggestion.parsedDocumentId} · 可信度 {formatConfidence(suggestion.confidence)}
+            </div>
+            {suggestion.conflictReasons.length > 0 ? (
+              <div className="mt-2 text-xs text-destructive">{suggestion.conflictReasons.join("、")}</div>
+            ) : null}
+            {mode === "detail" ? (
+              <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(260px,0.8fr)]">
+                <pre className="max-h-[280px] overflow-auto whitespace-pre-wrap rounded-md border bg-muted/20 p-3 text-sm leading-6">
+                  {suggestion.contentDraft}
+                </pre>
+                <div className="space-y-3">
+                  <SuggestionEvidenceBlock suggestion={suggestion} />
+                  <SuggestionRelationBlock suggestion={suggestion} />
+                </div>
+              </div>
+            ) : (
+              <div className="mt-2 text-xs text-muted-foreground">
+                来源证据 {suggestion.sourceRefCount} 条，关系候选 {suggestion.relationCandidateCount} 条。
+              </div>
+            )}
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  )
+}
+
+function SuggestionEvidenceBlock({ suggestion }: { suggestion: DraftWikiNodeSuggestion }) {
+  return (
+    <div className="rounded-md border p-3">
+      <div className="font-medium">来源证据</div>
+      <div className="mt-2 space-y-2">
+        {suggestion.sourceRefs.map((sourceRef) => (
+          <div key={`${sourceRef.parsedDocumentId}-${sourceRef.locator}`} className="text-sm">
+            <div>{labelFromMap(locatorTypeLabels, sourceRef.locatorType)} · {sourceRef.locator}</div>
+            <div className="text-muted-foreground">{sourceRef.excerpt}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function SuggestionRelationBlock({ suggestion }: { suggestion: DraftWikiNodeSuggestion }) {
+  return (
+    <div className="rounded-md border p-3">
+      <div className="font-medium">关系候选</div>
+      <div className="mt-2 space-y-2">
+        {suggestion.relationCandidates.length === 0 ? (
+          <div className="text-muted-foreground">暂无关系候选。</div>
+        ) : suggestion.relationCandidates.map((candidate) => (
+          <div key={`${candidate.targetTitle}-${candidate.relationType}`} className="text-sm">
+            <div>{labelFromMap(relationTypeLabels, candidate.relationType)} · {candidate.targetTitle}</div>
+            <div className="text-muted-foreground">来源 {candidate.source} · 可信度 {formatConfidence(candidate.confidence)}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function ParserProfileCard({ profile }: { profile: ParserProfile }) {
   return (
     <div className="rounded-md border p-3">
@@ -711,6 +862,10 @@ function ParserProfileCard({ profile }: { profile: ParserProfile }) {
 
 function rawMaterialDisplayType(rawMaterial: RawMaterial) {
   return rawMaterial.fileType ?? labelFromMap(rawMaterialTypeLabels, rawMaterial.rawMaterialType)
+}
+
+function formatConfidence(confidence: number | undefined) {
+  return confidence === undefined ? "无" : `${Math.round(confidence * 100)}%`
 }
 
 function formatMetadataSummary(metadata: KnowledgeMetadata | undefined) {

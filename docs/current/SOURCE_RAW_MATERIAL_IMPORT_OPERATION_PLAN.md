@@ -37,6 +37,7 @@ Implemented by prior increments:
 - IM033: single Raw Material parse planning for Parser Profile selection, operation lifecycle, Parsed Document write semantics, safe errors, retry, and rollback boundaries.
 - IM034: draft WikiNode suggestion planning for eligibility, sourceRefs carry-forward, Source Operation lifecycle, duplicate/conflict rules, accept/reject boundaries, safe errors, retry, and rollback constraints.
 - IM035: Draft WikiNode Suggestion read-only contract planning for first-class suggestion model shape, read-only APIs, review surfaces, Source Operation coupling, duplicate/conflict visibility, deferred write APIs, and future migration boundaries.
+- IM036: Draft WikiNode Suggestion read-only implementation for seeded persistence, GET APIs, frontend review panels, and tests without generation or accept/reject actions.
 
 Current product behavior:
 
@@ -417,3 +418,27 @@ IM036 Draft WikiNode Suggestion Read-only Model Implementation
 ```
 
 Start IM036 only after explicit approval because it would cross Java, database, migration, API, and frontend read-only implementation boundaries. It must not add suggestion generation, accept/reject, WikiNode creation, publishing, indexing, vector sync, parser execution, external AI, permissions, or batch conversion.
+
+### IM036 - Draft WikiNode Suggestion Read-only Model Implementation
+
+Type: backend + frontend read-only implementation after explicit approval.
+
+Goal:
+
+- Implement the read-only Draft WikiNode Suggestion model and review surface from `docs/current/DRAFT_WIKINODE_SUGGESTION_READONLY_CONTRACT_PLAN.md`.
+
+Implemented scope:
+
+- Java read-only model records.
+- Database migration and seed data.
+- Repository read methods.
+- GET-only API endpoints.
+- Frontend service/types and read-only review panels.
+- API, repository, and Playwright coverage.
+
+Forbidden:
+
+- No suggestion generation.
+- No accept/reject workflow.
+- No WikiNode creation.
+- No publish, index, vector sync, parser execution, external AI, permissions, or batch conversion.
