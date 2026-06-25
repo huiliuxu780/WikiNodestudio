@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D032
+    date: "2026-06-25"
+    title: "Plan file upload constraints before any upload implementation"
+    rationale: "IM032 defines the file upload boundary for Raw Material capture before any executable upload capability exists. The plan fixes supported MIME types, size limits, storage provider boundaries, security scan requirements, user-safe errors, cleanup, retry, and future API stop conditions while keeping upload UI, storage writes, backend upload endpoints, parser execution, dependencies, credentials, permissions, approval, export, and batch operations out of scope."
+    related:
+      - IM032
+      - D031
+      - FILE_UPLOAD_CONSTRAINT_PLAN
+      - SOURCE_RAW_MATERIAL_IMPORT_OPERATION_PLAN
   - id: D031
     date: "2026-06-25"
     title: "Add read-only Parser Profile registry before parser execution"

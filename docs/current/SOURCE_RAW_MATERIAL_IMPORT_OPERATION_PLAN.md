@@ -33,6 +33,7 @@ Implemented by prior increments:
 - IM028: frontend API alignment for existing read-only Source evidence pages.
 - IM030: read-only Source Operation logs, GET APIs, and Source / Raw Material operation log panels.
 - IM031: read-only Parser Profile registry, GET API, and Parser Engine profile panel.
+- IM032: file upload constraints planning for MIME types, size limits, storage, security scan, errors, cleanup, and retry boundaries.
 
 Current product behavior:
 
@@ -273,6 +274,7 @@ Type: planning only unless explicitly expanded.
 Goal:
 
 - Specify file upload constraints before implementation.
+- Detailed plan: `docs/current/FILE_UPLOAD_CONSTRAINT_PLAN.md`.
 
 Must define:
 
@@ -372,10 +374,10 @@ IM029 does not:
 
 ## 10. Recommended Next Task
 
-Recommended next task after IM031:
+Recommended next task after IM032:
 
 ```text
-IM032 File Upload Planning
+IM033 Single Raw Material Parse Planning
 ```
 
-Start IM032 as planning only unless the user explicitly expands scope. It must not add upload UI, storage writes, backend upload endpoints, parser execution, or dependencies.
+Start IM033 as planning only unless the user explicitly expands scope. It must not add parser execution, parser dependencies, Parsed Document writes, retry execution, or batch parse.
