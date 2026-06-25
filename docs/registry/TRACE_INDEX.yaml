@@ -33,6 +33,10 @@ phase2_plans:
     file: docs/current/SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_PHASE2_PLAN.md
     release: docs/release/mvp-baseline-v0.2.md
     inventory: docs/current/FULL_FEATURE_INVENTORY_AND_GAP_MATRIX.md
+  SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_MODEL_CONTRACT:
+    file: docs/current/SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_MODEL_CONTRACT_PLAN.md
+    parent_plan: docs/current/SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_PHASE2_PLAN.md
+    model_spec: docs/current/KNOWLEDGE_OBJECT_MODEL_SPEC.md
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md

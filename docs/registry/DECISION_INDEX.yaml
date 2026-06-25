@@ -1,5 +1,13 @@
 version: 1
 decisions:
+  - id: D026
+    date: "2026-06-25"
+    title: "Define Source / Raw Material / Parsed Document read-only model contract before backend implementation"
+    rationale: "IM026 turns the IM024 Phase 2 plan into a concrete model and read-only API contract proposal while keeping Java, DB, API, migration, parser, upload, external connector, and frontend service wiring out of scope. Any IM027 implementation must be explicitly approved because it will touch persistence and API boundaries."
+    related:
+      - IM026
+      - SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_MODEL_CONTRACT
+      - SOURCE_RAW_MATERIAL_PARSED_DOCUMENT
   - id: D024
     date: "2026-06-25"
     title: "Start Phase 2 with Source / Raw Material / Parsed Document planning before implementation"
