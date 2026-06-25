@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Link } from "react-router-dom"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,6 +23,21 @@ export function SourcesPage() {
       />
       <ApiErrorNotice error={sourcesError} onRetry={reloadSources} />
       <ApiErrorNotice error={nodesError} onRetry={reloadNodes} />
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">上游证据链</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3 text-sm md:grid-cols-[1fr_1.2fr]">
+          <div className="rounded-md border bg-muted/20 px-3 py-2">
+            <div className="font-medium">Source - Raw Material - Parsed Document - WikiNode</div>
+            <p className="mt-1 text-muted-foreground">{"Source -> Raw Material -> Parsed Document -> WikiNode"}</p>
+          </div>
+          <div className="rounded-md border border-dashed px-3 py-2">
+            <div className="font-medium">当前只读：不会执行真实同步、上传、解析或导入。</div>
+            <p className="mt-1 text-muted-foreground">本页只帮助验收来源、快照、解析预览和生成 WikiNode 的关系。</p>
+          </div>
+        </CardContent>
+      </Card>
       <Card>
         <CardContent className="grid gap-3 p-4 text-sm md:grid-cols-3">
           <div className="rounded-md border bg-muted/20 px-3 py-2">
@@ -65,7 +81,9 @@ export function SourcesPage() {
                 ) : sources.map((source) => (
                   <tr key={source.sourceId} className="cursor-pointer border-b hover:bg-muted/40" onClick={() => setSelectedSourceId(source.sourceId)}>
                     <td className="p-2"><Badge variant="outline">{labelFromMap(sourceTypeLabels, source.sourceType)}</Badge></td>
-                    <td className="p-2 font-medium">{source.title}</td>
+                    <td className="p-2 font-medium">
+                      <Link to={`/sources/${source.sourceId}`} className="hover:underline">{source.title}</Link>
+                    </td>
                     <td className="p-2">{source.owner}</td>
                     <td className="p-2">{labelFromMap(syncStatusLabels, source.syncStatus)}</td>
                     <td className="p-2">{source.lastSyncedAt}</td>
@@ -78,7 +96,7 @@ export function SourcesPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">关联知识节点</CardTitle>
+            <CardTitle className="text-base">生成的 WikiNode</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {selectedNodes.length === 0 ? (
