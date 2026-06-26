@@ -14,9 +14,18 @@ import { WikiNodeExplorer } from "@/components/wiki/wiki-node-explorer"
 import { WikiNodeInspector } from "@/components/wiki/wiki-node-inspector"
 import { useAsyncData } from "@/hooks/use-async-data"
 import { generateIndexSegmentsForWikiNode, listIndexSegmentsForWikiNode } from "@/services/index-segment-api-service"
-import { getNodeLinks, getWikiNodeById, listWikiNodes, updateWikiNode, type WikiNodeLinks } from "@/services/wiki-node-api-service"
+import {
+  createKnowledgeRelation,
+  deleteKnowledgeRelation,
+  getNodeLinks,
+  getWikiNodeById,
+  listWikiNodes,
+  updateKnowledgeRelation,
+  updateWikiNode,
+  type WikiNodeLinks,
+} from "@/services/wiki-node-api-service"
 import type { IndexSegment } from "@/types/index-segment"
-import type { WikiNode } from "@/types/wiki"
+import type { KnowledgeRelation, KnowledgeRelationInput, WikiNode } from "@/types/wiki"
 import { actionLabels, commonLabels } from "@/utils/display-labels"
 
 const emptyLinks: WikiNodeLinks = {
@@ -41,6 +50,7 @@ export function WikiNodeEditPage() {
   const [isGeneratingSegments, setIsGeneratingSegments] = useState(false)
   const [segmentGenerationError, setSegmentGenerationError] = useState<Error | null>(null)
   const [segmentGenerationFeedback, setSegmentGenerationFeedback] = useState("")
+  const [relationMutationError, setRelationMutationError] = useState<Error | null>(null)
   const { data: nodes, error: nodesError, reload: reloadNodes } = useAsyncData(listWikiNodes, [], [reloadVersion])
   const { data: node, isLoading, error: nodeError, reload: reloadNode } = useAsyncData(
     () => nodeId ? getWikiNodeById(nodeId) : Promise.resolve(undefined),
@@ -114,6 +124,49 @@ export function WikiNodeEditPage() {
     }
   }
 
+  async function handleCreateRelation(input: KnowledgeRelationInput) {
+    setRelationMutationError(null)
+    try {
+      const relation = await createKnowledgeRelation(activeDraft.nodeId, input)
+      patchDraftRelations((relations) => [...relations, relation])
+      setFeedback("关系已添加")
+      setReloadVersion((version) => version + 1)
+    } catch (error) {
+      setRelationMutationError(error instanceof Error ? error : new Error("添加关系失败，请稍后重试"))
+    }
+  }
+
+  async function handleUpdateRelation(relationId: string, input: KnowledgeRelationInput) {
+    setRelationMutationError(null)
+    try {
+      const relation = await updateKnowledgeRelation(activeDraft.nodeId, relationId, input)
+      patchDraftRelations((relations) => relations.map((item) => item.id === relationId ? relation : item))
+      setFeedback("关系已更新")
+      setReloadVersion((version) => version + 1)
+    } catch (error) {
+      setRelationMutationError(error instanceof Error ? error : new Error("更新关系失败，请稍后重试"))
+    }
+  }
+
+  async function handleDeleteRelation(relationId: string) {
+    setRelationMutationError(null)
+    try {
+      await deleteKnowledgeRelation(activeDraft.nodeId, relationId)
+      patchDraftRelations((relations) => relations.filter((item) => item.id !== relationId))
+      setFeedback("关系已删除")
+      setReloadVersion((version) => version + 1)
+    } catch (error) {
+      setRelationMutationError(error instanceof Error ? error : new Error("删除关系失败，请稍后重试"))
+    }
+  }
+
+  function patchDraftRelations(updater: (relations: KnowledgeRelation[]) => KnowledgeRelation[]) {
+    setDraftNode({
+      ...activeDraft,
+      relations: updater(activeDraft.relations ?? []),
+    })
+  }
+
   function handleMockPublish() {
     setDraftNode({
       ...activeDraft,
@@ -176,14 +229,19 @@ export function WikiNodeEditPage() {
           <ApiErrorNotice error={linksError} onRetry={reloadLinks} />
           <ApiErrorNotice error={indexSegmentsError} onRetry={reloadIndexSegments} />
           <ApiErrorNotice error={segmentGenerationError} title="生成本地 Index Segment 失败" />
+          <ApiErrorNotice error={relationMutationError} title="关系操作失败" />
           <WikiNodeEditor key={node.nodeId} node={activeDraft} nodes={nodes} onDraftChange={setDraftNode} />
         </div>
         <WikiNodeInspector
           node={activeDraft}
+          availableNodes={nodes}
           outgoingLinks={outgoingLinks}
           incomingLinks={incomingLinks}
           brokenLinks={brokenLinks}
           indexSegments={activeIndexSegments}
+          onCreateRelation={handleCreateRelation}
+          onUpdateRelation={handleUpdateRelation}
+          onDeleteRelation={handleDeleteRelation}
           onGenerateIndexSegments={handleGenerateIndexSegments}
           isGeneratingIndexSegments={isGeneratingSegments}
           segmentGenerationFeedback={segmentGenerationFeedback}

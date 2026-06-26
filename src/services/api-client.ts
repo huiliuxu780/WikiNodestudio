@@ -25,7 +25,7 @@ export function withMockFallback<T>(request: Promise<T>, fallback: () => T | Pro
 }
 
 type RequestOptions = {
-  method?: "GET" | "POST" | "PUT"
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
   body?: unknown
 }
 
@@ -77,4 +77,12 @@ export function apiPost<T>(path: string, body: unknown) {
 
 export function apiPut<T>(path: string, body: unknown) {
   return apiRequest<T>(path, { method: "PUT", body })
+}
+
+export function apiPatch<T>(path: string, body: unknown) {
+  return apiRequest<T>(path, { method: "PATCH", body })
+}
+
+export function apiDelete<T>(path: string) {
+  return apiRequest<T>(path, { method: "DELETE" })
 }

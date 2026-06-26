@@ -676,8 +676,8 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
   private List<KnowledgeRelation> loadRelations(String nodeId) {
     return jdbcTemplate.query(
       """
-      select relation_id, source_node_id, target_node_id, relation_type, direction,
-             confidence, created_by, evidence_source_ref_id
+      select relation_id, source_node_id, target_node_id, relation_type, relation_status, relation_source,
+             direction, confidence, created_by, anchor_text, note, evidence_source_ref_id
       from wiki_node_relations
       where source_node_id = ?
       order by position
@@ -687,9 +687,13 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
         resultSet.getString("source_node_id"),
         resultSet.getString("target_node_id"),
         resultSet.getString("relation_type"),
+        resultSet.getString("relation_status"),
+        resultSet.getString("relation_source"),
         resultSet.getString("direction"),
         getNullableDouble(resultSet, "confidence"),
         resultSet.getString("created_by"),
+        resultSet.getString("anchor_text"),
+        resultSet.getString("note"),
         resultSet.getString("evidence_source_ref_id") == null
           ? null
           : new KnowledgeRelationEvidence(resultSet.getString("evidence_source_ref_id"))
@@ -911,8 +915,9 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
         """
         insert into wiki_node_relations (
           source_node_id, position, relation_id, target_node_id, relation_type,
-          direction, confidence, created_by, evidence_source_ref_id
-        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          relation_status, relation_source, direction, confidence, created_by, anchor_text, note,
+          evidence_source_ref_id, created_at, updated_at
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         node.nodeId(),
         index,
@@ -921,10 +926,16 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
           : relation.id(),
         relation.targetNodeId(),
         relation.relationType(),
+        relation.status() == null ? "active" : relation.status(),
+        relation.source() == null ? "system" : relation.source(),
         relation.direction() == null ? "outgoing" : relation.direction(),
         relation.confidence(),
         relation.createdBy() == null ? "system" : relation.createdBy(),
-        relation.evidence() == null ? null : relation.evidence().sourceRefId()
+        relation.anchorText(),
+        relation.note(),
+        relation.evidence() == null ? null : relation.evidence().sourceRefId(),
+        node.createdAt(),
+        node.updatedAt()
       );
     }
   }

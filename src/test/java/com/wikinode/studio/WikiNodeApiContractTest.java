@@ -53,6 +53,63 @@ class WikiNodeApiContractTest {
   }
 
   @Test
+  void managesOneKnowledgeRelationThroughWikiNodeApi() throws Exception {
+    String createBody = """
+      {
+        "targetNodeId": "wn-002",
+        "relationType": "applies_to",
+        "status": "active",
+        "source": "manual",
+        "confidence": 0.77,
+        "anchorText": "适用于收费政策",
+        "note": "人工确认的适用范围关系。",
+        "evidenceSourceRefId": "ref-web-service-fee"
+      }
+      """;
+
+    HttpResponse<String> created = post("/api/wiki-nodes/wn-001/relations", createBody);
+    assertThat(created.statusCode()).isEqualTo(200);
+    assertThat(created.body()).contains("\"targetNodeId\":\"wn-002\"");
+    assertThat(created.body()).contains("\"relationType\":\"applies_to\"");
+    assertThat(created.body()).contains("\"status\":\"active\"");
+    assertThat(created.body()).contains("\"source\":\"manual\"");
+    assertThat(created.body()).contains("\"anchorText\":\"适用于收费政策\"");
+
+    String relationId = created.body().replaceAll(".*\\\"id\\\":\\\"([^\\\"]+)\\\".*", "$1");
+    String updateBody = """
+      {
+        "targetNodeId": "wn-003",
+        "relationType": "conflicts_with",
+        "status": "pending_review",
+        "source": "manual",
+        "confidence": 0.66,
+        "anchorText": "冲突待确认",
+        "note": "业务专家需要复核。",
+        "evidenceSourceRefId": "ref-web-service-fee"
+      }
+      """;
+
+    HttpResponse<String> updated = patch("/api/wiki-nodes/wn-001/relations/%s".formatted(relationId), updateBody);
+    HttpResponse<String> relations = get("/api/wiki-nodes/wn-001/relations");
+
+    assertThat(updated.statusCode()).isEqualTo(200);
+    assertThat(updated.body()).contains("\"targetNodeId\":\"wn-003\"");
+    assertThat(updated.body()).contains("\"relationType\":\"conflicts_with\"");
+    assertThat(updated.body()).contains("\"status\":\"pending_review\"");
+    assertThat(updated.body()).contains("\"note\":\"业务专家需要复核。\"");
+    assertThat(relations.statusCode()).isEqualTo(200);
+    assertThat(relations.body()).contains(relationId);
+    assertThat(relations.body()).contains("\"source\":\"manual\"");
+
+    HttpResponse<String> deleted = delete("/api/wiki-nodes/wn-001/relations/%s".formatted(relationId));
+    HttpResponse<String> afterDelete = get("/api/wiki-nodes/wn-001/relations");
+
+    assertThat(deleted.statusCode()).isEqualTo(204);
+    assertThat(afterDelete.statusCode()).isEqualTo(200);
+    assertThat(afterDelete.body()).doesNotContain(relationId);
+  }
+
+  @Test
   void returnsWikiNodeDetailsAndLinks() throws Exception {
     HttpResponse<String> detail = get("/api/wiki-nodes/wn-001");
     HttpResponse<String> links = get("/api/wiki-nodes/wn-001/links");
@@ -802,6 +859,23 @@ class WikiNodeApiContractTest {
         .header("Content-Type", "application/json")
         .PUT(HttpRequest.BodyPublishers.ofString(body))
         .build(),
+      HttpResponse.BodyHandlers.ofString()
+    );
+  }
+
+  private HttpResponse<String> patch(String path, String body) throws Exception {
+    return httpClient.send(
+      HttpRequest.newBuilder(uri(path))
+        .header("Content-Type", "application/json")
+        .method("PATCH", HttpRequest.BodyPublishers.ofString(body))
+        .build(),
+      HttpResponse.BodyHandlers.ofString()
+    );
+  }
+
+  private HttpResponse<String> delete(String path) throws Exception {
+    return httpClient.send(
+      HttpRequest.newBuilder(uri(path)).DELETE().build(),
       HttpResponse.BodyHandlers.ofString()
     );
   }

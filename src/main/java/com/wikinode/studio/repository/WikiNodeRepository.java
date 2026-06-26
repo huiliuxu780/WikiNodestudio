@@ -2,6 +2,8 @@ package com.wikinode.studio.repository;
 
 import com.wikinode.studio.model.IndexStatusSummary;
 import com.wikinode.studio.model.IndexSegment;
+import com.wikinode.studio.model.KnowledgeRelation;
+import com.wikinode.studio.model.KnowledgeRelationRequest;
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
@@ -37,6 +39,14 @@ public interface WikiNodeRepository {
   WikiNode createNode(WikiNodeUpsertRequest request);
 
   WikiNode updateNode(String nodeId, WikiNodeUpsertRequest request);
+
+  List<KnowledgeRelation> listKnowledgeRelations(String nodeId);
+
+  KnowledgeRelation createKnowledgeRelation(String nodeId, KnowledgeRelationRequest request);
+
+  KnowledgeRelation updateKnowledgeRelation(String nodeId, String relationId, KnowledgeRelationRequest request);
+
+  void deleteKnowledgeRelation(String nodeId, String relationId);
 
   List<WikiLink> outgoingLinks(String nodeId);
 

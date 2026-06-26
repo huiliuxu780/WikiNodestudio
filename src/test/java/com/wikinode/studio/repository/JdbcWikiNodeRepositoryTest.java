@@ -165,6 +165,58 @@ class JdbcWikiNodeRepositoryTest {
   }
 
   @Test
+  void mutatesKnowledgeRelationsAcrossRepositoryInstances() {
+    JdbcTemplate jdbcTemplate = jdbcTemplateWithSeededRelations();
+    JdbcWikiNodeRepository firstRepository = new JdbcWikiNodeRepository(jdbcTemplate);
+
+    KnowledgeRelation created = firstRepository.createKnowledgeRelation(
+      "wn-001",
+      new com.wikinode.studio.model.KnowledgeRelationRequest(
+        "wn-002",
+        "applies_to",
+        "active",
+        "manual",
+        0.77,
+        "适用于收费政策",
+        "人工确认的适用范围关系。",
+        "ref-web-service-fee"
+      )
+    );
+    KnowledgeRelation updated = firstRepository.updateKnowledgeRelation(
+      "wn-001",
+      created.id(),
+      new com.wikinode.studio.model.KnowledgeRelationRequest(
+        "wn-003",
+        "conflicts_with",
+        "pending_review",
+        "manual",
+        0.66,
+        "冲突待确认",
+        "业务专家需要复核。",
+        "ref-web-service-fee"
+      )
+    );
+
+    JdbcWikiNodeRepository secondRepository = new JdbcWikiNodeRepository(jdbcTemplate);
+
+    assertThat(updated.relationType()).isEqualTo("conflicts_with");
+    assertThat(secondRepository.listKnowledgeRelations("wn-001"))
+      .anySatisfy(relation -> {
+        assertThat(relation.id()).isEqualTo(created.id());
+        assertThat(relation.targetNodeId()).isEqualTo("wn-003");
+        assertThat(relation.status()).isEqualTo("pending_review");
+        assertThat(relation.source()).isEqualTo("manual");
+        assertThat(relation.anchorText()).isEqualTo("冲突待确认");
+        assertThat(relation.note()).isEqualTo("业务专家需要复核。");
+      });
+
+    secondRepository.deleteKnowledgeRelation("wn-001", created.id());
+
+    assertThat(firstRepository.listKnowledgeRelations("wn-001"))
+      .noneSatisfy(relation -> assertThat(relation.id()).isEqualTo(created.id()));
+  }
+
+  @Test
   void generatesDeterministicLocalIndexSegmentsWithTraceEvidence() {
     JdbcTemplate jdbcTemplate = jdbcTemplateWithIndexSegments();
     JdbcWikiNodeRepository repository = new JdbcWikiNodeRepository(jdbcTemplate);
@@ -636,7 +688,8 @@ class JdbcWikiNodeRepositoryTest {
     );
     ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
       new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
-      new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql")
+      new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql"),
+      new ClassPathResource("db/migration/V11__add_knowledge_relation_mutation_fields.sql")
     );
     populator.execute(dataSource);
     return new JdbcTemplate(dataSource);
@@ -652,7 +705,25 @@ class JdbcWikiNodeRepositoryTest {
     ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
       new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
       new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql"),
+      new ClassPathResource("db/migration/V11__add_knowledge_relation_mutation_fields.sql"),
       new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql")
+    );
+    populator.execute(dataSource);
+    return new JdbcTemplate(dataSource);
+  }
+
+  private JdbcTemplate jdbcTemplateWithSeededRelations() {
+    SingleConnectionDataSource dataSource = new SingleConnectionDataSource(
+      "jdbc:h2:mem:wikinode-relations-%s;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH".formatted(System.nanoTime()),
+      "sa",
+      "",
+      true
+    );
+    ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
+      new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
+      new ClassPathResource("db/migration/V2__seed_wikinode_data.sql"),
+      new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql"),
+      new ClassPathResource("db/migration/V11__add_knowledge_relation_mutation_fields.sql")
     );
     populator.execute(dataSource);
     return new JdbcTemplate(dataSource);
@@ -671,6 +742,7 @@ class JdbcWikiNodeRepositoryTest {
       new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql"),
       new ClassPathResource("db/migration/V7__create_index_segment_schema.sql"),
       new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql"),
+      new ClassPathResource("db/migration/V11__add_knowledge_relation_mutation_fields.sql"),
       new ClassPathResource("db/migration/V9__add_index_segment_trace_metadata.sql")
     );
     populator.execute(dataSource);
@@ -687,6 +759,7 @@ class JdbcWikiNodeRepositoryTest {
     ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
       new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
       new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql"),
+      new ClassPathResource("db/migration/V11__add_knowledge_relation_mutation_fields.sql"),
       new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql"),
       new ClassPathResource("db/migration/V4__create_source_operation_schema.sql")
     );
@@ -704,6 +777,7 @@ class JdbcWikiNodeRepositoryTest {
     ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
       new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
       new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql"),
+      new ClassPathResource("db/migration/V11__add_knowledge_relation_mutation_fields.sql"),
       new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql"),
       new ClassPathResource("db/migration/V4__create_source_operation_schema.sql"),
       new ClassPathResource("db/migration/V5__create_parser_profile_schema.sql")
@@ -722,6 +796,7 @@ class JdbcWikiNodeRepositoryTest {
     ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
       new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
       new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql"),
+      new ClassPathResource("db/migration/V11__add_knowledge_relation_mutation_fields.sql"),
       new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql"),
       new ClassPathResource("db/migration/V4__create_source_operation_schema.sql"),
       new ClassPathResource("db/migration/V5__create_parser_profile_schema.sql"),

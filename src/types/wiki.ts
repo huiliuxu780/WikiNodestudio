@@ -94,6 +94,17 @@ export type KnowledgeRelation = {
   }
 }
 
+export type KnowledgeRelationInput = {
+  targetNodeId: string
+  relationType: KnowledgeRelationType
+  status?: "active" | "broken" | "pending_review" | "rejected"
+  source?: "manual" | "system" | "api" | "import" | "markdown_link"
+  confidence?: number
+  anchorText?: string
+  note?: string
+  evidenceSourceRefId?: string
+}
+
 export type WikiNode = {
   nodeId: string
   slug: string
