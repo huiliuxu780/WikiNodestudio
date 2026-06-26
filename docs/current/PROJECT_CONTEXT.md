@@ -28,7 +28,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-The current executable slice is `IM055 Frontend IA and Boundary-Copy Correction`. Each future IM must run on its own branch, complete verification, commit locally, and stop for user confirmation before push or the next IM.
+The current executable slice is `IM056 Knowledge Relation Management Read Surface`. IM056 turns the external Knowledge Relation Management PRD into the current WikiNode Studio baseline and implements the current-contract read-only frontend surface: a first-class WikiNode relation tab, relation type/source/status display, Markdown WikiLink context, Broken Links relation context, and Playwright acceptance coverage. Each future IM must run on its own branch, complete verification, commit locally, and stop for user confirmation before push or the next IM.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -59,4 +59,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Current recommended next step: complete `IM055 Frontend IA and Boundary-Copy Correction`. IM055 removes no-navigation hidden quality routes, keeps Quality Issues as the current governance entry point, and cleans visible UI copy so product pages describe business objects, states, evidence, and review actions instead of implementation boundary explanations. Future conflict detection, expired knowledge, and duplicate knowledge remain roadmap capabilities until explicitly scoped.
+Current recommended next step: complete `IM056 Knowledge Relation Management Read Surface`. IM056 should add `docs/current/KNOWLEDGE_RELATION_MANAGEMENT_PRD.md`, audit the current WikiLink / KnowledgeRelation / WikiGraph / Broken Links contract, implement the read-only WikiNode relation surface and Broken Links relation context, and keep backend, database, API, Java model, package, lockfile, and CI files unchanged.

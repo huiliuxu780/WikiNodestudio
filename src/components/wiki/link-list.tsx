@@ -1,7 +1,6 @@
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import type { WikiLink } from "@/types/wiki"
-import { labelFromMap, linkStatusLabels, relationTypeLabels } from "@/utils/display-labels"
+import { labelFromMap, linkStatusLabels, relationSourceLabels, relationStatusLabels, relationTypeLabels } from "@/utils/display-labels"
 
 export function LinkList({
   links,
@@ -28,11 +27,9 @@ export function LinkList({
               {link.resolved ? linkStatusLabels.resolved : linkStatusLabels.broken}
             </Badge>
           </div>
-          <div className="mt-2 flex flex-wrap gap-1">
-            <Button variant="ghost" size="sm">打开</Button>
-            <Button variant="ghost" size="sm">关联</Button>
-            {!link.resolved ? <Button variant="outline" size="sm">创建知识节点</Button> : null}
-            <Button variant="ghost" size="sm">忽略</Button>
+          <div className="mt-2 grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
+            <span>关系来源：{relationSourceLabels.markdown_link}</span>
+            <span>关系状态：{link.resolved ? relationStatusLabels.active : relationStatusLabels.broken}</span>
           </div>
         </div>
       ))}
@@ -41,26 +38,35 @@ export function LinkList({
 }
 
 export function BrokenLinkActionList({ links }: { links: WikiLink[] }) {
-  if (!links.length) return <p className="text-sm text-muted-foreground">暂无未解析链接。</p>
+  if (!links.length) return <p className="text-sm text-muted-foreground">暂无未解析关系。</p>
 
   return (
     <div className="flex flex-col gap-2">
       {links.map((link) => (
         <div key={link.linkId} className="rounded-md border p-3">
           <div className="flex items-start justify-between gap-3">
-            <div>
+            <div className="min-w-0">
               <div className="font-medium">{link.targetTitle}</div>
-              <div className="text-xs text-muted-foreground">引用自 {link.fromTitle}</div>
+              <div className="text-xs text-muted-foreground">来源 WikiNode：{link.fromTitle}</div>
             </div>
-            <Badge variant="destructive">未解析</Badge>
+            <Badge variant="destructive">{relationStatusLabels.broken}</Badge>
           </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button variant="outline" size="sm">创建知识节点</Button>
-            <Button variant="outline" size="sm">关联已有节点</Button>
-            <Button variant="ghost" size="sm">暂时忽略</Button>
+          <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
+            <InfoCell label="关系类型" value={labelFromMap(relationTypeLabels, link.relationType)} />
+            <InfoCell label="关系来源" value={relationSourceLabels.markdown_link} />
+            <InfoCell label="关系状态" value={relationStatusLabels.broken} />
           </div>
         </div>
       ))}
+    </div>
+  )
+}
+
+function InfoCell({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border bg-muted/20 px-3 py-2">
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="mt-1 font-medium">{value}</div>
     </div>
   )
 }

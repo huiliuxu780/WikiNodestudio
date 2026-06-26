@@ -229,6 +229,23 @@ test.describe("Frontend skeleton IA", () => {
     await expect(page.getByText("SEG-").first()).toBeVisible()
   })
 
+  test("Broken Links shows relation context without unimplemented write actions", async ({ page }) => {
+    await page.goto("/broken-links")
+
+    await expect(page.getByRole("heading", { name: "断链检查" })).toBeVisible()
+    await expect(page.getByText("未解析关系")).toBeVisible()
+    await expect(page.getByText("洗衣机排水规范")).toBeVisible()
+    await expect(page.getByText("来源 WikiNode：洗衣机不脱水排查流程")).toBeVisible()
+    await expect(page.getByText("关系类型").first()).toBeVisible()
+    await expect(page.getByText("关系来源").first()).toBeVisible()
+    await expect(page.getByText("正文双链").first()).toBeVisible()
+    await expect(page.getByText("关系状态").first()).toBeVisible()
+    await expect(page.getByText("断链").first()).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/创建知识节点|关联已有节点|暂时忽略|修复|批量/)
+    await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+    await expect(page.locator("main").last()).not.toContainText(forbiddenBoundaryCopy)
+  })
+
   test("IM051 back-half pages show publishing, metadata governance, and admin work surfaces", async ({ page }) => {
     await page.goto("/publishing")
     await expect(page.getByRole("heading", { name: "发布与索引" })).toBeVisible()

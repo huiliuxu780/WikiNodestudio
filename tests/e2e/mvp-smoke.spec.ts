@@ -1,8 +1,13 @@
 import { expect, test } from "@playwright/test"
+import { routeRetrievalApiFixtures } from "./retrieval-api-fixtures"
 
 const forbiddenProductTerms = /Chunk Management|Chat API|Chatbot|Agent Platform|Workflow Builder|Vector DB Management/i
 
 test.describe.serial("MVP browser smoke", () => {
+  test.beforeEach(async ({ page }) => {
+    await routeRetrievalApiFixtures(page)
+  })
+
   test("WikiNodes page uses product-ready Chinese labels without API errors", async ({ page }) => {
     await page.goto("/wiki-nodes")
 
@@ -117,7 +122,7 @@ test.describe.serial("MVP browser smoke", () => {
     await page.goto("/broken-links")
 
     await expect(page.getByRole("heading", { name: "断链检查" })).toBeVisible()
-    await expect(page.getByText("未解析的 WikiLink", { exact: true })).toBeVisible()
+    await expect(page.getByText("未解析关系", { exact: true })).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
 
     await page.goto("/settings")

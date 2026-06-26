@@ -1,5 +1,15 @@
 version: 1
 decisions:
+  - id: D056
+    date: "2026-06-27"
+    title: "Implement current-contract Knowledge Relation read surface"
+    rationale: "The external Knowledge Relation Management PRD is accepted as product direction. IM056 implements the current-contract read-only surface directly instead of splitting it into tiny follow-on IMs: Markdown WikiLink remains a fast authoring input while Knowledge Relation becomes a first-class WikiNode information tab. The work audits the existing WikiLink, KnowledgeRelation, wiki_node_relations, WikiGraph, Broken Links, and WikiNode detail/editor contracts; maps the PRD enum direction to the current lowercase relation contract; adds relation status/source display labels; and upgrades WikiNode Inspector and Broken Links without relation CRUD, backend API, database, graph algorithm, repair, import, vector, AI, permission, package, or dependency work."
+    related:
+      - IM056
+      - US056
+      - KNOWLEDGE_RELATION_MANAGEMENT_PRD
+      - WIKINODE_KNOWLEDGE_OBJECT_API_ALIGNMENT
+      - WIKINODE_GRAPH
   - id: D055
     date: "2026-06-27"
     title: "Correct IM055 to frontend IA and boundary-copy cleanup"
