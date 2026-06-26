@@ -630,6 +630,20 @@ export function DraftWikiNodeSuggestionDetailPage() {
       {isLoading ? <LoadingBlock text="正在加载 WikiNode 建议..." /> : null}
       {suggestion ? (
         <>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">评审路径</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <p className="text-muted-foreground">Parsed Document → Draft WikiNode Suggestion → Review Decision</p>
+              <p className="rounded-md border bg-muted/20 p-3 text-muted-foreground">
+                当前不会创建 WikiLink、生成 Index Segment、发布、索引、向量同步或批量转换。
+              </p>
+              <Link className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" to="/draft-wikinode-suggestions">
+                回到建议评审
+              </Link>
+            </CardContent>
+          </Card>
           <SummaryGrid items={[
             ["建议标题", suggestion.title],
             ["状态", labelFromMap(draftWikiNodeSuggestionStatusLabels, suggestion.status)],
@@ -812,6 +826,19 @@ export function DraftWikiNodeSuggestionReviewConsolePage() {
         ["已采纳", String(acceptedCount)],
         ["已替换", String(supersededCount)],
       ]} />
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">评审工作台</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <p className="text-muted-foreground">
+            Source → Raw Material → Parsed Document → Source Operation → Draft WikiNode Suggestion → 评审决策
+          </p>
+          <div className="rounded-md border bg-muted/20 p-3 text-muted-foreground">
+            从来源证据进入建议评审，只处理建议状态和证据追踪；不会发布、索引、创建 WikiLink 或批量转换。
+          </div>
+        </CardContent>
+      </Card>
       <Card>
         <CardHeader>
           <CardTitle className="text-base">评审筛选</CardTitle>
@@ -1273,6 +1300,18 @@ function SuggestionLifecycleCard({ suggestion }: { suggestion: DraftWikiNodeSugg
         下一步：{nextStep}
       </div>
       <div className="mt-2 flex flex-wrap gap-3 text-xs">
+        <Link className="font-medium text-primary underline-offset-4 hover:underline" to={`/sources/${suggestion.sourceId}`}>
+          查看 Source
+        </Link>
+        <Link className="font-medium text-primary underline-offset-4 hover:underline" to={`/raw-materials/${suggestion.rawMaterialId}`}>
+          查看 Raw Material
+        </Link>
+        <Link className="font-medium text-primary underline-offset-4 hover:underline" to={`/raw-materials/${suggestion.rawMaterialId}/parsed-result`}>
+          查看 Parsed Result
+        </Link>
+        <Link className="font-medium text-primary underline-offset-4 hover:underline" to={`/draft-wikinode-suggestions/${suggestion.suggestionId}`}>
+          进入建议详情
+        </Link>
         {acceptedNodeId ? (
           <Link className="font-medium text-primary underline-offset-4 hover:underline" to={`/wiki-nodes/${acceptedNodeId}`}>
             打开草稿 WikiNode

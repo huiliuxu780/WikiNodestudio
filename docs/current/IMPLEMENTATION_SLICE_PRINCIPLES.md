@@ -32,6 +32,7 @@ It is acceptable to combine documentation, API, repository, frontend, and tests 
 - No new dependency, package, lockfile, migration, auth, permission, approval, export, batch, external integration, or storage-secret boundary is crossed.
 - The behavior is reversible or non-destructive from the product perspective.
 - Verification can cover the full behavior in one local run.
+- The PR can be reviewed as one PM-verifiable workflow rather than a single button, label, or helper method.
 
 Example:
 
@@ -71,6 +72,7 @@ Each PR should still stay clean:
 - Tests should map directly to that capability.
 - Documentation updates should explain the capability boundary, not expand the product scope.
 - Future work should be named explicitly instead of silently bundled.
+- Prefer a complete acceptance path when the path stays inside existing contracts. For example, a review console may include filters, lifecycle hints, evidence links, detail navigation, and Playwright coverage in one PR.
 
 Avoid both extremes:
 
@@ -90,6 +92,12 @@ After IM040, the preferred sequence is:
    - Keep publish, index, vector sync, and batch conversion absent.
 3. `IM043 Draft WikiNode Suggestion Review Flow Acceptance Sweep`
    - Polish the end-to-end review path after generation, reject, and accept are stable.
+4. `IM044 Draft WikiNode Suggestion Lifecycle Review Console`
+   - Combine retry/replacement with a lifecycle review console because both are part of the same replacement-review capability.
+   - Keep accepted-suggestion retry, WikiNode updates, WikiLink creation, publish, index, vector sync, parser execution, AI, permissions, approval workflow, and batch conversion absent.
+5. `IM045 Draft WikiNode Suggestion Review Workspace Hardening`
+   - Harden the PM-verifiable review workspace after the lifecycle console exists.
+   - Add evidence-chain navigation, review-path copy, and acceptance coverage without adding new write semantics.
 
 ## 7. Non-goals
 

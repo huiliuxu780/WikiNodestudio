@@ -90,6 +90,11 @@ Recommended sequence:
    - Mark the source suggestion `superseded` and link it to the replacement suggestion through `matchedSuggestionIds`.
    - Add a lifecycle review console that makes `draft`, `needs_review`, `accepted`, `rejected`, and `superseded` states searchable and filterable.
    - Keep accepted-suggestion retry, WikiNode updates, WikiLink creation, publish, index, vector sync, parser execution, AI/LLM, permissions, approval workflow, and batch conversion absent.
+6. `IM045 Draft WikiNode Suggestion Review Workspace Hardening`
+   - Harden the existing lifecycle review workspace as one PM-verifiable acceptance path.
+   - Add evidence-chain navigation from Source / Raw Material / Parsed Result into suggestion detail.
+   - Add detail-page review path copy and a return link to the review console.
+   - Keep all write semantics unchanged.
 
 Planning-only IMs should be reserved for high-risk boundaries such as accept-to-WikiNode, permissions, batch operations, external integrations, or schema expansion. Low-risk review-state changes may combine boundary clarification and implementation when they use existing fields and remain single-record.
 
@@ -482,3 +487,17 @@ Current IM044 scope:
 - Add `/draft-wikinode-suggestions` as a lifecycle review console with search, status filter, conflict filter, state counts, evidence links, and replacement links.
 - Add API, repository, and Playwright coverage for retry/replacement and lifecycle review.
 - Keep DB migration, dependencies, accepted-suggestion retry, WikiNode updates, WikiLink creation, publish, index, vector sync, parser execution, AI/LLM, permissions, approval workflow, and batch conversion out of scope.
+
+```text
+IM045 Draft WikiNode Suggestion Review Workspace Hardening
+```
+
+Current IM045 scope:
+
+- Treat the Draft WikiNode Suggestion lifecycle review console as the main review workspace.
+- Make the evidence path explicit: Source -> Raw Material -> Parsed Document -> Source Operation -> Draft WikiNode Suggestion -> review decision.
+- Add safe navigation links from each suggestion card to Source, Raw Material, Parsed Result, and suggestion detail.
+- Add suggestion detail review-path copy and a return link to the review console.
+- Add Playwright coverage for the review workspace and evidence-chain navigation.
+- Keep existing generate, reject, accept, and retry APIs unchanged.
+- Keep DB migration, dependencies, new write semantics, batch operations, WikiNode update semantics, WikiLink creation, publish, index, vector sync, parser execution, AI/LLM, permissions, approval workflow, and external integrations out of scope.

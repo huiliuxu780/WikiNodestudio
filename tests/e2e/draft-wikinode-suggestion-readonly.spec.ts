@@ -231,6 +231,24 @@ test.describe("Draft WikiNode Suggestion read-only review", () => {
     await expect(page.getByRole("button", { name: "索引" })).toHaveCount(0)
   })
 
+  test("renders review workspace evidence chain and safe navigation actions", async ({ page }) => {
+    await page.goto("/draft-wikinode-suggestions")
+
+    await expect(page.getByText("评审工作台")).toBeVisible()
+    await expect(page.getByText("Source → Raw Material → Parsed Document → Source Operation → Draft WikiNode Suggestion → 评审决策")).toBeVisible()
+    await expect(page.getByRole("link", { name: "查看 Source" }).first()).toHaveAttribute("href", "/sources/src-api-only")
+    await expect(page.getByRole("link", { name: "查看 Raw Material" }).first()).toHaveAttribute("href", "/raw-materials/rm-api-only")
+    await expect(page.getByRole("link", { name: "查看 Parsed Result" }).first()).toHaveAttribute("href", "/raw-materials/rm-api-only/parsed-result")
+    await expect(page.getByRole("link", { name: "进入建议详情" }).first()).toHaveAttribute("href", "/draft-wikinode-suggestions/sug-api-only")
+
+    await page.goto("/draft-wikinode-suggestions/sug-api-only")
+
+    await expect(page.getByRole("link", { name: "回到建议评审" })).toHaveAttribute("href", "/draft-wikinode-suggestions")
+    await expect(page.getByText("评审路径")).toBeVisible()
+    await expect(page.getByText("Parsed Document → Draft WikiNode Suggestion → Review Decision")).toBeVisible()
+    await expect(page.getByText("当前不会创建 WikiLink、生成 Index Segment、发布、索引、向量同步或批量转换。")).toBeVisible()
+  })
+
   test("generates one Draft WikiNode Suggestion from Parsed Result without review actions", async ({ page }) => {
     let parsedDocumentSuggestions: unknown[] = []
     await page.route("**/api/parsed-documents/pd-api-only/draft-wikinode-suggestions", (route) => {
