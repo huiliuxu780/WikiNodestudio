@@ -1,8 +1,13 @@
 import { expect, test } from "@playwright/test"
+import { routeRetrievalApiFixtures } from "./retrieval-api-fixtures"
 
 const forbiddenProductTerms = /Chunk Management|Chat API|Chatbot|Agent Platform|Workflow Builder|Vector DB Management/i
 
 test.describe("Retrieval Test debug experience", () => {
+  test.beforeEach(async ({ page }) => {
+    await routeRetrievalApiFixtures(page)
+  })
+
   test("keeps normal results WikiNode-first and shows matchedSegments only in debug mode", async ({ page }) => {
     await page.goto("/retrieval-test")
 

@@ -6,15 +6,17 @@ notes:
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
 stories:
-  - id: US055
-    title: "Frontend IA and boundary-copy correction"
+  - id: US056
+    title: "Knowledge relation management read surface"
     status: in_progress
-    goal: "Correct the current frontend information architecture and visible copy so roadmap-only quality capabilities are not exposed as hidden pages, and product pages do not display implementation boundary explanations as content."
+    goal: "Make Knowledge Relation a first-class read-only WikiNode surface using the current frontend, API, and data contracts."
     acceptance:
-      - "Routes without product navigation ownership for Conflicts, Expired Knowledge, and Duplicates are removed from the executable frontend router and route smoke coverage."
-      - "Raw Materials, Sources, Draft WikiNode Suggestion, Publishing, Parser, Settings, and related skeleton pages use business object, state, evidence, and review language instead of visible execution-boundary explanations."
-      - "Quality Issues remains the current governance entry point in the sidebar; future conflict, expiration, and duplicate capabilities stay in roadmap docs until explicitly scoped."
-      - "Playwright checks include negative coverage for visible boundary copy such as execution boundary, current read-only, not provided, not executed, mock, DTO, and repository terms."
-      - "Visible copy avoids Chat API, Chatbot, Agent Platform, Workflow Builder, Vector DB Management, and Chunk Management."
+      - "Adds `docs/current/KNOWLEDGE_RELATION_MANAGEMENT_PRD.md` as the current relation-management planning and execution baseline."
+      - "Audits existing WikiLink, KnowledgeRelation, wiki_node_relations, WikiGraph, Broken Links, and WikiNode detail/editor relation surfaces."
+      - "Defines accepted product direction for Markdown WikiLink plus first-class Knowledge Relation and implements the current read-only frontend surface."
+      - "Defines relation type/status/source direction and maps the external PRD enum style to the current lowercase contract direction."
+      - "WikiNode Inspector includes a dedicated relation surface with structured relations, Markdown WikiLinks, unresolved relation counts, relation status/source, target object, and evidence."
+      - "Broken Links displays unresolved relation context without fake create, associate, ignore, repair, or batch actions."
+      - "No backend, database, API, Java model, package, lockfile, or CI files are changed."
     non_goals:
-      - "No new product page, backend API, DB migration, automated quality execution, duplicate matching, conflict workflow, expiration job, batch operation, export, publishing approval, external vector DB work, embedding, Source import, parser execution, permissions, package change, or dependency change."
+      - "No relation CRUD, relation drawer, manual add/edit/delete action, backend API, DB migration, Java model change, frontend implementation, graph algorithm, Broken Link repair action, Source import, parser execution, vector retrieval change, AI relation suggestion, permission flow, package change, or dependency change."

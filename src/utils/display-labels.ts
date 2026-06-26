@@ -339,6 +339,21 @@ export const relationTypeLabels: Record<string, string> = {
   broken_wikilink: "异常 WikiLink",
 }
 
+export const relationStatusLabels: Record<string, string> = {
+  active: "有效",
+  broken: "断链",
+  pending_review: "待确认",
+  rejected: "已驳回",
+}
+
+export const relationSourceLabels: Record<string, string> = {
+  markdown_link: "正文双链",
+  manual: "人工添加",
+  import: "导入生成",
+  system: "系统生成",
+  api: "API 写入",
+}
+
 export function labelFromMap(labels: Record<string, string>, value: string) {
   return labels[value] ?? value
 }

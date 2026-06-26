@@ -10,11 +10,11 @@ export function BrokenLinksPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader title="断链检查" description="查看 Markdown 双链语法中尚未解析的 WikiLink 引用。" />
+      <PageHeader title="断链检查" description="查看 WikiNode 之间尚未解析的 WikiLink，并按关系类型、来源和状态定位治理线索。" />
       <ApiErrorNotice error={error} onRetry={reload} />
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">未解析的 WikiLink</CardTitle>
+          <CardTitle className="text-base">未解析关系</CardTitle>
         </CardHeader>
         <CardContent>
           <BrokenLinkActionList links={brokenLinks} />

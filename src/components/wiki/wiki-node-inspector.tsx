@@ -18,6 +18,8 @@ import {
   nodeTypeLabels,
   objectTypeLabels,
   publishStatusLabels,
+  relationSourceLabels,
+  relationStatusLabels,
   relationTypeLabels,
   reviewStatusLabels,
   securityLevelLabels,
@@ -50,9 +52,12 @@ export function WikiNodeInspector({
   return (
     <aside className="min-h-0 border-l bg-muted/20 p-3" data-testid="wikinode-inspector">
       <Tabs defaultValue="metadata" className="flex h-full flex-col gap-3">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="metadata">元数据</TabsTrigger>
+          <TabsTrigger value="relations">关联关系</TabsTrigger>
           <TabsTrigger value="links">双链</TabsTrigger>
+        </TabsList>
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="sources">来源</TabsTrigger>
           <TabsTrigger value="index">索引</TabsTrigger>
           <TabsTrigger value="segments">片段</TabsTrigger>
@@ -101,10 +106,14 @@ export function WikiNodeInspector({
               objectType / subtype / metadata / sourceRefs / relations / processingProfile
             </div>
           </PanelSection>
-          <PanelSection title="Knowledge Object 关系">
-            <KnowledgeRelationList relations={node.relations} />
-          </PanelSection>
           </div>
+        </TabsContent>
+        <TabsContent value="relations" className="mt-0 min-h-0 overflow-y-auto text-sm">
+          <RelationSurface
+            node={node}
+            outgoingLinks={outgoingLinks}
+            brokenLinks={brokenLinks}
+          />
         </TabsContent>
         <TabsContent value="links" className="mt-0 min-h-0 overflow-y-auto">
           <div className="flex flex-col gap-4 pr-1">
@@ -218,9 +227,62 @@ function MetaRow({ label, value }: { label: string; value: ReactNode }) {
   )
 }
 
-function KnowledgeRelationList({ relations }: { relations: KnowledgeRelation[] | undefined }) {
+function RelationSurface({
+  node,
+  outgoingLinks,
+  brokenLinks,
+}: {
+  node: WikiNode
+  outgoingLinks: WikiLink[]
+  brokenLinks: WikiLink[]
+}) {
+  const structuredRelations = node.relations ?? []
+  const markdownRelations = outgoingLinks
+  const unresolvedRelations = brokenLinks
+
+  return (
+    <div className="flex flex-col gap-4 pr-1">
+      <PanelSection title="关系总览">
+        <div className="grid grid-cols-3 gap-2">
+          <RelationCount label="结构化关系" value={structuredRelations.length} />
+          <RelationCount label="Markdown 双链" value={markdownRelations.length} />
+          <RelationCount label="未解析" value={unresolvedRelations.length} />
+        </div>
+      </PanelSection>
+
+      <PanelSection title="结构化关系">
+        <KnowledgeRelationList relations={structuredRelations} sourceRefs={node.sourceRefs} />
+      </PanelSection>
+
+      <PanelSection title="正文双链">
+        <WikiLinkRelationList links={markdownRelations} />
+      </PanelSection>
+
+      <PanelSection title="断链 / 待确认">
+        <WikiLinkRelationList links={unresolvedRelations} emptyText="暂无未解析关系。" />
+      </PanelSection>
+    </div>
+  )
+}
+
+function RelationCount({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-md border bg-background px-3 py-2">
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="mt-1 text-lg font-semibold">{value}</div>
+    </div>
+  )
+}
+
+function KnowledgeRelationList({
+  relations,
+  sourceRefs,
+}: {
+  relations: KnowledgeRelation[] | undefined
+  sourceRefs: WikiNode["sourceRefs"]
+}) {
   if (!relations?.length) {
-    return <p className="rounded-md border bg-background p-3 text-sm text-muted-foreground">暂无 Knowledge Object 关系。</p>
+    return <p className="rounded-md border bg-background p-3 text-sm text-muted-foreground">暂无结构化关系。</p>
   }
 
   return (
@@ -228,21 +290,82 @@ function KnowledgeRelationList({ relations }: { relations: KnowledgeRelation[] |
       {relations.map((relation) => {
         const target = mockWikiNodes.find((node) => node.nodeId === relation.targetNodeId)
         const relationLabel = labelFromMap(relationTypeLabels, relation.relationType)
+        const evidence = sourceRefs.find((sourceRef) => sourceRef.id === relation.evidence?.sourceRefId || sourceRef.sourceId === relation.evidence?.sourceRefId)
+        const status = relation.status ?? (target ? "active" : "broken")
+        const source = relation.source ?? (relation.createdBy === "user" ? "manual" : "system")
+        const group = relationGroupLabel(relation.relationType)
 
         return (
           <div key={relation.id ?? `${relation.relationType}-${relation.targetNodeId}`} className="rounded-md border bg-background p-3 text-sm">
-            <div className="font-medium">{relationLabel} -&gt; {target?.title ?? relation.targetNodeId}</div>
-            <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="outline">{group}</Badge>
+                  <Badge variant={status === "broken" ? "destructive" : "secondary"}>
+                    {labelFromMap(relationStatusLabels, status)}
+                  </Badge>
+                  <Badge variant="outline">{labelFromMap(relationSourceLabels, source)}</Badge>
+                </div>
+                <div className="mt-2 font-medium">{relationLabel} -&gt; {target?.title ?? relation.targetNodeId}</div>
+              </div>
+            </div>
+            <div className="mt-3 grid gap-2 text-xs text-muted-foreground">
+              <span>目标对象：{target ? `${target.title} / ${labelFromMap(objectTypeLabels, target.objectType ?? "Article")}` : relation.targetNodeId}</span>
               <span>方向：{relation.direction === "incoming" ? "入向" : "出向"}</span>
+              <span>证据：{evidence?.sourceTitle ?? relation.evidence?.sourceRefId ?? commonLabels.none}</span>
               <span>置信度：{relation.confidence ?? commonLabels.none}</span>
-              <span>创建方式：{relation.createdBy === "user" ? "人工" : "系统"}</span>
-              <span>证据 {relation.evidence?.sourceRefId ?? commonLabels.none}</span>
+              {relation.anchorText ? <span>上下文：{relation.anchorText}</span> : null}
+              {relation.note ? <span>备注：{relation.note}</span> : null}
             </div>
           </div>
         )
       })}
     </div>
   )
+}
+
+function WikiLinkRelationList({ links, emptyText = "暂无正文双链关系。" }: { links: WikiLink[]; emptyText?: string }) {
+  if (!links.length) {
+    return <p className="rounded-md border bg-background p-3 text-sm text-muted-foreground">{emptyText}</p>
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      {links.map((link) => {
+        const status = link.resolved ? "active" : "broken"
+
+        return (
+          <div key={link.linkId} className="rounded-md border bg-background p-3 text-sm data-[broken=true]:border-destructive/60" data-broken={!link.resolved}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="outline">引用知识</Badge>
+                  <Badge variant={link.resolved ? "secondary" : "destructive"}>
+                    {labelFromMap(relationStatusLabels, status)}
+                  </Badge>
+                  <Badge variant="outline">{relationSourceLabels.markdown_link}</Badge>
+                </div>
+                <div className="mt-2 font-medium">{labelFromMap(relationTypeLabels, link.relationType)} -&gt; {link.toTitle ?? link.targetTitle}</div>
+                <div className="mt-1 text-xs text-muted-foreground">来源 WikiNode：{link.fromTitle}</div>
+              </div>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function relationGroupLabel(relationType: string) {
+  if (relationType === "applies_to") return "适用范围"
+  if (relationType === "references" || relationType === "reference" || relationType === "has_policy") return "引用知识"
+  if (relationType === "related_to" || relationType === "explains") return "相关知识"
+  if (relationType === "replaces") return "替代关系"
+  if (relationType === "conflicts_with") return "冲突关系"
+  if (relationType === "derived_from" || relationType === "has_asset" || relationType === "has_manual" || relationType === "has_part_catalog") return "来源依据"
+  if (relationType === "broken_wikilink") return "断链 / 待确认"
+
+  return "关联关系"
 }
 
 function formatMetadataValue(value: unknown) {

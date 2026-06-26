@@ -82,9 +82,13 @@ export type KnowledgeRelation = {
   sourceNodeId?: string
   targetNodeId: string
   relationType: KnowledgeRelationType
+  status?: "active" | "broken" | "pending_review" | "rejected"
+  source?: "markdown_link" | "manual" | "import" | "system" | "api"
   direction?: "outgoing" | "incoming"
   confidence?: number
   createdBy?: "system" | "user"
+  anchorText?: string
+  note?: string
   evidence?: {
     sourceRefId?: string
   }

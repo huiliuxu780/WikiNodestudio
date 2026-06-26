@@ -272,6 +272,23 @@ phase2_plans:
     frontend_pages: src/pages
     frontend_components: src/components/quality
     playwright: tests/e2e
+  KNOWLEDGE_RELATION_MANAGEMENT_READ_SURFACE:
+    decision: D056
+    file: docs/current/KNOWLEDGE_RELATION_MANAGEMENT_PRD.md
+    external_prd: /Users/mac/Downloads/KNOWLEDGE_RELATION_MANAGEMENT_PRD.md
+    model_spec: docs/current/KNOWLEDGE_OBJECT_MODEL_SPEC.md
+    feature_map: docs/current/FEATURE_MAP.md
+    current_types: src/types/wiki.ts
+    display_labels: src/utils/display-labels.ts
+    link_parser: src/utils/link-parser.ts
+    graph_builder: src/utils/knowledge-graph.ts
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    relation_models:
+      - src/main/java/com/wikinode/studio/model/KnowledgeRelation.java
+      - src/main/java/com/wikinode/studio/model/KnowledgeRelationEvidence.java
+      - src/main/java/com/wikinode/studio/model/WikiLink.java
+      - src/main/java/com/wikinode/studio/model/GraphEdge.java
+    current_schema: src/main/resources/db/migration/V8__align_wikinode_knowledge_object_fields.sql
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
@@ -373,6 +390,9 @@ tasks:
   IM055:
     decision: D055
     implementation: FRONTEND_IA_BOUNDARY_COPY_CORRECTION
+  IM056:
+    decision: D056
+    implementation: KNOWLEDGE_RELATION_MANAGEMENT_READ_SURFACE
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN
