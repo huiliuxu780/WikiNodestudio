@@ -6,6 +6,8 @@ import com.wikinode.studio.model.DraftWikiNodeSuggestion;
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
+import com.wikinode.studio.model.RetrievalEvaluationCase;
+import com.wikinode.studio.model.RetrievalLog;
 import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.WikiNode;
 import java.util.ArrayList;
@@ -27,6 +29,8 @@ public class InMemoryWikiNodeRepository extends AbstractWikiNodeRepository {
   private final List<SourceOperation> sourceOperations = new ArrayList<>(WikiNodeSeedData.sourceOperations());
   private final List<ParserProfile> parserProfiles = WikiNodeSeedData.parserProfiles();
   private final List<IndexSegment> indexSegments = new ArrayList<>(WikiNodeSeedData.indexSegments());
+  private final List<RetrievalLog> retrievalLogs = new ArrayList<>();
+  private final List<RetrievalEvaluationCase> retrievalEvaluationCases = new ArrayList<>();
   private final List<DraftWikiNodeSuggestion> draftWikiNodeSuggestions = new ArrayList<>(WikiNodeSeedData.draftWikiNodeSuggestions());
 
   public InMemoryWikiNodeRepository() {
@@ -98,6 +102,27 @@ public class InMemoryWikiNodeRepository extends AbstractWikiNodeRepository {
     );
     indexSegments.removeIf(segment -> segment.nodeId().equals(nodeId) && generatedIds.contains(segment.segmentId()));
     indexSegments.addAll(segments);
+  }
+
+  @Override
+  protected List<RetrievalLog> loadRetrievalLogs() {
+    return retrievalLogs;
+  }
+
+  @Override
+  protected void insertRetrievalLog(RetrievalLog log) {
+    retrievalLogs.add(log);
+  }
+
+  @Override
+  protected List<RetrievalEvaluationCase> loadRetrievalEvaluationCases() {
+    return retrievalEvaluationCases;
+  }
+
+  @Override
+  protected void insertRetrievalEvaluationCase(RetrievalEvaluationCase evaluationCase) {
+    retrievalEvaluationCases.removeIf(existing -> existing.caseId().equals(evaluationCase.caseId()));
+    retrievalEvaluationCases.add(evaluationCase);
   }
 
   @Override

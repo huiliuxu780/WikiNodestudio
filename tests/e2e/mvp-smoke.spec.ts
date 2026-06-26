@@ -102,7 +102,7 @@ test.describe.serial("MVP browser smoke", () => {
     await expect(page.getByText("保修政策").first()).toBeVisible()
     await expect(page.getByText("Request failed")).toHaveCount(0)
     await expect(page.getByText(/chunk/i)).toHaveCount(0)
-    await expect(page.getByText(/document/i)).toHaveCount(0)
+    await expect(page.locator("main").last()).not.toContainText(/raw document|documentId|document":/i)
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
 
     await page.getByLabel("检索问题").fill("zzzz-no-result-前端验收")

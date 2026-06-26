@@ -472,6 +472,82 @@ class WikiNodeApiContractTest {
   }
 
   @Test
+  void retrievalDebugAddsMatchedSegmentsAndWritesQueryLogEvidence() throws Exception {
+    String normalBody = """
+      {
+        "query": "保修期内维修",
+        "filters": {},
+        "topK": 3,
+        "debug": false
+      }
+      """;
+    String debugBody = """
+      {
+        "query": "保修期内维修",
+        "filters": {},
+        "topK": 3,
+        "debug": true
+      }
+      """;
+
+    HttpResponse<String> normal = post("/api/retrieval-test", normalBody);
+    HttpResponse<String> debug = post("/api/retrieval-test", debugBody);
+    HttpResponse<String> logs = get("/api/retrieval-test/logs");
+
+    assertThat(normal.statusCode()).isEqualTo(200);
+    assertThat(normal.body()).contains("\"node\":");
+    assertThat(normal.body()).doesNotContain("\"matchedSegments\"");
+    assertThat(normal.body()).doesNotContain("\"chunk\"");
+
+    assertThat(debug.statusCode()).isEqualTo(200);
+    assertThat(debug.body()).contains("\"node\":");
+    assertThat(debug.body()).contains("\"matchedSegments\"");
+    assertThat(debug.body()).contains("\"segmentId\":\"seg-001\"");
+    assertThat(debug.body()).contains("\"sourceRefIds\":[\"src-feishu-cc\"]");
+    assertThat(debug.body()).doesNotContain("\"chunk\"");
+
+    assertThat(logs.statusCode()).isEqualTo(200);
+    assertThat(logs.body()).contains("\"query\":\"保修期内维修\"");
+    assertThat(logs.body()).contains("\"returnedNodeIds\"");
+    assertThat(logs.body()).contains("\"matchedSegmentIds\"");
+    assertThat(logs.body()).contains("\"latencyMs\"");
+    assertThat(logs.body()).contains("\"status\":\"succeeded\"");
+    assertThat(logs.body()).doesNotContain("\"Chat API\"");
+    assertThat(logs.body()).doesNotContain("\"chunk\"");
+  }
+
+  @Test
+  void retrievalEvaluationCaseStoresExpectedWikiNodesAndRunEvidence() throws Exception {
+    String body = """
+      {
+        "caseId": "eval-api-warranty",
+        "query": "保修期内维修",
+        "filters": {},
+        "topK": 3,
+        "expectedNodeIds": ["wn-001"]
+      }
+      """;
+
+    HttpResponse<String> created = post("/api/retrieval-test/evaluation-cases", body);
+    HttpResponse<String> cases = get("/api/retrieval-test/evaluation-cases");
+
+    assertThat(created.statusCode()).isEqualTo(200);
+    assertThat(created.body()).contains("\"caseId\":\"eval-api-warranty\"");
+    assertThat(created.body()).contains("\"query\":\"保修期内维修\"");
+    assertThat(created.body()).contains("\"expectedNodeIds\":[\"wn-001\"]");
+    assertThat(created.body()).contains("\"runResult\"");
+    assertThat(created.body()).contains("\"returnedNodeIds\"");
+    assertThat(created.body()).contains("\"matchedSegmentIds\"");
+    assertThat(created.body()).contains("\"status\":\"passed\"");
+    assertThat(created.body()).doesNotContain("\"Chat API\"");
+    assertThat(created.body()).doesNotContain("\"chunk\"");
+
+    assertThat(cases.statusCode()).isEqualTo(200);
+    assertThat(cases.body()).contains("\"caseId\":\"eval-api-warranty\"");
+    assertThat(cases.body()).contains("\"expectedNodeIds\":[\"wn-001\"]");
+  }
+
+  @Test
   void updatesWikiNodeContentAndRecalculatesBrokenLinks() throws Exception {
     String updatedNode = """
       {

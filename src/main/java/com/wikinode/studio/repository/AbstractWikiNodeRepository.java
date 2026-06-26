@@ -20,6 +20,11 @@ import com.wikinode.studio.model.DraftWikiNodeSuggestionRejectRequest;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionRetryRequest;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionRetryResult;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionReviewResult;
+import com.wikinode.studio.model.RetrievalEvaluationCase;
+import com.wikinode.studio.model.RetrievalEvaluationCaseRequest;
+import com.wikinode.studio.model.RetrievalEvaluationRunResult;
+import com.wikinode.studio.model.RetrievalLog;
+import com.wikinode.studio.model.RetrievalMatchedSegment;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
@@ -41,6 +46,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -71,6 +77,14 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   protected abstract void replaceGeneratedIndexSegments(String nodeId, List<IndexSegment> segments);
 
   protected abstract List<DraftWikiNodeSuggestion> loadDraftWikiNodeSuggestions();
+
+  protected abstract List<RetrievalLog> loadRetrievalLogs();
+
+  protected abstract void insertRetrievalLog(RetrievalLog log);
+
+  protected abstract List<RetrievalEvaluationCase> loadRetrievalEvaluationCases();
+
+  protected abstract void insertRetrievalEvaluationCase(RetrievalEvaluationCase evaluationCase);
 
   protected abstract void insertSourceOperation(SourceOperation operation);
 
@@ -123,19 +137,107 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
 
   @Override
   public List<RetrievalResult> search(RetrievalQuery query) {
+    long startedAt = System.nanoTime();
+    try {
+      List<RetrievalResult> results = searchResults(query);
+      insertRetrievalLog(retrievalLog(query, results, startedAt, "succeeded", null));
+      return results;
+    } catch (RuntimeException error) {
+      insertRetrievalLog(retrievalLog(query, List.of(), startedAt, "failed", error.getMessage()));
+      throw error;
+    }
+  }
+
+  @Override
+  public List<RetrievalLog> listRetrievalLogs() {
+    return loadRetrievalLogs().stream()
+      .sorted(Comparator.comparing(RetrievalLog::createdAt).reversed())
+      .toList();
+  }
+
+  @Override
+  public List<RetrievalEvaluationCase> listRetrievalEvaluationCases() {
+    return List.copyOf(loadRetrievalEvaluationCases());
+  }
+
+  @Override
+  public RetrievalEvaluationCase createRetrievalEvaluationCase(RetrievalEvaluationCaseRequest request) {
+    RetrievalQuery query = new RetrievalQuery(
+      request.query(),
+      request.filters(),
+      request.topK(),
+      true
+    );
+    List<RetrievalResult> results = searchResults(query);
+    List<String> returnedNodeIds = results.stream().map(result -> result.node().nodeId()).toList();
+    List<String> matchedSegmentIds = matchedSegmentIds(results);
+    List<String> expectedNodeIds = request.expectedNodeIds() == null ? List.of() : request.expectedNodeIds();
+    boolean passed = expectedNodeIds.isEmpty() || returnedNodeIds.containsAll(expectedNodeIds);
+    RetrievalEvaluationRunResult runResult = new RetrievalEvaluationRunResult(
+      returnedNodeIds,
+      matchedSegmentIds,
+      passed ? "passed" : "failed",
+      passed ? "命中预期 WikiNode。" : "未命中全部预期 WikiNode。"
+    );
+    String now = today();
+    RetrievalEvaluationCase evaluationCase = new RetrievalEvaluationCase(
+      request.caseId() == null || request.caseId().isBlank() ? "eval-%d".formatted(System.currentTimeMillis()) : request.caseId(),
+      request.query(),
+      request.filters() == null ? new RetrievalQuery.RetrievalFilters(null, null, null) : request.filters(),
+      request.topK() > 0 ? request.topK() : 5,
+      expectedNodeIds,
+      runResult,
+      now,
+      now
+    );
+    insertRetrievalEvaluationCase(evaluationCase);
+    return evaluationCase;
+  }
+
+  private List<RetrievalResult> searchResults(RetrievalQuery query) {
     String cleanQuery = Optional.ofNullable(query.query()).orElse("").trim();
     RetrievalQuery.RetrievalFilters filters = query.filters() == null
       ? new RetrievalQuery.RetrievalFilters(null, null, null)
       : query.filters();
     int limit = query.topK() > 0 ? query.topK() : 5;
+    boolean debug = Boolean.TRUE.equals(query.debug());
 
     return listNodes().stream()
       .filter(node -> filters.nodeType() == null || filters.nodeType().equals(node.nodeType()))
       .filter(node -> filters.status() == null || filters.status().equals(node.status()))
-      .map(node -> retrievalResult(node, cleanQuery, filters))
+      .map(node -> retrievalResult(node, cleanQuery, filters, debug))
       .filter(result -> result.score() > 0.05 || cleanQuery.isBlank())
       .sorted(Comparator.comparingDouble(RetrievalResult::score).reversed())
       .limit(limit)
+      .toList();
+  }
+
+  private RetrievalLog retrievalLog(
+    RetrievalQuery query,
+    List<RetrievalResult> results,
+    long startedAt,
+    String status,
+    String errorSummary
+  ) {
+    long latencyMs = Math.max(1, (System.nanoTime() - startedAt) / 1_000_000);
+    return new RetrievalLog(
+      "rlog-%s".formatted(UUID.randomUUID()),
+      Optional.ofNullable(query.query()).orElse(""),
+      query.filters() == null ? new RetrievalQuery.RetrievalFilters(null, null, null) : query.filters(),
+      results.stream().map(result -> result.node().nodeId()).toList(),
+      matchedSegmentIds(results),
+      latencyMs,
+      status,
+      errorSummary,
+      OffsetDateTime.now(ZoneOffset.UTC).toString()
+    );
+  }
+
+  private List<String> matchedSegmentIds(List<RetrievalResult> results) {
+    return results.stream()
+      .flatMap(result -> result.matchedSegments().stream())
+      .map(RetrievalMatchedSegment::segmentId)
+      .distinct()
       .toList();
   }
 
@@ -1006,7 +1108,8 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   private RetrievalResult retrievalResult(
     WikiNode node,
     String cleanQuery,
-    RetrievalQuery.RetrievalFilters filters
+    RetrievalQuery.RetrievalFilters filters,
+    boolean debug
   ) {
     Map<String, Double> fieldScores = new LinkedHashMap<>();
     fieldScores.put("title", fieldScore(cleanQuery, node.title(), 0.48));
@@ -1034,8 +1137,24 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
         : "Matched relevant WikiNode content.",
       matchedFields,
       backlinks(node.nodeId()),
-      outgoingLinks(node.nodeId())
+      outgoingLinks(node.nodeId()),
+      debug ? matchedSegments(node, score) : List.of()
     );
+  }
+
+  private List<RetrievalMatchedSegment> matchedSegments(WikiNode node, double nodeScore) {
+    return listIndexSegmentsForNode(node.nodeId()).stream()
+      .limit(2)
+      .map(segment -> new RetrievalMatchedSegment(
+        segment.segmentId(),
+        segment.nodeId(),
+        segment.segmentType(),
+        Math.max(0.55, nodeScore - 0.05),
+        segment.contentPreview(),
+        segment.sourceRefIds() == null ? List.of() : segment.sourceRefIds(),
+        segment.metadataSummary() == null ? List.of() : segment.metadataSummary()
+      ))
+      .toList();
   }
 
   private double fieldScore(String query, String text, double weight) {

@@ -15,6 +15,9 @@ import com.wikinode.studio.model.DraftWikiNodeSuggestionRetryRequest;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionRetryResult;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionReviewResult;
 import com.wikinode.studio.model.RetrievalQuery;
+import com.wikinode.studio.model.RetrievalEvaluationCase;
+import com.wikinode.studio.model.RetrievalEvaluationCaseRequest;
+import com.wikinode.studio.model.RetrievalLog;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
 import com.wikinode.studio.model.SourceOperation;
@@ -46,6 +49,12 @@ public interface WikiNodeRepository {
   WikiGraphOverview graphEgo(String nodeId);
 
   List<RetrievalResult> search(RetrievalQuery query);
+
+  List<RetrievalLog> listRetrievalLogs();
+
+  List<RetrievalEvaluationCase> listRetrievalEvaluationCases();
+
+  RetrievalEvaluationCase createRetrievalEvaluationCase(RetrievalEvaluationCaseRequest request);
 
   List<SourceItem> listSources();
 

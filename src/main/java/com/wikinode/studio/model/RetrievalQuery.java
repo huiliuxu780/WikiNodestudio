@@ -5,7 +5,8 @@ import java.util.List;
 public record RetrievalQuery(
   String query,
   RetrievalFilters filters,
-  int topK
+  int topK,
+  Boolean debug
 ) {
 
   public record RetrievalFilters(

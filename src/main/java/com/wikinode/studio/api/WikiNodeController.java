@@ -14,6 +14,9 @@ import com.wikinode.studio.model.DraftWikiNodeSuggestionRejectRequest;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionRetryRequest;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionRetryResult;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionReviewResult;
+import com.wikinode.studio.model.RetrievalEvaluationCase;
+import com.wikinode.studio.model.RetrievalEvaluationCaseRequest;
+import com.wikinode.studio.model.RetrievalLog;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
@@ -116,6 +119,21 @@ public class WikiNodeController {
   @PostMapping("/retrieval-test")
   public List<RetrievalResult> retrievalTest(@RequestBody RetrievalQuery query) {
     return repository.search(query);
+  }
+
+  @GetMapping("/retrieval-test/logs")
+  public List<RetrievalLog> listRetrievalLogs() {
+    return repository.listRetrievalLogs();
+  }
+
+  @GetMapping("/retrieval-test/evaluation-cases")
+  public List<RetrievalEvaluationCase> listRetrievalEvaluationCases() {
+    return repository.listRetrievalEvaluationCases();
+  }
+
+  @PostMapping("/retrieval-test/evaluation-cases")
+  public RetrievalEvaluationCase createRetrievalEvaluationCase(@RequestBody RetrievalEvaluationCaseRequest request) {
+    return repository.createRetrievalEvaluationCase(request);
   }
 
   @GetMapping("/sources")
