@@ -244,6 +244,16 @@ phase2_plans:
     registry:
       - docs/registry/TRACE_INDEX.yaml
       - docs/registry/DECISION_INDEX.yaml
+  RETRIEVAL_EVALUATION_CONSOLE_BASELINE:
+    decision: D053
+    previous_retrieval_api: RETRIEVAL_API_DEBUG_EVIDENCE
+    story_queue: docs/current/STORY_QUEUE.yaml
+    active_task: docs/current/ACTIVE_TASKS.yaml
+    frontend_service: src/services/retrieval-api-service.ts
+    frontend_types: src/types/retrieval.ts
+    frontend_pages: src/pages/skeleton-pages.tsx
+    frontend_components: src/components/retrieval
+    playwright: tests/e2e
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
@@ -336,6 +346,9 @@ tasks:
   IM052:
     decision: D052
     implementation: PHASE2_CURRENT_QUEUE_CLOSURE
+  IM053:
+    decision: D053
+    implementation: RETRIEVAL_EVALUATION_CONSOLE_BASELINE
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN

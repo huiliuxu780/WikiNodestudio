@@ -5,4 +5,16 @@ notes:
   - "Only ready, in_progress, and blocked stories belong here."
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
-stories: []
+stories:
+  - id: US053
+    title: "Retrieval evaluation console baseline"
+    status: ready
+    goal: "Turn the existing Retrieval API query logs and evaluation case evidence into dedicated, PM-readable evaluation console surfaces while preserving WikiNode-first retrieval."
+    acceptance:
+      - "Query Logs page lists retrieval query evidence with query, filters, returned WikiNodes, matched Index Segments, latency, status, and safe error summary."
+      - "Evaluation Cases page lists saved retrieval evaluation cases with expected WikiNodes, returned WikiNodes, matched Index Segments, run status, and summary."
+      - "Retrieval Evaluation page summarizes evaluation readiness and pass/fail evidence without running batch evaluation or export."
+      - "Retrieval Test remains WikiNode-first; matchedSegments stay debug evidence only."
+      - "Visible copy avoids Chat API, Chatbot, Agent Platform, Workflow Builder, Vector DB Management, and Chunk Management."
+    non_goals:
+      - "No new scoring algorithm, batch evaluation runner, export, dashboard analytics, external vector DB work, embedding, answer generation, permissions, publishing, Source import, parser execution, package change, or dependency change."

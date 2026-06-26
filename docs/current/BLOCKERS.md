@@ -6,8 +6,8 @@ None.
 
 ## Active Scope Constraints
 
-- No active IM is currently authorized.
-- Define the next medium-granularity Phase 2 slice before implementation.
+- `IM053` may deepen Query Logs, Evaluation Cases, and Retrieval Evaluation pages using existing Retrieval API evidence.
+- `IM053` must not add backend API changes, database migrations, batch evaluation execution, export, answer generation, scoring engine, external vector DB integration, embedding invocation, permissions, publishing approval, package changes, or new dependencies.
 - Future frontend work must follow `docs/quality/frontend-ux-guidelines.md`.
 
 ## Standing Constraints
