@@ -5,4 +5,31 @@ notes:
   - "Each IM is a product capability slice and must stop after local verification and commit."
   - "Do not auto-enter the next IM without explicit user confirmation."
   - "Done history stays in release docs or archive."
-tasks: []
+tasks:
+  - id: IM053
+    title: "Retrieval Evaluation Console Baseline"
+    status: ready
+    story_ids: [US053]
+    allowed_files:
+      - "src/services/retrieval-api-service.ts"
+      - "src/types/retrieval.ts"
+      - "src/pages/**"
+      - "src/components/retrieval/**"
+      - "src/utils/display-labels.ts"
+      - "tests/e2e/**"
+      - "docs/current/**"
+      - "docs/registry/**"
+      - "docs/release/**"
+    forbidden_files:
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/**"
+      - "src/main/java/**"
+      - "src/main/resources/db/migration/**"
+    gates:
+      - "TDD gate: write or update Playwright coverage for Query Logs, Evaluation Cases, and Retrieval Evaluation pages before implementation."
+      - "Product gate: keep Retrieval API results WikiNode-first and show Index Segment only as evidence."
+      - "Boundary gate: no batch evaluation runner, export, scoring engine, embedding, external vector-store work, Source import, parser execution, permissions, publishing, or new dependencies."
+      - "Verification gate: pnpm lint, pnpm build, bash scripts/check.sh, focused Playwright, and diff check."
+    stop_conditions:
+      - "Backend API changes, DB migration, new scoring algorithm, batch evaluation execution, export, answer generation, external vector DB integration, embedding invocation, permissions, publishing approval, package or lockfile change."

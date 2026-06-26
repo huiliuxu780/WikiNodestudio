@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D053
+    date: "2026-06-26"
+    title: "Define Retrieval Evaluation Console as the next Phase 2 capability slice"
+    rationale: "After IM048 through IM051 aligned Knowledge Object fields, Index Segment trace evidence, Retrieval API debug evidence, and governance planning surfaces, the next medium-granularity slice should make existing retrieval evidence PM-readable across Query Logs, Evaluation Cases, and Retrieval Evaluation pages. IM053 is frontend/test focused and must preserve WikiNode-first retrieval while avoiding backend API changes, database migrations, batch evaluation execution, export, answer generation, external vector DB integration, embedding, permissions, publishing approval, package changes, and new dependencies."
+    related:
+      - IM053
+      - US053
+      - RETRIEVAL_EVALUATION_CONSOLE_BASELINE
+      - RETRIEVAL_API_DEBUG_EVIDENCE
   - id: D052
     date: "2026-06-26"
     title: "Close the current Phase 2 execution queue after IM048 through IM051"

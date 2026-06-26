@@ -28,7 +28,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-There is no current executable IM after the IM048-IM051 sequence. The next implementation slice must be explicitly defined before opening a new branch. Each future IM must run on its own branch, complete verification, commit locally, and stop for user confirmation before push or the next IM.
+The next executable slice is `IM053 Retrieval Evaluation Console Baseline`. Each future IM must run on its own branch, complete verification, commit locally, and stop for user confirmation before push or the next IM.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -59,4 +59,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Current recommended next step: define the next medium-granularity Phase 2 capability slice before implementation. Good candidates should be chosen from `docs/current/PRODUCT_SCOPE.md`, `docs/current/FEATURE_MAP.md`, and the updated release evidence, and must avoid reopening Source import, parser execution, publishing approval, embedding, external vector sync, permissions, export, or batch operations unless explicitly approved.
+Current recommended next step: run `IM053 Retrieval Evaluation Console Baseline` after the queue-definition branch is reviewed. IM053 should deepen Query Logs, Evaluation Cases, and Retrieval Evaluation pages using existing Retrieval API evidence while avoiding Source import, parser execution, publishing approval, embedding, external vector sync, permissions, export, batch operations, backend schema changes, package changes, and new dependencies.
