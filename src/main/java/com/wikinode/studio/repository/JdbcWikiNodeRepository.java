@@ -1,7 +1,12 @@
 package com.wikinode.studio.repository;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wikinode.studio.model.IndexSegment;
 import com.wikinode.studio.model.IndexSegmentMetadataSummaryItem;
+import com.wikinode.studio.model.KnowledgeRelation;
+import com.wikinode.studio.model.KnowledgeRelationEvidence;
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParsedDocumentSourceRef;
 import com.wikinode.studio.model.ParserProfile;
@@ -29,6 +34,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Profile("!test & !mock")
 public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
 
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  private static final TypeReference<Map<String, Object>> METADATA_TYPE = new TypeReference<>() {
+  };
+
   private final JdbcTemplate jdbcTemplate;
 
   public JdbcWikiNodeRepository(JdbcTemplate jdbcTemplate) {
@@ -39,13 +48,13 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
   protected List<WikiNode> loadNodes() {
     return jdbcTemplate.query(
       """
-      select node_id, slug, title, node_type, summary, content_markdown, status, index_status,
-             created_at, updated_at, last_indexed_at
+      select node_id, slug, title, node_type, object_type, subtype, metadata_json, processing_profile,
+             summary, content_markdown, status, index_status, created_at, updated_at, last_indexed_at
       from wiki_nodes
       order by created_at, node_id
       """,
-      (resultSet, rowNumber) -> mapNode(resultSet)
-    );
+      (resultSet, rowNumber) -> mapNodeBase(resultSet)
+    ).stream().map(this::hydrateNode).toList();
   }
 
   @Override
@@ -53,14 +62,14 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
     try {
       return Optional.ofNullable(jdbcTemplate.queryForObject(
         """
-        select node_id, slug, title, node_type, summary, content_markdown, status, index_status,
-               created_at, updated_at, last_indexed_at
+        select node_id, slug, title, node_type, object_type, subtype, metadata_json, processing_profile,
+               summary, content_markdown, status, index_status, created_at, updated_at, last_indexed_at
         from wiki_nodes
         where node_id = ?
         """,
-        (resultSet, rowNumber) -> mapNode(resultSet),
+        (resultSet, rowNumber) -> mapNodeBase(resultSet),
         nodeId
-      ));
+      )).map(this::hydrateNode);
     } catch (EmptyResultDataAccessException error) {
       return Optional.empty();
     }
@@ -73,14 +82,18 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       jdbcTemplate.update(
         """
         insert into wiki_nodes (
-          node_id, slug, title, node_type, summary, content_markdown, status, index_status,
-          created_at, updated_at, last_indexed_at
-        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          node_id, slug, title, node_type, object_type, subtype, metadata_json, processing_profile,
+          summary, content_markdown, status, index_status, created_at, updated_at, last_indexed_at
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         node.nodeId(),
         node.slug(),
         node.title(),
         node.nodeType(),
+        node.objectType(),
+        node.subtype(),
+        toJson(node.metadata()),
+        node.processingProfile(),
         node.summary(),
         node.contentMarkdown(),
         node.status(),
@@ -91,6 +104,7 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       );
       replaceTags(node);
       replaceSourceRefs(node);
+      replaceRelations(node);
     } catch (DuplicateKeyException error) {
       throw new IllegalArgumentException("WikiNode slug already exists", error);
     }
@@ -103,13 +117,18 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       int updated = jdbcTemplate.update(
         """
         update wiki_nodes
-        set slug = ?, title = ?, node_type = ?, summary = ?, content_markdown = ?, status = ?,
-            index_status = ?, created_at = ?, updated_at = ?, last_indexed_at = ?
+        set slug = ?, title = ?, node_type = ?, object_type = ?, subtype = ?, metadata_json = ?,
+            processing_profile = ?, summary = ?, content_markdown = ?, status = ?, index_status = ?,
+            created_at = ?, updated_at = ?, last_indexed_at = ?
         where node_id = ?
         """,
         node.slug(),
         node.title(),
         node.nodeType(),
+        node.objectType(),
+        node.subtype(),
+        toJson(node.metadata()),
+        node.processingProfile(),
         node.summary(),
         node.contentMarkdown(),
         node.status(),
@@ -124,8 +143,10 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       }
       jdbcTemplate.update("delete from wiki_node_tags where node_id = ?", nodeId);
       jdbcTemplate.update("delete from wiki_node_source_refs where node_id = ?", nodeId);
+      jdbcTemplate.update("delete from wiki_node_relations where source_node_id = ?", nodeId);
       replaceTags(node);
       replaceSourceRefs(node);
+      replaceRelations(node);
     } catch (DuplicateKeyException error) {
       throw new IllegalArgumentException("WikiNode slug already exists", error);
     }
@@ -429,18 +450,23 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
     insertDraftWikiNodeRelationCandidates(suggestion);
   }
 
-  private WikiNode mapNode(ResultSet resultSet) throws SQLException {
+  private WikiNode mapNodeBase(ResultSet resultSet) throws SQLException {
     String nodeId = resultSet.getString("node_id");
     return new WikiNode(
       nodeId,
       resultSet.getString("slug"),
       resultSet.getString("title"),
       resultSet.getString("node_type"),
+      resultSet.getString("object_type"),
+      resultSet.getString("subtype"),
+      metadataFromJson(resultSet.getString("metadata_json")),
+      List.of(),
+      resultSet.getString("processing_profile"),
       resultSet.getString("summary"),
       resultSet.getString("content_markdown"),
-      loadTags(nodeId),
+      List.of(),
       resultSet.getString("status"),
-      loadSourceRefs(nodeId),
+      List.of(),
       resultSet.getString("index_status"),
       0,
       0,
@@ -448,6 +474,32 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       resultSet.getString("created_at"),
       resultSet.getString("updated_at"),
       resultSet.getString("last_indexed_at")
+    );
+  }
+
+  private WikiNode hydrateNode(WikiNode node) {
+    return new WikiNode(
+      node.nodeId(),
+      node.slug(),
+      node.title(),
+      node.nodeType(),
+      node.objectType(),
+      node.subtype(),
+      node.metadata(),
+      loadRelations(node.nodeId()),
+      node.processingProfile(),
+      node.summary(),
+      node.contentMarkdown(),
+      loadTags(node.nodeId()),
+      node.status(),
+      loadSourceRefs(node.nodeId()),
+      node.indexStatus(),
+      node.incomingCount(),
+      node.outgoingCount(),
+      node.brokenLinkCount(),
+      node.createdAt(),
+      node.updatedAt(),
+      node.lastIndexedAt()
     );
   }
 
@@ -510,6 +562,31 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
         resultSet.getString("source_url"),
         resultSet.getString("paragraph_ref"),
         resultSet.getString("version")
+      ),
+      nodeId
+    );
+  }
+
+  private List<KnowledgeRelation> loadRelations(String nodeId) {
+    return jdbcTemplate.query(
+      """
+      select relation_id, source_node_id, target_node_id, relation_type, direction,
+             confidence, created_by, evidence_source_ref_id
+      from wiki_node_relations
+      where source_node_id = ?
+      order by position
+      """,
+      (resultSet, rowNumber) -> new KnowledgeRelation(
+        resultSet.getString("relation_id"),
+        resultSet.getString("source_node_id"),
+        resultSet.getString("target_node_id"),
+        resultSet.getString("relation_type"),
+        resultSet.getString("direction"),
+        getNullableDouble(resultSet, "confidence"),
+        resultSet.getString("created_by"),
+        resultSet.getString("evidence_source_ref_id") == null
+          ? null
+          : new KnowledgeRelationEvidence(resultSet.getString("evidence_source_ref_id"))
       ),
       nodeId
     );
@@ -666,6 +743,50 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
         sourceRef.paragraphRef(),
         sourceRef.version()
       );
+    }
+  }
+
+  private void replaceRelations(WikiNode node) {
+    for (int index = 0; index < node.relations().size(); index++) {
+      KnowledgeRelation relation = node.relations().get(index);
+      jdbcTemplate.update(
+        """
+        insert into wiki_node_relations (
+          source_node_id, position, relation_id, target_node_id, relation_type,
+          direction, confidence, created_by, evidence_source_ref_id
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        node.nodeId(),
+        index,
+        relation.id() == null || relation.id().isBlank()
+          ? "%s-rel-%d".formatted(node.nodeId(), index)
+          : relation.id(),
+        relation.targetNodeId(),
+        relation.relationType(),
+        relation.direction() == null ? "outgoing" : relation.direction(),
+        relation.confidence(),
+        relation.createdBy() == null ? "system" : relation.createdBy(),
+        relation.evidence() == null ? null : relation.evidence().sourceRefId()
+      );
+    }
+  }
+
+  private Map<String, Object> metadataFromJson(String json) {
+    if (json == null || json.isBlank()) {
+      return Map.of();
+    }
+    try {
+      return OBJECT_MAPPER.readValue(json, METADATA_TYPE);
+    } catch (JsonProcessingException error) {
+      throw new IllegalArgumentException("Invalid WikiNode metadata JSON", error);
+    }
+  }
+
+  private String toJson(Map<String, Object> metadata) {
+    try {
+      return OBJECT_MAPPER.writeValueAsString(metadata == null ? Map.of() : metadata);
+    } catch (JsonProcessingException error) {
+      throw new IllegalArgumentException("Invalid WikiNode metadata", error);
     }
   }
 

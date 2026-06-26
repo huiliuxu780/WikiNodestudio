@@ -1,8 +1,13 @@
 import { expect, test } from "@playwright/test"
+import { routeWikiNodeApiFixtures } from "./wiki-node-api-fixtures"
 
 const forbiddenProductTerms = /Chunk Management|Chat API|Chatbot|Agent Platform|Workflow Builder|Vector DB Management/i
 
 test.describe("WikiGraph canvas visualization", () => {
+  test.beforeEach(async ({ page }) => {
+    await routeWikiNodeApiFixtures(page)
+  })
+
   test("uses a canvas-first layout with top toolbar and collapsible inspector", async ({ page }) => {
     await page.goto("/wiki-graph")
 

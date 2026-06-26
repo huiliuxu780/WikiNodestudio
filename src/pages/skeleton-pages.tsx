@@ -24,6 +24,7 @@ import { LinkList } from "@/components/wiki/link-list"
 import { useAsyncData } from "@/hooks/use-async-data"
 import { listIndexSegments } from "@/services/index-segment-api-service"
 import { listParserProfiles } from "@/services/parser-profile-api-service"
+import { getWikiNodeById } from "@/services/wiki-node-api-service"
 import {
   acceptDraftWikiNodeSuggestion,
   getRawMaterial,
@@ -916,7 +917,35 @@ export function DraftWikiNodeSuggestionReviewConsolePage() {
 
 export function WikiNodeDetailPage() {
   const { nodeId } = useParams()
-  const node = mockWikiNodes.find((item) => item.nodeId === nodeId || item.slug === nodeId) ?? mockWikiNodes[0]
+  const {
+    data: node,
+    error,
+    isLoading,
+    reload,
+  } = useAsyncData(
+    () => nodeId ? getWikiNodeById(nodeId) : Promise.resolve(undefined),
+    undefined,
+    [nodeId],
+  )
+
+  if (isLoading && !node) {
+    return <PageScaffold title="WikiNode 详情"><LoadingBlock text="正在加载 WikiNode 详情..." /></PageScaffold>
+  }
+
+  if (error && !node) {
+    return <PageScaffold title="WikiNode 详情"><ApiErrorNotice error={error} onRetry={reload} /></PageScaffold>
+  }
+
+  if (!node) {
+    return (
+      <PageScaffold title="WikiNode 详情" description="未找到对应 WikiNode。">
+        <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+          当前 WikiNode 不存在或已被移除。
+        </div>
+      </PageScaffold>
+    )
+  }
+
   const relationSummary = formatKnowledgeRelations(node.relations)
   const sourceEvidence = node.sourceRefs
     .map((sourceRef) => `${sourceRef.sourceName ?? sourceRef.sourceTitle} / ${sourceRef.id ?? sourceRef.sourceId}`)

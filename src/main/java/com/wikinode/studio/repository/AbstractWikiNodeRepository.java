@@ -4,6 +4,7 @@ import com.wikinode.studio.model.GraphEdge;
 import com.wikinode.studio.model.GraphNode;
 import com.wikinode.studio.model.IndexStatusSummary;
 import com.wikinode.studio.model.IndexSegment;
+import com.wikinode.studio.model.KnowledgeRelation;
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParsedDocumentSourceRef;
 import com.wikinode.studio.model.ParserProfile;
@@ -661,6 +662,22 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       nodeId,
       suggestion.title(),
       nodeTypeForSuggestion(suggestion),
+      suggestion.objectType(),
+      suggestion.subtype(),
+      Map.copyOf(suggestion.metadataDraft()),
+      suggestion.relationCandidates().stream()
+        .map(candidate -> new KnowledgeRelation(
+          null,
+          nodeId,
+          null,
+          candidate.relationType(),
+          "outgoing",
+          candidate.confidence(),
+          "system",
+          null
+        ))
+        .toList(),
+      null,
       summaryForSuggestion(suggestion),
       suggestion.contentDraft(),
       tagsForSuggestion(suggestion),
@@ -1015,6 +1032,11 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       node.slug(),
       node.title(),
       node.nodeType(),
+      node.objectType(),
+      node.subtype(),
+      node.metadata(),
+      node.relations(),
+      node.processingProfile(),
       node.summary(),
       node.contentMarkdown(),
       node.tags(),
@@ -1036,12 +1058,18 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
     String slug = valueOrDefault(request.slug(), nodeId);
     String title = valueOrDefault(request.title(), existing == null ? slug : existing.title());
     String createdAt = valueOrDefault(request.createdAt(), existing == null ? today : existing.createdAt());
+    String nodeType = valueOrDefault(request.nodeType(), existing == null ? "term" : existing.nodeType());
 
     return new WikiNode(
       nodeId,
       slug,
       title,
-      valueOrDefault(request.nodeType(), existing == null ? "term" : existing.nodeType()),
+      nodeType,
+      valueOrDefault(request.objectType(), existing == null ? objectTypeForNodeType(nodeType) : existing.objectType()),
+      valueOrDefault(request.subtype(), existing == null ? subtypeForNodeType(nodeType) : existing.subtype()),
+      mapOrDefault(request.metadata(), existing == null ? metadataForStatus(request.status()) : existing.metadata()),
+      listOrDefault(request.relations(), existing == null ? List.of() : existing.relations()),
+      valueOrDefault(request.processingProfile(), existing == null ? processingProfileForNodeType(nodeType) : existing.processingProfile()),
       valueOrDefault(request.summary(), existing == null ? "" : existing.summary()),
       valueOrDefault(request.contentMarkdown(), existing == null ? "" : existing.contentMarkdown()),
       listOrDefault(request.tags(), existing == null ? List.of() : existing.tags()),
@@ -1070,8 +1098,51 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
     return value == null || value.isBlank() ? fallback : value;
   }
 
-  private List<String> listOrDefault(List<String> value, List<String> fallback) {
+  private <T> List<T> listOrDefault(List<T> value, List<T> fallback) {
     return value == null ? fallback : value;
+  }
+
+  private Map<String, Object> mapOrDefault(Map<String, Object> value, Map<String, Object> fallback) {
+    return value == null ? fallback : value;
+  }
+
+  private String objectTypeForNodeType(String nodeType) {
+    return switch (nodeType == null ? "" : nodeType) {
+      case "product" -> "Product";
+      case "procedure", "troubleshooting" -> "Procedure";
+      case "fee_rule", "regulation" -> "Rule";
+      default -> "Article";
+    };
+  }
+
+  private String subtypeForNodeType(String nodeType) {
+    return switch (nodeType == null ? "" : nodeType) {
+      case "product" -> "product_model";
+      case "procedure" -> "procedure";
+      case "troubleshooting" -> "troubleshooting_flow";
+      case "fee_rule" -> "fee_rule";
+      case "regulation" -> "regulation";
+      case "guide" -> "guide";
+      case "term" -> "term";
+      default -> "service_fee_policy";
+    };
+  }
+
+  private Map<String, Object> metadataForStatus(String status) {
+    return Map.of(
+      "businessDomain", "after_sales",
+      "language", "zh-CN",
+      "lifecycleStatus", status == null ? "draft" : status
+    );
+  }
+
+  private String processingProfileForNodeType(String nodeType) {
+    return switch (nodeType == null ? "" : nodeType) {
+      case "product" -> "db_product_master_v1";
+      case "procedure", "troubleshooting" -> "feishu_service_process_v1";
+      case "fee_rule" -> "excel_fee_rule_v1";
+      default -> "web_article_policy_v1";
+    };
   }
 
   private List<SourceRef> sourceRefsOrDefault(List<SourceRef> value, List<SourceRef> fallback) {
