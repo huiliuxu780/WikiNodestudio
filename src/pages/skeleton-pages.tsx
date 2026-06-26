@@ -24,6 +24,7 @@ import { LinkList } from "@/components/wiki/link-list"
 import { useAsyncData } from "@/hooks/use-async-data"
 import { listIndexSegments } from "@/services/index-segment-api-service"
 import { listParserProfiles } from "@/services/parser-profile-api-service"
+import { listRetrievalEvaluationCases, listRetrievalLogs } from "@/services/retrieval-api-service"
 import { getWikiNodeById } from "@/services/wiki-node-api-service"
 import {
   acceptDraftWikiNodeSuggestion,
@@ -45,6 +46,7 @@ import {
 import type { ParserProfile } from "@/types/parser-profile"
 import type { DraftWikiNodeSuggestion } from "@/types/draft-wikinode-suggestion"
 import type { ParsedDocument, RawMaterial } from "@/types/raw-material"
+import type { RetrievalEvaluationCase, RetrievalLog } from "@/types/retrieval"
 import type { SourceItem } from "@/types/source"
 import type { SourceOperation } from "@/types/source-operation"
 import {
@@ -1040,6 +1042,7 @@ export function GenericSkeletonPage({ title, description }: { title: keyof typeo
     <PageScaffold title={title} description={description ?? "当前页是 WikiNode Studio 产品信息架构的本地占位基线。"}>
       <SimpleList items={(routeCards as Record<string, string[]>)[title] ?? ["本地占位模块", "导航目标", "当前不连接真实后端"]} />
       <SkeletonBoundaryContent title={title} />
+      <RetrievalEvaluationConsoleContent title={title} />
     </PageScaffold>
   )
 }
@@ -1202,6 +1205,190 @@ function BoundaryCard({ title, items }: { title: string; items: string[] }) {
       </CardContent>
     </Card>
   )
+}
+
+function RetrievalEvaluationConsoleContent({ title }: { title: string }) {
+  const isRetrievalConsole = title === "查询日志" || title === "评测用例" || title === "召回评测"
+  if (!isRetrievalConsole) return null
+
+  return <RetrievalEvaluationConsolePanels title={title} />
+}
+
+function RetrievalEvaluationConsolePanels({ title }: { title: string }) {
+  const {
+    data: logs,
+    error: logsError,
+    isLoading: areLogsLoading,
+    reload: reloadLogs,
+  } = useAsyncData(listRetrievalLogs, [], [title])
+  const {
+    data: evaluationCases,
+    error: casesError,
+    isLoading: areCasesLoading,
+    reload: reloadCases,
+  } = useAsyncData(listRetrievalEvaluationCases, [], [title])
+
+  return (
+    <div className="grid gap-4">
+      <ApiErrorNotice error={logsError} title="加载查询日志失败" onRetry={reloadLogs} />
+      <ApiErrorNotice error={casesError} title="加载评测用例失败" onRetry={reloadCases} />
+      {title === "查询日志" ? <QueryLogEvidencePanel logs={logs} isLoading={areLogsLoading} /> : null}
+      {title === "评测用例" ? <EvaluationCaseEvidencePanel evaluationCases={evaluationCases} isLoading={areCasesLoading} /> : null}
+      {title === "召回评测" ? (
+        <RetrievalEvaluationSummaryPanel
+          logs={logs}
+          evaluationCases={evaluationCases}
+          areLogsLoading={areLogsLoading}
+          areCasesLoading={areCasesLoading}
+        />
+      ) : null}
+    </div>
+  )
+}
+
+function QueryLogEvidencePanel({ logs, isLoading }: { logs: RetrievalLog[]; isLoading: boolean }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Retrieval API 查询日志证据</CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-3 lg:grid-cols-2">
+        {isLoading ? <LoadingBlock text="正在加载查询日志..." /> : null}
+        {!isLoading && logs.length === 0 ? (
+          <LoadingBlock text="暂无查询日志。完成一次检索后，这里会展示返回 WikiNode 和命中 Index Segment 证据。" />
+        ) : null}
+        {logs.map((log) => (
+          <div key={log.logId} className="rounded-md border bg-background p-3 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="font-medium">{log.logId}</div>
+              <Badge variant={log.status === "succeeded" ? "default" : "destructive"}>{retrievalStatusLabel(log.status)}</Badge>
+            </div>
+            <div className="mt-2 text-muted-foreground">{log.query}</div>
+            <div className="mt-3 grid gap-1 text-xs text-muted-foreground">
+              <span>筛选条件：{retrievalFiltersSummary(log.filters)}</span>
+              <span>返回 WikiNode：{joinEvidenceIds(log.returnedNodeIds)}</span>
+              <span>命中 Index Segment：{joinEvidenceIds(log.matchedSegmentIds)}</span>
+              <span>状态：{retrievalStatusLabel(log.status)} · {log.latencyMs}ms</span>
+              {log.errorSummary ? <span>{log.errorSummary}</span> : null}
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  )
+}
+
+function EvaluationCaseEvidencePanel({
+  evaluationCases,
+  isLoading,
+}: {
+  evaluationCases: RetrievalEvaluationCase[]
+  isLoading: boolean
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Retrieval Evaluation Case 证据</CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-3 lg:grid-cols-2">
+        {isLoading ? <LoadingBlock text="正在加载评测用例..." /> : null}
+        {!isLoading && evaluationCases.length === 0 ? (
+          <LoadingBlock text="暂无评测用例。可先在检索测试中保存当前 WikiNode 结果作为评测证据。" />
+        ) : null}
+        {evaluationCases.map((evaluationCase) => (
+          <div key={evaluationCase.caseId} className="rounded-md border bg-background p-3 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="font-medium">{evaluationCase.caseId}</div>
+              <Badge variant={evaluationCase.runResult.status === "passed" ? "default" : "destructive"}>
+                {evaluationRunStatusLabel(evaluationCase.runResult.status)}
+              </Badge>
+            </div>
+            <div className="mt-2 text-muted-foreground">{evaluationCase.query}</div>
+            <div className="mt-3 grid gap-1 text-xs text-muted-foreground">
+              <span>筛选条件：{retrievalFiltersSummary(evaluationCase.filters)}</span>
+              <span>返回数量：Top {evaluationCase.topK}</span>
+              <span>预期 WikiNode：{joinEvidenceIds(evaluationCase.expectedNodeIds)}</span>
+              <span>返回 WikiNode：{joinEvidenceIds(evaluationCase.runResult.returnedNodeIds)}</span>
+              <span>命中 Index Segment：{joinEvidenceIds(evaluationCase.runResult.matchedSegmentIds)}</span>
+              <span>运行结果：{evaluationRunStatusLabel(evaluationCase.runResult.status)}</span>
+              <span>{evaluationCase.runResult.summary}</span>
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  )
+}
+
+function RetrievalEvaluationSummaryPanel({
+  logs,
+  evaluationCases,
+  areLogsLoading,
+  areCasesLoading,
+}: {
+  logs: RetrievalLog[]
+  evaluationCases: RetrievalEvaluationCase[]
+  areLogsLoading: boolean
+  areCasesLoading: boolean
+}) {
+  const passedCount = evaluationCases.filter((item) => item.runResult.status === "passed").length
+  const failedCount = evaluationCases.filter((item) => item.runResult.status === "failed").length
+  const latestLogCount = logs.length
+
+  return (
+    <div className="grid gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">召回评测基线</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-3">
+          <div className="rounded-md border bg-muted/20 px-3 py-2 text-sm">
+            <div className="text-muted-foreground">评测用例数</div>
+            <div className="mt-1 text-xl font-semibold">{areCasesLoading ? "加载中..." : evaluationCases.length}</div>
+          </div>
+          <div className="rounded-md border bg-muted/20 px-3 py-2 text-sm">
+            <div className="text-muted-foreground">运行结果</div>
+            <div className="mt-1 text-xl font-semibold">{areCasesLoading ? "加载中..." : `通过 ${passedCount} / 失败 ${failedCount}`}</div>
+          </div>
+          <div className="rounded-md border bg-muted/20 px-3 py-2 text-sm">
+            <div className="text-muted-foreground">最近查询日志</div>
+            <div className="mt-1 text-xl font-semibold">{areLogsLoading ? "加载中..." : `最近查询日志 ${latestLogCount} 条`}</div>
+          </div>
+        </CardContent>
+      </Card>
+      <BoundaryCard
+        title="执行边界"
+        items={[
+          "当前不运行批量评测、不导出评测结果、不引入新评分算法。",
+          "评测结果只解释 Retrieval API 返回 WikiNode 与命中 Index Segment 证据。",
+        ]}
+      />
+      <EvaluationCaseEvidencePanel evaluationCases={evaluationCases} isLoading={areCasesLoading} />
+    </div>
+  )
+}
+
+function joinEvidenceIds(ids: string[] | undefined) {
+  return ids?.length ? ids.join("、") : "无"
+}
+
+function retrievalStatusLabel(status: RetrievalLog["status"]) {
+  return status === "succeeded" ? "成功" : "失败"
+}
+
+function evaluationRunStatusLabel(status: RetrievalEvaluationCase["runResult"]["status"]) {
+  return status === "passed" ? "通过" : "失败"
+}
+
+function retrievalFiltersSummary(filters: RetrievalLog["filters"]) {
+  if (!filters || Object.keys(filters).length === 0) return "全部"
+  const entries = [
+    filters.nodeType ? `节点类型 ${labelFromMap(nodeTypeLabels, filters.nodeType)}` : null,
+    filters.status ? `发布状态 ${labelFromMap(statusLabels, filters.status)}` : null,
+    filters.tags?.length ? `标签 ${filters.tags.join("、")}` : null,
+  ].filter(Boolean)
+
+  return entries.length ? entries.join("；") : "全部"
 }
 
 function SimpleList({ items }: { items: string[] }) {
