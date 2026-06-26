@@ -1,135 +1,185 @@
-version: 1
-updated_at: "2026-06-24"
+version: 2
+updated_at: "2026-06-26"
 source_of_truth: "current_active_tasks"
 notes:
-  - "Only current executable tasks belong here."
-  - "Each ready story must have a matching active task before execution."
-  - "Done task history stays in legacy files or archive."
+  - "Each IM is a product capability slice and must stop after local verification and commit."
+  - "Do not auto-enter the next IM without explicit user confirmation."
+  - "Done history stays in release docs or archive."
 tasks:
-  - id: IM001
-    title: "Implement Integration CI Gate"
+  - id: IM048
+    title: "WikiNode Knowledge Object API Alignment"
     status: ready
-    story_ids: [US001]
+    story_ids: [US048]
     allowed_files:
-      - ".github/workflows/ci.yml"
-      - "README.md"
-      - "docs/current/**"
-      - "docs/quality/**"
-      - "docs/registry/**"
-    forbidden_files:
       - "src/main/java/com/wikinode/studio/api/**"
       - "src/main/java/com/wikinode/studio/model/**"
-      - "src/types/**"
-      - "src/pages/**"
-      - "src/components/**"
-      - "src/services/**"
+      - "src/main/java/com/wikinode/studio/repository/**"
       - "src/main/resources/db/migration/**"
-    gates:
-      - "Backend unit/contract gate: mvn test."
-      - "Frontend quality gate: pnpm install --frozen-lockfile, pnpm run lint, pnpm run build."
-      - "PostgreSQL integration gate: start PostgreSQL service, run Flyway through Spring Boot startup, verify /api/wiki-nodes."
-      - "Browser smoke gate: install Playwright Chromium, start/reuse Vite dev server, run pnpm run test:e2e."
-      - "Non-goals gate: reject vector DB, embedding, chunk exposure, Source import, permissions, versioning, and publishing approval."
-    stop_conditions:
-      - "Any API or DTO contract change."
-      - "Any UI/page behavior change."
-      - "Any new product feature."
-      - "Any Playwright scope expansion beyond /wiki-nodes and /retrieval-test."
-      - "Any CI service beyond PostgreSQL unless the user confirms scope expansion."
-  - id: IM004
-    title: "Analyze WeKnora WikiGraph source"
-    status: ready
-    story_ids: [US004]
-    allowed_files:
-      - "docs/current/WEKNORA_WIKI_GRAPH_ANALYSIS.md"
-      - "docs/current/**"
-      - "docs/quality/**"
-      - "docs/registry/**"
+      - "src/services/**"
+      - "src/types/**"
+      - "src/components/wiki/**"
+      - "src/pages/**"
+      - "src/test/java/**"
+      - "tests/e2e/**"
+      - "scripts/api-smoke.sh"
     forbidden_files:
-      - ".github/workflows/**"
-      - "src/**"
-      - "pom.xml"
       - "package.json"
       - "pnpm-lock.yaml"
-      - "src/main/resources/db/migration/**"
+      - ".github/workflows/**"
     gates:
-      - "Source analysis gate: clone or read Tencent/WeKnora outside this repository as read-only evidence."
-      - "Report gate: every conclusion must cite concrete WeKnora paths, APIs, or data structures when found."
-      - "Scope gate: ignore Agent, Chatbot, Workflow, MCP, IM, and LLM answer-generation modules except direct graph/search coupling notes."
-      - "Harness gate: run bash scripts/check.sh after report and state updates."
+      - "TDD gate: add/adjust Java and Playwright contract tests before implementation."
+      - "Product gate: keep WikiNode as Knowledge Object carrier and preserve Inspector tabs."
+      - "Verification gate: mvn test, pnpm lint, pnpm build, bash scripts/check.sh, reset-db, api-smoke, Playwright, diff check."
     stop_conditions:
-      - "Any WikiNode Studio source-code modification."
-      - "Any dependency, package, or lockfile change."
-      - "Any product implementation beyond the analysis document."
-      - "Unable to access Tencent/WeKnora source."
-  - id: IM005
-    title: "Build frontend shell and navigation skeleton"
+      - "New dependencies, package/lock changes, auth, permissions, publishing approval, embedding, vector sync, Source import, parser execution, or batch operations."
+  - id: IM049
+    title: "Index Segment Generation and Trace Model"
     status: ready
-    story_ids: [US005]
+    story_ids: [US049]
     allowed_files:
-      - "src/app/**"
-      - "src/components/**"
-      - "src/data/**"
-      - "src/pages/**"
+      - "src/main/java/com/wikinode/studio/api/**"
+      - "src/main/java/com/wikinode/studio/model/**"
+      - "src/main/java/com/wikinode/studio/repository/**"
+      - "src/main/resources/db/migration/**"
       - "src/services/**"
       - "src/types/**"
-      - "src/utils/**"
-      - "src/App.tsx"
-      - "src/main.tsx"
-      - "src/index.css"
+      - "src/components/segments/**"
+      - "src/components/wiki/**"
+      - "src/pages/**"
+      - "src/test/java/**"
       - "tests/e2e/**"
-      - "README.md"
+      - "scripts/api-smoke.sh"
+    forbidden_files:
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/**"
+    gates:
+      - "TDD gate: prove deterministic local segment generation and trace evidence first."
+      - "Boundary gate: no embedding, no external vector write, no product-facing Chunk Management."
+      - "Verification gate: full local validation stack and diff check."
+    stop_conditions:
+      - "External vector-store sync, embedding invocation, real publish flow, approval, batch operation, or dependency change."
+  - id: IM050
+    title: "Retrieval API Debug Evidence and Query Logs"
+    status: ready
+    story_ids: [US050]
+    allowed_files:
+      - "src/main/java/com/wikinode/studio/api/**"
+      - "src/main/java/com/wikinode/studio/model/**"
+      - "src/main/java/com/wikinode/studio/repository/**"
+      - "src/main/resources/db/migration/**"
+      - "src/services/**"
+      - "src/types/**"
+      - "src/components/retrieval/**"
+      - "src/pages/**"
+      - "src/test/java/**"
+      - "tests/e2e/**"
+      - "scripts/api-smoke.sh"
+    forbidden_files:
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/**"
+    gates:
+      - "Contract gate: normal retrieval returns WikiNodes; debug mode may add matchedSegments."
+      - "Log gate: query logs are minimal evidence records, not analytics or scoring automation."
+      - "Verification gate: full local validation stack and diff check."
+    stop_conditions:
+      - "Chat API, Chatbot, answer generation, raw chunk primary result, external vector DB implementation, or evaluation runner."
+  - id: IM051
+    title: "Publishing and Index Job Boundary"
+    status: ready
+    story_ids: [US051]
+    allowed_files:
+      - "src/main/java/com/wikinode/studio/api/**"
+      - "src/main/java/com/wikinode/studio/model/**"
+      - "src/main/java/com/wikinode/studio/repository/**"
+      - "src/main/resources/db/migration/**"
+      - "src/services/**"
+      - "src/types/**"
+      - "src/pages/**"
+      - "src/test/java/**"
+      - "tests/e2e/**"
+      - "scripts/api-smoke.sh"
+    forbidden_files:
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/**"
+    gates:
+      - "Boundary gate: model readiness/status evidence without executing publishing or vector sync."
+      - "UX gate: pages must clearly say what is ready, blocked, failed, or deferred."
+      - "Verification gate: full local validation stack and diff check."
+    stop_conditions:
+      - "Approval workflow, batch publish, rollback, external vector sync, embedding, destructive operation, or auth boundary."
+  - id: IM052
+    title: "Quality and Evaluation Console"
+    status: ready
+    story_ids: [US052]
+    allowed_files:
+      - "src/main/java/com/wikinode/studio/api/**"
+      - "src/main/java/com/wikinode/studio/model/**"
+      - "src/main/java/com/wikinode/studio/repository/**"
+      - "src/main/resources/db/migration/**"
+      - "src/services/**"
+      - "src/types/**"
+      - "src/pages/**"
+      - "src/test/java/**"
+      - "tests/e2e/**"
+      - "scripts/api-smoke.sh"
+    forbidden_files:
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/**"
+    gates:
+      - "Evidence gate: quality/evaluation records cite WikiNode, WikiLink, Index Segment, or Retrieval evidence."
+      - "Scope gate: no complex scoring, export, batch automation, or production rules."
+      - "Verification gate: full local validation stack and diff check."
+    stop_conditions:
+      - "Complex scoring engine, export, batch operation, destructive remediation, or unapproved automation."
+  - id: IM053
+    title: "Tags and Metadata Governance"
+    status: ready
+    story_ids: [US053]
+    allowed_files:
+      - "src/main/java/com/wikinode/studio/api/**"
+      - "src/main/java/com/wikinode/studio/model/**"
+      - "src/main/java/com/wikinode/studio/repository/**"
+      - "src/main/resources/db/migration/**"
+      - "src/services/**"
+      - "src/types/**"
+      - "src/pages/**"
+      - "src/test/java/**"
+      - "tests/e2e/**"
+      - "scripts/api-smoke.sh"
+    forbidden_files:
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/**"
+    gates:
+      - "Model gate: stay aligned with Knowledge Object fields and existing display-label conventions."
+      - "Retrieval/index gate: explain participation without implementing scoring or vector sync."
+      - "Verification gate: full local validation stack and diff check."
+    stop_conditions:
+      - "Permission boundary, approval workflow, broad schema designer, external integration, or dependency change."
+  - id: IM054
+    title: "Admin Roles Permissions Audit Planning"
+    status: ready
+    story_ids: [US054]
+    allowed_files:
       - "docs/current/**"
       - "docs/quality/**"
       - "docs/registry/**"
+      - "src/pages/**"
+      - "src/types/**"
+      - "tests/e2e/**"
     forbidden_files:
+      - "package.json"
+      - "pnpm-lock.yaml"
       - ".github/workflows/**"
       - "src/main/java/**"
       - "src/main/resources/db/migration/**"
-      - "pom.xml"
-      - "package.json"
-      - "pnpm-lock.yaml"
     gates:
-      - "Frontend skeleton gate: preserve sidebar-07 shell and implement only static/mock frontend IA."
-      - "Product language gate: use WikiNode, WikiLink, Index Segment, and Retrieval API naming; never expose Chunk Management as product copy."
-      - "Backend boundary gate: no API, DTO, repository, migration, or real integration changes."
-      - "Frontend quality gate: pnpm run lint, pnpm run build, and browser smoke for in-scope routes."
-      - "Harness gate: run bash scripts/check.sh after implementation and state updates."
+      - "Planning/read-only gate: define roles, permission dimensions, and audit evidence without enforcement."
+      - "Boundary gate: no auth, login, permission checks, destructive admin actions, export, or batch operations."
+      - "Verification gate: frontend checks if UI changes, plus bash scripts/check.sh and diff check."
     stop_conditions:
-      - "Any package or lockfile change."
-      - "Any backend, database, API, DTO, or migration change."
-      - "Any real external integration, file upload/parser, auth, permission, approval, export, batch, vector DB, embedding, Agent, Chatbot, Workflow, MCP, IM, or LLM answer-generation scope."
-  - id: IM014
-    title: "Frontend Localization and UX Feedback Baseline"
-    status: ready
-    story_ids: [US014]
-    allowed_files:
-      - "src/app/**"
-      - "src/components/**"
-      - "src/pages/**"
-      - "src/services/**"
-      - "src/types/**"
-      - "src/utils/**"
-      - "tests/e2e/**"
-      - "README.md"
-      - "docs/current/**"
-      - "docs/quality/**"
-      - "docs/registry/**"
-    forbidden_files:
-      - ".github/workflows/**"
-      - "src/main/java/**"
-      - "src/main/resources/db/migration/**"
-      - "pom.xml"
-      - "package.json"
-      - "pnpm-lock.yaml"
-    gates:
-      - "Frontend UX polish gate: localize existing MVP routes and preserve current product scope."
-      - "Product language gate: use WikiNode, WikiLink, Index Segment, Retrieval API, and Knowledge Object naming; never expose Chunk Management, Chat API, Chatbot, Agent Platform, Workflow Builder, or Vector DB Management as product copy."
-      - "Feedback gate: create, edit, retrieval, loading, empty, error, validation, duplicate, and backend-unavailable states are user-readable in Chinese."
-      - "Backend boundary gate: no API, Java model, repository, database, migration, package, or lockfile changes."
-      - "Browser smoke gate: Playwright covers key Chinese feedback and forbidden product drift terms."
-      - "Harness gate: run bash scripts/check.sh after implementation and state updates."
-    stop_conditions:
-      - "Any package or lockfile change."
-      - "Any backend, database, API, DTO, or migration change."
-      - "Any new route, business module, real external integration, Source import, file upload/parser, auth, permission, approval, export, batch operation, vector DB, embedding, publishing flow, or Knowledge Object model expansion."
+      - "Auth enforcement, permission checks, production RBAC, audit persistence, export, batch operation, or backend schema change."
