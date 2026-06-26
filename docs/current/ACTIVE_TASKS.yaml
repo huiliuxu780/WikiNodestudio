@@ -60,7 +60,7 @@ tasks:
     stop_conditions:
       - "External vector-store sync, embedding invocation, real publish flow, approval, batch operation, or dependency change."
   - id: IM050
-    title: "Retrieval API Debug Evidence and Query Logs"
+    title: "Retrieval API Debug Evidence Query Logs and Evaluation Cases"
     status: ready
     story_ids: [US050]
     allowed_files:
@@ -81,95 +81,20 @@ tasks:
       - ".github/workflows/**"
     gates:
       - "Contract gate: normal retrieval returns WikiNodes; debug mode may add matchedSegments."
-      - "Log gate: query logs are minimal evidence records, not analytics or scoring automation."
+      - "Log/evaluation gate: query logs and evaluation cases are minimal evidence records, not analytics automation."
       - "Verification gate: full local validation stack and diff check."
     stop_conditions:
-      - "Chat API, Chatbot, answer generation, raw chunk primary result, external vector DB implementation, or evaluation runner."
+      - "Chat API, Chatbot, answer generation, raw chunk primary result, external vector DB implementation, complex scoring, export, or batch automation."
   - id: IM051
-    title: "Publishing and Index Job Boundary"
+    title: "Publishing Index Job Metadata Governance and Admin Planning Baseline"
     status: ready
     story_ids: [US051]
-    allowed_files:
-      - "src/main/java/com/wikinode/studio/api/**"
-      - "src/main/java/com/wikinode/studio/model/**"
-      - "src/main/java/com/wikinode/studio/repository/**"
-      - "src/main/resources/db/migration/**"
-      - "src/services/**"
-      - "src/types/**"
-      - "src/pages/**"
-      - "src/test/java/**"
-      - "tests/e2e/**"
-      - "scripts/api-smoke.sh"
-    forbidden_files:
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/**"
-    gates:
-      - "Boundary gate: model readiness/status evidence without executing publishing or vector sync."
-      - "UX gate: pages must clearly say what is ready, blocked, failed, or deferred."
-      - "Verification gate: full local validation stack and diff check."
-    stop_conditions:
-      - "Approval workflow, batch publish, rollback, external vector sync, embedding, destructive operation, or auth boundary."
-  - id: IM052
-    title: "Quality and Evaluation Console"
-    status: ready
-    story_ids: [US052]
-    allowed_files:
-      - "src/main/java/com/wikinode/studio/api/**"
-      - "src/main/java/com/wikinode/studio/model/**"
-      - "src/main/java/com/wikinode/studio/repository/**"
-      - "src/main/resources/db/migration/**"
-      - "src/services/**"
-      - "src/types/**"
-      - "src/pages/**"
-      - "src/test/java/**"
-      - "tests/e2e/**"
-      - "scripts/api-smoke.sh"
-    forbidden_files:
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/**"
-    gates:
-      - "Evidence gate: quality/evaluation records cite WikiNode, WikiLink, Index Segment, or Retrieval evidence."
-      - "Scope gate: no complex scoring, export, batch automation, or production rules."
-      - "Verification gate: full local validation stack and diff check."
-    stop_conditions:
-      - "Complex scoring engine, export, batch operation, destructive remediation, or unapproved automation."
-  - id: IM053
-    title: "Tags and Metadata Governance"
-    status: ready
-    story_ids: [US053]
-    allowed_files:
-      - "src/main/java/com/wikinode/studio/api/**"
-      - "src/main/java/com/wikinode/studio/model/**"
-      - "src/main/java/com/wikinode/studio/repository/**"
-      - "src/main/resources/db/migration/**"
-      - "src/services/**"
-      - "src/types/**"
-      - "src/pages/**"
-      - "src/test/java/**"
-      - "tests/e2e/**"
-      - "scripts/api-smoke.sh"
-    forbidden_files:
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/**"
-    gates:
-      - "Model gate: stay aligned with Knowledge Object fields and existing display-label conventions."
-      - "Retrieval/index gate: explain participation without implementing scoring or vector sync."
-      - "Verification gate: full local validation stack and diff check."
-    stop_conditions:
-      - "Permission boundary, approval workflow, broad schema designer, external integration, or dependency change."
-  - id: IM054
-    title: "Admin Roles Permissions Audit Planning"
-    status: ready
-    story_ids: [US054]
     allowed_files:
       - "docs/current/**"
       - "docs/quality/**"
       - "docs/registry/**"
-      - "src/pages/**"
       - "src/types/**"
+      - "src/pages/**"
       - "tests/e2e/**"
     forbidden_files:
       - "package.json"
@@ -178,8 +103,8 @@ tasks:
       - "src/main/java/**"
       - "src/main/resources/db/migration/**"
     gates:
-      - "Planning/read-only gate: define roles, permission dimensions, and audit evidence without enforcement."
-      - "Boundary gate: no auth, login, permission checks, destructive admin actions, export, or batch operations."
+      - "Back-half baseline gate: keep publishing/index, metadata governance, and admin/audit as boundary or read-only planning surfaces."
+      - "Boundary gate: no auth, approval, destructive admin actions, external vector sync, export, or batch operations."
       - "Verification gate: frontend checks if UI changes, plus bash scripts/check.sh and diff check."
     stop_conditions:
-      - "Auth enforcement, permission checks, production RBAC, audit persistence, export, batch operation, or backend schema change."
+      - "Approval workflow, batch publish, rollback, external vector sync, embedding, auth enforcement, permission checks, RBAC backend, audit persistence, export, batch operation, destructive operation, or backend schema change."
