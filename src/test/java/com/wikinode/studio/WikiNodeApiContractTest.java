@@ -132,6 +132,36 @@ class WikiNodeApiContractTest {
   }
 
   @Test
+  void exposesIndexSegmentsAsReadOnlyWikiNodeEvidence() throws Exception {
+    HttpResponse<String> segments = get("/api/index-segments");
+    HttpResponse<String> detail = get("/api/index-segments/seg-001");
+    HttpResponse<String> nodeSegments = get("/api/wiki-nodes/wn-001/index-segments");
+
+    assertThat(segments.statusCode()).isEqualTo(200);
+    assertThat(segments.body()).contains("\"segmentId\":\"seg-001\"");
+    assertThat(segments.body()).contains("\"nodeId\":\"wn-001\"");
+    assertThat(segments.body()).contains("\"nodeTitle\":\"保修政策\"");
+    assertThat(segments.body()).contains("\"objectType\":\"Article\"");
+    assertThat(segments.body()).contains("\"segmentType\":\"body\"");
+    assertThat(segments.body()).contains("\"indexStatus\":\"indexed\"");
+    assertThat(segments.body()).contains("\"sourceRefs\"");
+    assertThat(segments.body()).contains("\"processingProfile\":\"feishu_article_v1\"");
+    assertThat(segments.body()).doesNotContain("\"chunk\"");
+    assertThat(segments.body()).doesNotContain("\"embedding\"");
+
+    assertThat(detail.statusCode()).isEqualTo(200);
+    assertThat(detail.body()).contains("\"segmentId\":\"seg-001\"");
+    assertThat(detail.body()).contains("\"contentPreview\":\"保修期内维修不收取人工费");
+    assertThat(detail.body()).contains("\"metadataSummary\"");
+    assertThat(detail.body()).contains("\"vectorDocId\":\"vec-wn-001-body\"");
+
+    assertThat(nodeSegments.statusCode()).isEqualTo(200);
+    assertThat(nodeSegments.body()).contains("\"segmentId\":\"seg-001\"");
+    assertThat(nodeSegments.body()).contains("\"nodeId\":\"wn-001\"");
+    assertThat(nodeSegments.body()).doesNotContain("\"chunk\"");
+  }
+
+  @Test
   void exposesDraftWikiNodeSuggestionsAsReadOnlyReviewEvidence() throws Exception {
     HttpResponse<String> suggestions = get("/api/draft-wikinode-suggestions");
     HttpResponse<String> detail = get("/api/draft-wikinode-suggestions/sug-001");

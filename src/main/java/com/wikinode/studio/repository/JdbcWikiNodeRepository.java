@@ -1,5 +1,7 @@
 package com.wikinode.studio.repository;
 
+import com.wikinode.studio.model.IndexSegment;
+import com.wikinode.studio.model.IndexSegmentMetadataSummaryItem;
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParsedDocumentSourceRef;
 import com.wikinode.studio.model.ParserProfile;
@@ -258,6 +260,21 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
   }
 
   @Override
+  protected List<IndexSegment> loadIndexSegments() {
+    return jdbcTemplate.query(
+      """
+      select segment_id, node_id, node_title, object_type, subtype, segment_type, content, title,
+             content_preview, token_count, enabled, index_status, vector_doc_id, last_indexed_at,
+             retrieval_hits, avg_score, processing_profile, metadata_node_type, metadata_status,
+             metadata_tags, created_at, updated_at
+      from index_segments
+      order by created_at, segment_id
+      """,
+      (resultSet, rowNumber) -> mapIndexSegment(resultSet)
+    );
+  }
+
+  @Override
   protected List<DraftWikiNodeSuggestion> loadDraftWikiNodeSuggestions() {
     return jdbcTemplate.query(
       """
@@ -434,6 +451,42 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
     );
   }
 
+  private IndexSegment mapIndexSegment(ResultSet resultSet) throws SQLException {
+    String segmentId = resultSet.getString("segment_id");
+    List<SourceRef> sourceRefs = loadIndexSegmentSourceRefs(segmentId);
+    return new IndexSegment(
+      segmentId,
+      resultSet.getString("node_id"),
+      resultSet.getString("node_title"),
+      resultSet.getString("object_type"),
+      resultSet.getString("subtype"),
+      resultSet.getString("segment_type"),
+      resultSet.getString("content"),
+      resultSet.getString("title"),
+      resultSet.getString("content_preview"),
+      resultSet.getInt("token_count"),
+      resultSet.getBoolean("enabled"),
+      resultSet.getString("index_status"),
+      resultSet.getString("vector_doc_id"),
+      resultSet.getString("last_indexed_at"),
+      resultSet.getInt("retrieval_hits"),
+      getNullableDouble(resultSet, "avg_score"),
+      sourceRefs,
+      sourceRefs.stream().map(SourceRef::sourceId).toList(),
+      resultSet.getString("processing_profile"),
+      loadIndexSegmentMetadataSummary(segmentId),
+      resultSet.getString("created_at"),
+      resultSet.getString("updated_at"),
+      Map.of(
+        "nodeType", resultSet.getString("metadata_node_type"),
+        "status", resultSet.getString("metadata_status"),
+        "tags", splitCsv(resultSet.getString("metadata_tags")),
+        "objectType", resultSet.getString("object_type"),
+        "subtype", resultSet.getString("subtype")
+      )
+    );
+  }
+
   private List<String> loadTags(String nodeId) {
     return jdbcTemplate.query(
       "select tag from wiki_node_tags where node_id = ? order by position",
@@ -459,6 +512,42 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
         resultSet.getString("version")
       ),
       nodeId
+    );
+  }
+
+  private List<SourceRef> loadIndexSegmentSourceRefs(String segmentId) {
+    return jdbcTemplate.query(
+      """
+      select source_id, source_type, source_title, source_url, paragraph_ref, version
+      from index_segment_source_refs
+      where segment_id = ?
+      order by position
+      """,
+      (resultSet, rowNumber) -> new SourceRef(
+        resultSet.getString("source_id"),
+        resultSet.getString("source_type"),
+        resultSet.getString("source_title"),
+        resultSet.getString("source_url"),
+        resultSet.getString("paragraph_ref"),
+        resultSet.getString("version")
+      ),
+      segmentId
+    );
+  }
+
+  private List<IndexSegmentMetadataSummaryItem> loadIndexSegmentMetadataSummary(String segmentId) {
+    return jdbcTemplate.query(
+      """
+      select label, value
+      from index_segment_metadata_summary
+      where segment_id = ?
+      order by position
+      """,
+      (resultSet, rowNumber) -> new IndexSegmentMetadataSummaryItem(
+        resultSet.getString("label"),
+        resultSet.getString("value")
+      ),
+      segmentId
     );
   }
 
@@ -541,6 +630,11 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       return List.of();
     }
     return Arrays.stream(value.split(",")).map(String::trim).filter(item -> !item.isBlank()).toList();
+  }
+
+  private Double getNullableDouble(ResultSet resultSet, String columnLabel) throws SQLException {
+    double value = resultSet.getDouble(columnLabel);
+    return resultSet.wasNull() ? null : value;
   }
 
   private void replaceTags(WikiNode node) {

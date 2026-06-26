@@ -1,7 +1,75 @@
 import { expect, test } from "@playwright/test"
+import { routeIndexSegmentApi } from "./index-segment-api-fixtures"
 
 test.describe("Index Segment Knowledge Object experience", () => {
+  test("renders API-backed Index Segments with WikiNode evidence", async ({ page }) => {
+    let indexSegmentListRequested = false
+    await page.route("**/api/index-segments", async (route) => {
+      indexSegmentListRequested = true
+      await route.fulfill({
+        contentType: "application/json",
+        body: JSON.stringify([
+          {
+            segmentId: "seg-api-001",
+            nodeId: "wn-api-001",
+            nodeTitle: "API 保修政策",
+            objectType: "Article",
+            subtype: "service_fee_policy",
+            segmentType: "body",
+            title: "API 保修政策 / Body section segment",
+            content: "保修期内维修不收取人工费，收费例外需要关联人为损坏判定规则。",
+            contentPreview: "保修期内维修不收取人工费，收费例外需要关联人为损坏判定规则。",
+            tokenCount: 28,
+            enabled: true,
+            indexStatus: "indexed",
+            vectorDocId: "vec-api-wn-001-body",
+            lastIndexedAt: "2026-06-20",
+            retrievalHits: 7,
+            avgScore: 0.88,
+            sourceRefs: [
+              {
+                sourceId: "src-feishu-cc",
+                sourceType: "feishu",
+                sourceTitle: "CC 售后政策飞书空间",
+                sourceUrl: "https://feishu.example.com/wiki/after-sales",
+                paragraphRef: "P-12",
+                version: "2026.06",
+              },
+            ],
+            sourceRefIds: ["src-feishu-cc"],
+            processingProfile: "feishu_article_v1",
+            metadataSummary: [
+              { label: "objectType", value: "Article" },
+              { label: "subtype", value: "service_fee_policy" },
+            ],
+            createdAt: "2026-06-20",
+            updatedAt: "2026-06-20",
+            metadata: {
+              nodeType: "policy",
+              status: "published",
+              tags: ["保修", "售后"],
+              objectType: "Article",
+              subtype: "service_fee_policy",
+            },
+          },
+        ]),
+      })
+    })
+
+    await page.goto("/index-segments")
+
+    await expect(page.getByTestId("index-segment-row").filter({ hasText: "API 保修政策" })).toBeVisible()
+    await page.getByRole("button", { name: "查看 seg-api-001" }).click()
+    await expect(page.getByRole("dialog", { name: "片段详情" })).toBeVisible()
+    await expect(page.getByTestId("index-segment-preview")).toContainText("API 保修政策")
+    await expect(page.getByTestId("index-segment-preview")).toContainText("vec-api-wn-001-body")
+    await expect(page.getByTestId("index-segment-preview")).toContainText("CC 售后政策飞书空间")
+    await expect(page.locator("main").last()).not.toContainText(/Chunk Management|Vector DB Management|raw chunk/i)
+    expect(indexSegmentListRequested).toBe(true)
+  })
+
   test("preview and debug explain controlled segment boundaries", async ({ page }) => {
+    await routeIndexSegmentApi(page)
     await page.goto("/index-segments")
 
     await expect(page.getByText("平台管理的是 WikiNode 发布前的 Index Segment，不管理外部向量库内部片段。")).toBeVisible()
@@ -29,6 +97,7 @@ test.describe("Index Segment Knowledge Object experience", () => {
   })
 
   test("list search and filters expose Knowledge Object context", async ({ page }) => {
+    await routeIndexSegmentApi(page)
     await page.goto("/index-segments")
 
     await expect(page.getByRole("heading", { name: "Index Segment" })).toBeVisible()
@@ -56,6 +125,7 @@ test.describe("Index Segment Knowledge Object experience", () => {
   })
 
   test("strategy and debug pages explain objectType-aware segmentation", async ({ page }) => {
+    await routeIndexSegmentApi(page)
     await page.goto("/index-segments/strategy")
 
     await expect(page.getByText("文章语义分段")).toBeVisible()

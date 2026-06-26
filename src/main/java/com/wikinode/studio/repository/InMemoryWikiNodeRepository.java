@@ -1,5 +1,6 @@
 package com.wikinode.studio.repository;
 
+import com.wikinode.studio.model.IndexSegment;
 import com.wikinode.studio.model.SourceItem;
 import com.wikinode.studio.model.DraftWikiNodeSuggestion;
 import com.wikinode.studio.model.ParsedDocument;
@@ -25,6 +26,7 @@ public class InMemoryWikiNodeRepository extends AbstractWikiNodeRepository {
   private final List<ParsedDocument> parsedDocuments = WikiNodeSeedData.parsedDocuments();
   private final List<SourceOperation> sourceOperations = new ArrayList<>(WikiNodeSeedData.sourceOperations());
   private final List<ParserProfile> parserProfiles = WikiNodeSeedData.parserProfiles();
+  private final List<IndexSegment> indexSegments = WikiNodeSeedData.indexSegments();
   private final List<DraftWikiNodeSuggestion> draftWikiNodeSuggestions = new ArrayList<>(WikiNodeSeedData.draftWikiNodeSuggestions());
 
   public InMemoryWikiNodeRepository() {
@@ -80,6 +82,11 @@ public class InMemoryWikiNodeRepository extends AbstractWikiNodeRepository {
   @Override
   protected List<ParserProfile> loadParserProfiles() {
     return parserProfiles;
+  }
+
+  @Override
+  protected List<IndexSegment> loadIndexSegments() {
+    return indexSegments;
   }
 
   @Override
