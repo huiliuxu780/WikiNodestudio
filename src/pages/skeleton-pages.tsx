@@ -1040,9 +1040,12 @@ export function SegmentDebugPage() {
 
 export function GenericSkeletonPage({ title, description }: { title: keyof typeof routeCards | string; description?: string }) {
   const isQualityIssuePage = title === "质量问题"
+  const pageDescription = isQualityIssuePage
+    ? "集中查看影响 WikiNode、WikiLink、来源证据、Index Segment 和召回质量的风险线索。"
+    : description ?? "当前页是 WikiNode Studio 产品信息架构的本地占位基线。"
 
   return (
-    <PageScaffold title={title} description={description ?? "当前页是 WikiNode Studio 产品信息架构的本地占位基线。"}>
+    <PageScaffold title={title} description={pageDescription}>
       {isQualityIssuePage ? null : (
         <SimpleList items={(routeCards as Record<string, string[]>)[title] ?? ["本地占位模块", "导航目标", "当前不连接真实后端"]} />
       )}

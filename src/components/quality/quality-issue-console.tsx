@@ -11,7 +11,7 @@ type QualityIssueGroup = {
 const qualityIssueGroups: QualityIssueGroup[] = [
   {
     title: "断链与关系风险",
-    description: "关注 WikiLink、关系候选和冲突解释，不自动创建或修复关系。",
+    description: "关注 WikiLink、关系候选和冲突解释，帮助确认关系指向和适用范围。",
     issueTypes: ["broken_link", "conflict"],
   },
   {
@@ -77,11 +77,11 @@ export function QualityIssueConsole({ issues }: { issues: QualityIssue[] }) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">执行边界</CardTitle>
+          <CardTitle className="text-base">质量概览</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>当前只展示质量风险证据，不运行自动检查、自动修复、批量处理或导出。</p>
-          <p>质量问题以 WikiNode / Knowledge Object 为中心，WikiLink、sourceRefs、Index Segment 和 Retrieval API 只作为证据。</p>
+          <p>按 WikiNode / Knowledge Object 聚合质量风险，帮助负责人优先处理影响检索和发布的证据问题。</p>
+          <p>WikiLink、sourceRefs、Index Segment 和 Retrieval API 结果用于定位风险来源。</p>
         </CardContent>
       </Card>
 
@@ -137,7 +137,7 @@ function QualityIssueCard({ issue }: { issue: QualityIssue }) {
         </div>
         <div className="space-y-2 text-sm">
           <p className="text-muted-foreground">证据：{qualityIssueEvidence(issue)}</p>
-          <p className="text-muted-foreground">安全下一步：{qualityIssueNextStep(issue)}</p>
+          <p className="text-muted-foreground">建议处理：{qualityIssueNextStep(issue)}</p>
         </div>
       </CardContent>
     </Card>
@@ -162,11 +162,11 @@ function qualityIssueEvidence(issue: QualityIssue) {
 
 function qualityIssueNextStep(issue: QualityIssue) {
   const nextSteps: Record<QualityIssue["issueType"], string> = {
-    broken_link: "人工确认 WikiLink 指向，不自动创建或修复关系。",
-    missing_source: "补充来源证据后再进入发布检查，不自动抓取或解析 Source。",
-    expired: "由知识负责人确认是否更新、下线或继续保留，不执行批量下线。",
-    conflict: "由业务负责人裁定口径，不自动覆盖 WikiNode 内容。",
-    low_retrieval_score: "人工检查 WikiNode 摘要、标签和 Index Segment，不执行外部向量同步。",
+    broken_link: "确认 WikiLink 指向，并在关系证据中记录处理结论。",
+    missing_source: "补充来源证据后再进入发布检查。",
+    expired: "由知识负责人确认更新、下线或继续保留。",
+    conflict: "由业务负责人裁定口径，并记录适用范围。",
+    low_retrieval_score: "检查 WikiNode 摘要、标签和 Index Segment 证据。",
   }
 
   return nextSteps[issue.issueType]
