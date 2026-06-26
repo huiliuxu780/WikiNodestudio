@@ -2,12 +2,13 @@ import type { ReactNode } from "react"
 import { Link } from "react-router-dom"
 
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { mockIndexSegments } from "@/data/mock-index-segments"
 import { mockWikiNodes } from "@/data/mock-wiki-nodes"
 import { IndexStatusBadge } from "@/components/wiki/index-status-badge"
 import { LinkList } from "@/components/wiki/link-list"
 import { SourceRefList } from "@/components/wiki/source-ref-list"
+import type { IndexSegment } from "@/types/index-segment"
 import type { KnowledgeRelation, WikiLink, WikiNode } from "@/types/wiki"
 import {
   commonLabels,
@@ -29,13 +30,21 @@ export function WikiNodeInspector({
   outgoingLinks,
   incomingLinks,
   brokenLinks,
+  indexSegments,
+  onGenerateIndexSegments,
+  isGeneratingIndexSegments = false,
+  segmentGenerationFeedback = "",
 }: {
   node: WikiNode
   outgoingLinks: WikiLink[]
   incomingLinks: WikiLink[]
   brokenLinks: WikiLink[]
+  indexSegments: IndexSegment[]
+  onGenerateIndexSegments?: () => void
+  isGeneratingIndexSegments?: boolean
+  segmentGenerationFeedback?: string
 }) {
-  const nodeSegments = mockIndexSegments.filter((segment) => segment.nodeId === node.nodeId)
+  const nodeSegments = indexSegments
   const firstVectorDocId = nodeSegments.find((segment) => segment.vectorDocId)?.vectorDocId
 
   return (
@@ -148,7 +157,17 @@ export function WikiNodeInspector({
           <div className="flex flex-wrap gap-2">
             <Link className="rounded-md border bg-background px-3 py-1 text-xs font-medium hover:bg-muted" to="/index-segments">打开 Index Segment</Link>
             <Link className="rounded-md border bg-background px-3 py-1 text-xs font-medium hover:bg-muted" to="/index-segments/debug">打开片段调试</Link>
+            {onGenerateIndexSegments ? (
+              <Button size="sm" variant="outline" onClick={onGenerateIndexSegments} disabled={isGeneratingIndexSegments}>
+                {isGeneratingIndexSegments ? "生成中..." : "生成本地片段"}
+              </Button>
+            ) : null}
           </div>
+          {segmentGenerationFeedback ? (
+            <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-700">
+              {segmentGenerationFeedback}
+            </div>
+          ) : null}
           {nodeSegments.map((segment) => (
             <div key={segment.segmentId} className="rounded-md border bg-background p-3">
               <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -157,6 +176,7 @@ export function WikiNodeInspector({
                 <Badge variant="outline">{labelFromMap(objectTypeLabels, segment.objectType ?? "Article")}</Badge>
                 <Badge variant="outline">{labelFromMap(subtypeLabels, segment.subtype ?? commonLabels.none)}</Badge>
                 <Badge variant="outline">{segment.segmentType}</Badge>
+                {isLocalDeterministicSegment(segment) ? <Badge variant="outline">本地确定性生成</Badge> : null}
                 <IndexStatusBadge status={segment.indexStatus} />
               </div>
               <p className="text-muted-foreground">{segment.contentPreview}</p>
@@ -168,7 +188,7 @@ export function WikiNodeInspector({
                 <span>{metadataLabels.avgScore}：{segment.avgScore?.toFixed(2) ?? commonLabels.none}</span>
                 <span>{metadataLabels.lastIndexedAt}：{segment.lastIndexedAt ?? commonLabels.none}</span>
                 <span className="col-span-2">{metadataLabels.processingProfile}：{segment.processingProfile ?? commonLabels.none}</span>
-                <span className="col-span-2">来源证据 ID：{segment.sourceRefIds?.join(", ") ?? commonLabels.none}</span>
+                <span className="col-span-2">来源证据 ID：{segment.sourceRefIds?.join(", ") || commonLabels.none}</span>
               </div>
             </div>
           ))}
@@ -234,4 +254,9 @@ function formatMetadataValue(value: unknown) {
   }
 
   return JSON.stringify(value)
+}
+
+function isLocalDeterministicSegment(segment: IndexSegment) {
+  return segment.metadata?.generationMode === "local_deterministic" ||
+    segment.metadataSummary?.some((item) => item.label === "generationMode" && item.value === "local_deterministic")
 }

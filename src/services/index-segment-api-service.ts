@@ -1,5 +1,5 @@
 import { mockIndexSegments } from "@/data/mock-index-segments"
-import { apiGet, withMockFallback } from "@/services/api-client"
+import { apiGet, apiPost, withMockFallback } from "@/services/api-client"
 import type { IndexSegment } from "@/types/index-segment"
 
 export function listIndexSegments() {
@@ -25,6 +25,13 @@ export function getIndexSegment(segmentId: string) {
 export function listIndexSegmentsForWikiNode(nodeId: string) {
   return withMockFallback(
     apiGet<IndexSegment[]>(`/wiki-nodes/${nodeId}/index-segments`),
+    () => mockIndexSegments.filter((segment) => segment.nodeId === nodeId),
+  )
+}
+
+export function generateIndexSegmentsForWikiNode(nodeId: string) {
+  return withMockFallback(
+    apiPost<IndexSegment[]>(`/wiki-nodes/${nodeId}/index-segments/generate`, {}),
     () => mockIndexSegments.filter((segment) => segment.nodeId === nodeId),
   )
 }

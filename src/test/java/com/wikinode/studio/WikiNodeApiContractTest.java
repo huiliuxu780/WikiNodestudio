@@ -181,6 +181,29 @@ class WikiNodeApiContractTest {
   }
 
   @Test
+  void generatesIndexSegmentsLocallyWithoutVectorSync() throws Exception {
+    HttpResponse<String> generate = post("/api/wiki-nodes/wn-001/index-segments/generate", "{}");
+    HttpResponse<String> nodeSegments = get("/api/wiki-nodes/wn-001/index-segments");
+
+    assertThat(generate.statusCode()).isEqualTo(200);
+    assertThat(generate.body()).contains("\"segmentId\":\"seg-wn-001-title\"");
+    assertThat(generate.body()).contains("\"segmentId\":\"seg-wn-001-summary\"");
+    assertThat(generate.body()).contains("\"segmentId\":\"seg-wn-001-body\"");
+    assertThat(generate.body()).contains("\"indexStatus\":\"not_indexed\"");
+    assertThat(generate.body()).contains("\"generationMode\":\"local_deterministic\"");
+    assertThat(generate.body()).contains("\"traceSource\":\"wiki_node\"");
+    assertThat(generate.body()).contains("\"sourceRefs\"");
+    assertThat(generate.body()).doesNotContain("\"vectorDocId\":\"vec-");
+    assertThat(generate.body()).doesNotContain("\"embedding\"");
+    assertThat(generate.body()).doesNotContain("\"chunk\"");
+
+    assertThat(nodeSegments.statusCode()).isEqualTo(200);
+    assertThat(nodeSegments.body()).contains("\"segmentId\":\"seg-wn-001-title\"");
+    assertThat(nodeSegments.body()).contains("\"segmentId\":\"seg-wn-001-summary\"");
+    assertThat(nodeSegments.body()).contains("\"segmentId\":\"seg-wn-001-body\"");
+  }
+
+  @Test
   void exposesDraftWikiNodeSuggestionsAsReadOnlyReviewEvidence() throws Exception {
     HttpResponse<String> suggestions = get("/api/draft-wikinode-suggestions");
     HttpResponse<String> detail = get("/api/draft-wikinode-suggestions/sug-001");

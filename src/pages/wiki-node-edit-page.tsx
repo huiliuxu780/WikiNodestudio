@@ -13,7 +13,9 @@ import { WikiNodeEditor } from "@/components/wiki/wiki-node-editor"
 import { WikiNodeExplorer } from "@/components/wiki/wiki-node-explorer"
 import { WikiNodeInspector } from "@/components/wiki/wiki-node-inspector"
 import { useAsyncData } from "@/hooks/use-async-data"
+import { generateIndexSegmentsForWikiNode, listIndexSegmentsForWikiNode } from "@/services/index-segment-api-service"
 import { getNodeLinks, getWikiNodeById, listWikiNodes, updateWikiNode, type WikiNodeLinks } from "@/services/wiki-node-api-service"
+import type { IndexSegment } from "@/types/index-segment"
 import type { WikiNode } from "@/types/wiki"
 import { actionLabels, commonLabels } from "@/utils/display-labels"
 
@@ -34,6 +36,11 @@ export function WikiNodeEditPage() {
   const [feedback, setFeedback] = useState(location.state && typeof location.state === "object" && "feedback" in location.state && location.state.feedback === "created" ? commonLabels.createSuccess : "")
   const [validationError, setValidationError] = useState("")
   const [mockActionState, setMockActionState] = useState("")
+  const [generatedSegmentsNodeId, setGeneratedSegmentsNodeId] = useState("")
+  const [generatedSegments, setGeneratedSegments] = useState<IndexSegment[] | null>(null)
+  const [isGeneratingSegments, setIsGeneratingSegments] = useState(false)
+  const [segmentGenerationError, setSegmentGenerationError] = useState<Error | null>(null)
+  const [segmentGenerationFeedback, setSegmentGenerationFeedback] = useState("")
   const { data: nodes, error: nodesError, reload: reloadNodes } = useAsyncData(listWikiNodes, [], [reloadVersion])
   const { data: node, isLoading, error: nodeError, reload: reloadNode } = useAsyncData(
     () => nodeId ? getWikiNodeById(nodeId) : Promise.resolve(undefined),
@@ -43,6 +50,11 @@ export function WikiNodeEditPage() {
   const { data: links, error: linksError, reload: reloadLinks } = useAsyncData(
     () => nodeId ? getNodeLinks(nodeId) : Promise.resolve(emptyLinks),
     emptyLinks,
+    [nodeId, reloadVersion],
+  )
+  const { data: indexSegments, error: indexSegmentsError, reload: reloadIndexSegments } = useAsyncData(
+    () => nodeId ? listIndexSegmentsForWikiNode(nodeId) : Promise.resolve([]),
+    [],
     [nodeId, reloadVersion],
   )
 
@@ -58,6 +70,7 @@ export function WikiNodeEditPage() {
 
   const { outgoingLinks, incomingLinks, brokenLinks } = links
   const activeDraft = draftNode?.nodeId === node.nodeId ? draftNode : node
+  const activeIndexSegments = generatedSegmentsNodeId === activeDraft.nodeId && generatedSegments ? generatedSegments : indexSegments
 
   async function handleSave() {
     const formError = validateDraft(activeDraft)
@@ -81,6 +94,23 @@ export function WikiNodeEditPage() {
       setSaveError(error instanceof Error ? error : new Error("保存失败，请稍后重试"))
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  async function handleGenerateIndexSegments() {
+    setIsGeneratingSegments(true)
+    setSegmentGenerationError(null)
+    setSegmentGenerationFeedback("")
+    try {
+      const generated = await generateIndexSegmentsForWikiNode(activeDraft.nodeId)
+      setGeneratedSegmentsNodeId(activeDraft.nodeId)
+      setGeneratedSegments(generated)
+      setSegmentGenerationFeedback("已生成本地 Index Segment，尚未执行外部向量库同步。")
+      reloadIndexSegments()
+    } catch (error) {
+      setSegmentGenerationError(error instanceof Error ? error : new Error("生成本地 Index Segment 失败，请稍后重试"))
+    } finally {
+      setIsGeneratingSegments(false)
     }
   }
 
@@ -144,9 +174,20 @@ export function WikiNodeEditPage() {
           <ApiErrorNotice error={saveError} title={commonLabels.saveFailed} />
           <ApiErrorNotice error={nodesError} onRetry={reloadNodes} />
           <ApiErrorNotice error={linksError} onRetry={reloadLinks} />
+          <ApiErrorNotice error={indexSegmentsError} onRetry={reloadIndexSegments} />
+          <ApiErrorNotice error={segmentGenerationError} title="生成本地 Index Segment 失败" />
           <WikiNodeEditor key={node.nodeId} node={activeDraft} nodes={nodes} onDraftChange={setDraftNode} />
         </div>
-        <WikiNodeInspector node={activeDraft} outgoingLinks={outgoingLinks} incomingLinks={incomingLinks} brokenLinks={brokenLinks} />
+        <WikiNodeInspector
+          node={activeDraft}
+          outgoingLinks={outgoingLinks}
+          incomingLinks={incomingLinks}
+          brokenLinks={brokenLinks}
+          indexSegments={activeIndexSegments}
+          onGenerateIndexSegments={handleGenerateIndexSegments}
+          isGeneratingIndexSegments={isGeneratingSegments}
+          segmentGenerationFeedback={segmentGenerationFeedback}
+        />
       </div>
     </div>
   )

@@ -198,6 +198,12 @@ public class WikiNodeController {
     return repository.listIndexSegmentsForNode(id);
   }
 
+  @PostMapping("/wiki-nodes/{id}/index-segments/generate")
+  public List<IndexSegment> generateWikiNodeIndexSegments(@PathVariable String id) {
+    ensureNodeExists(id);
+    return repository.generateIndexSegmentsForNode(id);
+  }
+
   @GetMapping("/draft-wikinode-suggestions")
   public List<DraftWikiNodeSuggestion> listDraftWikiNodeSuggestions() {
     return repository.listDraftWikiNodeSuggestions();

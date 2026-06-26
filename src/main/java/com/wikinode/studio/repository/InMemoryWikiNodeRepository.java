@@ -26,7 +26,7 @@ public class InMemoryWikiNodeRepository extends AbstractWikiNodeRepository {
   private final List<ParsedDocument> parsedDocuments = WikiNodeSeedData.parsedDocuments();
   private final List<SourceOperation> sourceOperations = new ArrayList<>(WikiNodeSeedData.sourceOperations());
   private final List<ParserProfile> parserProfiles = WikiNodeSeedData.parserProfiles();
-  private final List<IndexSegment> indexSegments = WikiNodeSeedData.indexSegments();
+  private final List<IndexSegment> indexSegments = new ArrayList<>(WikiNodeSeedData.indexSegments());
   private final List<DraftWikiNodeSuggestion> draftWikiNodeSuggestions = new ArrayList<>(WikiNodeSeedData.draftWikiNodeSuggestions());
 
   public InMemoryWikiNodeRepository() {
@@ -87,6 +87,17 @@ public class InMemoryWikiNodeRepository extends AbstractWikiNodeRepository {
   @Override
   protected List<IndexSegment> loadIndexSegments() {
     return indexSegments;
+  }
+
+  @Override
+  protected void replaceGeneratedIndexSegments(String nodeId, List<IndexSegment> segments) {
+    List<String> generatedIds = List.of(
+      "seg-%s-title".formatted(nodeId),
+      "seg-%s-summary".formatted(nodeId),
+      "seg-%s-body".formatted(nodeId)
+    );
+    indexSegments.removeIf(segment -> segment.nodeId().equals(nodeId) && generatedIds.contains(segment.segmentId()));
+    indexSegments.addAll(segments);
   }
 
   @Override

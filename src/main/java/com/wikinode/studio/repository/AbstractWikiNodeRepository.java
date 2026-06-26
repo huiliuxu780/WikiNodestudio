@@ -4,6 +4,7 @@ import com.wikinode.studio.model.GraphEdge;
 import com.wikinode.studio.model.GraphNode;
 import com.wikinode.studio.model.IndexStatusSummary;
 import com.wikinode.studio.model.IndexSegment;
+import com.wikinode.studio.model.IndexSegmentMetadataSummaryItem;
 import com.wikinode.studio.model.KnowledgeRelation;
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParsedDocumentSourceRef;
@@ -66,6 +67,8 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   protected abstract List<ParserProfile> loadParserProfiles();
 
   protected abstract List<IndexSegment> loadIndexSegments();
+
+  protected abstract void replaceGeneratedIndexSegments(String nodeId, List<IndexSegment> segments);
 
   protected abstract List<DraftWikiNodeSuggestion> loadDraftWikiNodeSuggestions();
 
@@ -208,6 +211,14 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
     return loadIndexSegments().stream()
       .filter(segment -> segment.nodeId().equals(nodeId))
       .toList();
+  }
+
+  @Override
+  public List<IndexSegment> generateIndexSegmentsForNode(String nodeId) {
+    WikiNode node = findNode(nodeId).orElseThrow(() -> new IllegalArgumentException("WikiNode not found"));
+    List<IndexSegment> segments = generatedIndexSegments(node);
+    replaceGeneratedIndexSegments(node.nodeId(), segments);
+    return segments;
   }
 
   @Override
@@ -556,6 +567,105 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       return Optional.of(generationResult(operationId, parsedDocument.parsedDocumentId(), "skipped", "已有 WikiNode 使用相同来源证据，请先确认是否需要更新。", null));
     }
     return Optional.empty();
+  }
+
+  private List<IndexSegment> generatedIndexSegments(WikiNode node) {
+    List<IndexSegment> segments = new ArrayList<>();
+    addGeneratedSegment(segments, node, "title", node.title());
+    addGeneratedSegment(segments, node, "summary", node.summary());
+    addGeneratedSegment(segments, node, "body", node.contentMarkdown());
+    return segments;
+  }
+
+  private void addGeneratedSegment(List<IndexSegment> segments, WikiNode node, String segmentType, String content) {
+    String normalizedContent = normalizeSegmentContent(content);
+    if (normalizedContent.isBlank()) {
+      return;
+    }
+
+    Map<String, Object> traceMetadata = new LinkedHashMap<>();
+    if (node.metadata() != null) {
+      traceMetadata.putAll(node.metadata());
+    }
+    traceMetadata.put("nodeType", node.nodeType());
+    traceMetadata.put("status", node.status());
+    traceMetadata.put("tags", node.tags());
+    traceMetadata.put("objectType", node.objectType());
+    traceMetadata.put("subtype", node.subtype());
+    traceMetadata.put("generationMode", "local_deterministic");
+    traceMetadata.put("traceSource", "wiki_node");
+    traceMetadata.put("parentNodeId", node.nodeId());
+    traceMetadata.put("parentNodeUpdatedAt", node.updatedAt());
+    traceMetadata.put("strategyVersion", "index_segment_strategy_v1");
+    traceMetadata.put("sourceRefIds", node.sourceRefs().stream().map(SourceRef::sourceId).toList());
+
+    segments.add(new IndexSegment(
+      generatedSegmentId(node.nodeId(), segmentType),
+      node.nodeId(),
+      node.title(),
+      node.objectType(),
+      node.subtype(),
+      segmentType,
+      normalizedContent,
+      "%s / %s segment".formatted(node.title(), segmentTitle(segmentType)),
+      preview(normalizedContent),
+      tokenCount(normalizedContent),
+      true,
+      "not_indexed",
+      null,
+      null,
+      0,
+      null,
+      node.sourceRefs(),
+      node.sourceRefs().stream().map(SourceRef::sourceId).toList(),
+      node.processingProfile(),
+      generatedMetadataSummary(node, traceMetadata),
+      today(),
+      today(),
+      traceMetadata
+    ));
+  }
+
+  private List<IndexSegmentMetadataSummaryItem> generatedMetadataSummary(WikiNode node, Map<String, Object> metadata) {
+    List<IndexSegmentMetadataSummaryItem> summary = new ArrayList<>();
+    summary.add(new IndexSegmentMetadataSummaryItem("objectType", node.objectType()));
+    summary.add(new IndexSegmentMetadataSummaryItem("subtype", node.subtype()));
+    if (metadata.get("businessDomain") != null) {
+      summary.add(new IndexSegmentMetadataSummaryItem("businessDomain", metadata.get("businessDomain").toString()));
+    }
+    summary.add(new IndexSegmentMetadataSummaryItem("generationMode", "local_deterministic"));
+    summary.add(new IndexSegmentMetadataSummaryItem("traceSource", "wiki_node"));
+    summary.add(new IndexSegmentMetadataSummaryItem("parentNodeId", node.nodeId()));
+    return summary;
+  }
+
+  private String generatedSegmentId(String nodeId, String segmentType) {
+    return "seg-%s-%s".formatted(nodeId, segmentType);
+  }
+
+  private String segmentTitle(String segmentType) {
+    return switch (segmentType) {
+      case "title" -> "Title";
+      case "summary" -> "Summary";
+      default -> "Body";
+    };
+  }
+
+  private String normalizeSegmentContent(String content) {
+    return Optional.ofNullable(content).orElse("").replaceAll("\\s+", " ").trim();
+  }
+
+  private String preview(String content) {
+    return content.length() <= 180 ? content : content.substring(0, 180);
+  }
+
+  private int tokenCount(String content) {
+    if (content.isBlank()) {
+      return 0;
+    }
+    int latinWords = content.replaceAll("[\\p{IsHan}]", " ").trim().split("\\s+").length;
+    int hanChars = (int) content.codePoints().filter(codePoint -> Character.UnicodeScript.of(codePoint) == Character.UnicodeScript.HAN).count();
+    return Math.max(1, latinWords + hanChars);
   }
 
   private DraftWikiNodeSuggestionGenerationResult generationResult(

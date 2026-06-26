@@ -75,6 +75,8 @@ public interface WikiNodeRepository {
 
   List<IndexSegment> listIndexSegmentsForNode(String nodeId);
 
+  List<IndexSegment> generateIndexSegmentsForNode(String nodeId);
+
   List<DraftWikiNodeSuggestion> listDraftWikiNodeSuggestions();
 
   List<DraftWikiNodeSuggestion> listDraftWikiNodeSuggestionsForParsedDocument(String parsedDocumentId);
