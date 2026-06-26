@@ -2,7 +2,7 @@
 
 ## Current Stage
 
-WikiNode Studio MVP Baseline v0.2 is fixed and verifiable after IM014 through IM022.
+WikiNode Studio is in Phase 2 execution after the MVP v0.2 baseline and the post-baseline Source, Draft WikiNode Suggestion, and Index Segment read-only API increments.
 
 ## Product Direction
 
@@ -12,20 +12,23 @@ The full product scope is captured in `docs/current/PRODUCT_SCOPE.md`; the roadm
 
 ## Active Boundary
 
-The product baseline includes the React frontend MVP, Spring Boot API, PostgreSQL + Flyway persistence, reset/seed scripts, API smoke, GitHub Actions baseline CI, v0.2 release documentation, and Playwright browser coverage for the main MVP acceptance paths.
+The product baseline includes the React frontend MVP, Spring Boot API, PostgreSQL + Flyway persistence, reset/seed scripts, API smoke, GitHub Actions baseline CI, v0.2 release documentation, Playwright browser coverage, Source / Raw Material / Parsed Document read-only APIs, Draft WikiNode Suggestion review APIs, and Index Segment read-only APIs.
 
 Current development must stay inside confirmed task scope. The standing MVP exclusions remain: no real Source import, file upload, parser execution, vector database implementation, embedding invocation, product-facing Chunk Management, permissions, version management, audit implementation, or publishing approval flow unless explicitly approved by the user.
 
 ## Current Queue
 
-MVP v0.2 acceptance work from IM014 through IM023 is now the current release baseline.
+Current executable Phase 2 work is tracked in:
 
-Use these release documents for manual acceptance and handoff:
+- `docs/current/STORY_QUEUE.yaml`
+- `docs/current/ACTIVE_TASKS.yaml`
+
+Use these release documents for baseline acceptance and handoff:
 
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-The older queue files remain part of the Harness state history, but they do not authorize automatic continuation into a new implementation stream. Any post-v0.2 work must start from a new explicit user-confirmed task.
+Each IM must run on its own branch, complete verification, commit locally, and stop for user confirmation before push or the next IM.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -44,7 +47,7 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Stop Conditions
 
-- Real external product integrations. Read-only source analysis for `IM004` is limited to Tencent/WeKnora evidence gathering outside this repository.
+- Real external product integrations.
 - Database persistence changes unless a matching task is active.
 - CI service orchestration beyond PostgreSQL, Spring Boot, Vite, and Playwright Chromium.
 - Unconfirmed new dependencies or package/lockfile changes.
@@ -56,4 +59,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Recommended sequencing: finish `IM001` if CI hardening remains the priority; otherwise run `IM004` and `IM005` as separate task branches, with `IM004` read-only/report-only and `IM005` frontend-only/mock-only.
+Recommended sequencing: run `IM048` first, then continue through `IM049`, `IM050`, `IM051`, `IM052`, `IM053`, and `IM054` only after each prior IM has been reviewed, pushed, and merged.

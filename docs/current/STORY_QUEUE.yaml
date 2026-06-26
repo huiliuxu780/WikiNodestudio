@@ -1,70 +1,79 @@
-version: 1
-updated_at: "2026-06-24"
+version: 2
+updated_at: "2026-06-26"
 source_of_truth: "current_story_queue"
 notes:
   - "Only ready, in_progress, and blocked stories belong here."
-  - "Done history stays in legacy files or archive."
-  - "Archive entries are not executable."
+  - "Done history stays in release docs or archive."
+  - "Each story is a product capability slice, not a tiny UI patch."
 stories:
-  - id: US001
-    title: "PostgreSQL integration CI plus Playwright smoke CI"
+  - id: US048
+    title: "WikiNode Knowledge Object API alignment"
     status: ready
-    goal: "Run the persisted backend and two-page browser smoke inside GitHub Actions without changing product behavior."
+    goal: "Align WikiNode Knowledge Object fields across Java, DB, API, frontend service, editor, and tests while preserving WikiNode as the managed business object."
     acceptance:
-      - "GitHub Actions starts a PostgreSQL service for the integration job."
-      - "Spring Boot starts with WIKINODE_DB_URL, WIKINODE_DB_USERNAME, and WIKINODE_DB_PASSWORD from the CI environment."
-      - "CI verifies /api/wiki-nodes against the running backend."
-      - "CI installs Playwright Chromium and runs pnpm run test:e2e."
-      - "Browser smoke remains limited to /wiki-nodes and /retrieval-test."
-      - "Retrieval remains WikiNode-based and does not expose chunk or document payloads."
+      - "WikiNode API exposes objectType, subtype, metadata, sourceRefs, relations, and processingProfile where the current product model requires them."
+      - "WikiNode detail/editor read the aligned API instead of relying only on frontend mock data for these fields."
+      - "Existing Chinese UX, sidebar shell, and Inspector tabs remain stable."
+      - "Retrieval results remain WikiNode-centered and do not expose raw chunks."
     non_goals:
-      - "No Source import."
-      - "No vector database."
-      - "No embedding pipeline."
-      - "No chunk exposure."
-      - "No permissions, version management, or publishing approval flow."
-  - id: US004
-    title: "WeKnora WikiGraph source analysis"
+      - "No Source import, parser execution, publishing approval, embedding, vector sync, permissions, or batch operations."
+      - "No new dependency or package/lockfile change."
+  - id: US049
+    title: "Index Segment generation and trace model"
     status: ready
-    goal: "Analyze Tencent/WeKnora WikiGraph, Wiki Browser, Wiki Mode, and knowledge search source paths for WikiNode Studio reuse without changing product code."
+    goal: "Turn Index Segment from a read-only stored sample into a controlled local generation and trace model tied to WikiNode content and source evidence."
     acceptance:
-      - "Report confirms whether WeKnora has WikiGraph, Wiki Browser, Wiki Mode, Markdown Wiki Page, references/relationships, and knowledge search paths."
-      - "Report lists relevant frontend, backend, docs, API, and data-model files with reuse recommendations."
-      - "Report distinguishes direct reuse, adapt-before-reuse, and do-not-adopt areas for WikiNode Studio."
-      - "Report proposes WikiNode, WikiLink, WikiGraph, Index Segment, and Retrieval data-model guidance."
-      - "Report is saved as docs/current/WEKNORA_WIKI_GRAPH_ANALYSIS.md."
+      - "Index Segment generation is deterministic, local, and preserves nodeId, segmentType, contentPreview, metadata, sourceRefs, and trace evidence."
+      - "Segment list, debug panel, and WikiNode Segments tab can show generated segment evidence from the backend model."
+      - "Generation remains pre-vector-store and does not call embedding or external vector services."
     non_goals:
-      - "No modification to WeKnora source."
-      - "No WikiNode Studio product implementation."
-      - "No Agent, Chatbot, Workflow, MCP, IM, or LLM answer-generation analysis beyond direct graph/search coupling notes."
-  - id: US005
-    title: "WikiNode Studio frontend shell and full navigation skeleton"
+      - "No external vector-store sync, embedding invocation, real publish workflow, approval flow, or Chunk Management naming."
+  - id: US050
+    title: "Retrieval API debug evidence and query logs"
     status: ready
-    goal: "Build the sidebar-07 product shell, full product navigation, routes, mock data, core static pages, and WikiNode-centered types without connecting real backend features."
+    goal: "Align Retrieval API and Retrieval Test so normal mode returns WikiNodes and debug mode shows matched Index Segment evidence plus persisted query log basics."
     acceptance:
-      - "Application shell keeps shadcn new-york-v4 sidebar-07 structure with AppSidebar, SidebarInset, SidebarTrigger, Separator, and Breadcrumb."
-      - "Full product navigation and routes are available for Platform, Knowledge, Governance, System, and Admin areas."
-      - "Core static pages are not blank: Overview, WikiNode List, WikiNode Editor, Wiki Graph, Index Segments, Retrieval Test, Sources, and Settings/System."
-      - "Mock data includes Knowledge Bases, Sources, Raw Materials, WikiNodes, WikiLinks, Index Segments, Retrieval Logs, Quality Issues, and Users at the requested minimum counts."
-      - "Retrieval results remain WikiNode-centered; matched Index Segments appear only in debug mode."
-      - "No visible product surface uses Chunk Management, Agent, Chatbot, Workflow, MCP, or vector-database ownership language."
+      - "Normal retrieval remains WikiNode-first."
+      - "Debug retrieval can expose matchedSegments and trace evidence without making segments the primary result."
+      - "Query logs capture query, filters, returned WikiNodes, matched segments, latency, status, and error summary at a minimum."
+      - "Retrieval Test uses the aligned API and keeps product copy clear."
     non_goals:
-      - "No real backend API connection."
-      - "No real vector database, embedding pipeline, login, file upload, parser, Agent, Chatbot, Workflow, MCP, IM, or LLM answer-generation work."
-      - "No package or lockfile changes unless the user separately confirms a dependency decision."
-  - id: US014
-    title: "Frontend localization and UX feedback baseline"
+      - "No Chat API, Chatbot, answer generation, raw chunk response, external vector DB implementation, or evaluation runner."
+  - id: US051
+    title: "Publishing and index job boundary"
     status: ready
-    goal: "Make the existing MVP frontend manually acceptable by standardizing Chinese copy, product terms, status labels, operation feedback, and browser smoke coverage without adding new product modules."
+    goal: "Define a read-only publishing/index job boundary that shows readiness, validation, segment generation status, and external vector-sync boundary without executing production publishing."
     acceptance:
-      - "Existing MVP pages use understandable Chinese titles, actions, filters, fields, table labels, status labels, empty states, loading states, error states, and operation feedback."
-      - "Product terminology stays centered on WikiNode, WikiLink, Index Segment, Retrieval API, and Knowledge Object."
-      - "Visible product surfaces do not use Chunk Management, Chat API, Chatbot, Agent Platform, Workflow Builder, or Vector DB Management."
-      - "Shared display label utilities cover objectType, subtype, nodeType, status, indexStatus, linkStatus, sourceType, syncStatus, and retrieval result status where those values already exist."
-      - "Create, save, update, delete, publish, re-index, and retrieval actions return clear Chinese success, failure, validation, duplicate, empty, and backend-unavailable feedback where the existing MVP supports those actions."
-      - "Playwright smoke covers key Chinese feedback and forbidden product drift terms."
+      - "Publishing and index pages distinguish readiness checks, Index Segment generation state, and external vector sync boundary."
+      - "Job/status model is verifiable without invoking external vector stores."
+      - "Index Status and related pages can explain failed/outdated/not_indexed cases clearly."
     non_goals:
-      - "No new business modules or pages."
-      - "No backend API, Java model, database migration, or Knowledge Object model expansion."
-      - "No package or lockfile changes."
-      - "No Source import, file upload, parser execution, vector database sync, permissions, approval workflow, or real publishing center behavior."
+      - "No approval workflow, batch publish, rollback, external vector sync, embedding, or destructive operation."
+  - id: US052
+    title: "Quality and evaluation console"
+    status: ready
+    goal: "Create a verifiable quality/evaluation console based on WikiNode, WikiLink, Index Segment, and Retrieval evidence."
+    acceptance:
+      - "Quality issues can represent missing summary, missing sourceRefs, broken links, stale Index Segments, and metadata gaps."
+      - "Evaluation cases can store test query, expected WikiNodes, and run result evidence."
+      - "Console stays read-only or minimally interactive until scoring rules are explicitly approved."
+    non_goals:
+      - "No complex scoring engine, export, batch operations, or production quality automation."
+  - id: US053
+    title: "Tags and metadata governance"
+    status: ready
+    goal: "Add governance surfaces for tags, metadata fields, objectType/subtype display rules, and filter participation after core Knowledge Object alignment."
+    acceptance:
+      - "Tags and metadata field pages show schema intent, display labels, validation rules, and retrieval/index participation."
+      - "Changes stay aligned with Knowledge Object model and do not create a separate object system."
+    non_goals:
+      - "No permission boundary, approval workflow, or broad schema designer beyond confirmed metadata governance."
+  - id: US054
+    title: "Admin roles permissions audit planning"
+    status: ready
+    goal: "Plan users, roles, permissions, and audit logs as a bounded governance capability without enforcing authentication or authorization."
+    acceptance:
+      - "Roles, permissions, and audit surfaces define intended dimensions and evidence requirements."
+      - "Any implementation remains read-only/planning unless auth enforcement is separately confirmed."
+    non_goals:
+      - "No auth enforcement, login flow, permission checks, destructive admin actions, export, or batch operation."
