@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test"
 import { mockSourceEvidenceApi } from "./source-api-fixtures"
 
 const forbiddenProductTerms = /Chunk Management|Chat API|Chatbot|Agent Platform|Workflow Builder|Vector DB Management/i
+const forbiddenBoundaryCopy = /当前只读|当前不|不执行|不会执行|不提供|真实上传|真实存储|验收基线|留到后续/i
 const forbiddenActions = /创建 Source|导入 Source|上传文件|开始同步|重新解析|执行解析|下载原文件/i
 
 test.describe("Source / Raw Material / Parsed Document acceptance", () => {
@@ -9,19 +10,20 @@ test.describe("Source / Raw Material / Parsed Document acceptance", () => {
     await mockSourceEvidenceApi(page)
   })
 
-  test("Sources page explains the upstream read-only evidence chain", async ({ page }) => {
+  test("Sources page shows the upstream evidence chain", async ({ page }) => {
     await page.goto("/sources")
 
     await expect(page.getByRole("heading", { name: "知识来源" })).toBeVisible()
     await expect(page.getByText("上游证据链", { exact: true })).toBeVisible()
     await expect(page.getByText("Source -> Raw Material -> Parsed Document -> WikiNode", { exact: true })).toBeVisible()
-    await expect(page.getByText("当前只读：不会执行真实同步、上传、解析或导入。", { exact: true })).toBeVisible()
+    await expect(page.getByText("按来源查看快照、解析预览和生成的 WikiNode。", { exact: true })).toBeVisible()
     await expect(page.getByText("生成的 WikiNode", { exact: true })).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+    await expect(page.locator("main").last()).not.toContainText(forbiddenBoundaryCopy)
     await expect(page.getByRole("button", { name: forbiddenActions })).toHaveCount(0)
   })
 
-  test("Source detail points to related raw material without implying sync execution", async ({ page }) => {
+  test("Source detail points to related raw material and processing status", async ({ page }) => {
     await page.goto("/sources/src-feishu-cc")
 
     await expect(page.getByRole("heading", { name: "知识来源详情" })).toBeVisible()
@@ -29,13 +31,14 @@ test.describe("Source / Raw Material / Parsed Document acceptance", () => {
     await expect(page.getByText("Source 阶段", { exact: true })).toBeVisible()
     await expect(page.getByText("关联 Raw Material", { exact: true })).toBeVisible()
     await expect(page.getByRole("link", { name: /售后政策空间快照/ })).toBeVisible()
-    await expect(page.getByText("下一步只读检查", { exact: true })).toBeVisible()
-    await expect(page.getByText("不执行真实同步、授权连接或后台任务。", { exact: true })).toBeVisible()
+    await expect(page.getByText("来源处理状态", { exact: true })).toBeVisible()
+    await expect(page.getByText("重点查看快照数量、解析状态、生成节点和异常提示。", { exact: true })).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+    await expect(page.locator("main").last()).not.toContainText(forbiddenBoundaryCopy)
     await expect(page.getByRole("button", { name: forbiddenActions })).toHaveCount(0)
   })
 
-  test("Raw Material pages make snapshot and parsed preview boundaries explicit", async ({ page }) => {
+  test("Raw Material pages show snapshot and parsed preview evidence", async ({ page }) => {
     await page.goto("/raw-materials")
 
     await expect(page.getByRole("heading", { name: "原始材料" })).toBeVisible()
@@ -50,8 +53,9 @@ test.describe("Source / Raw Material / Parsed Document acceptance", () => {
     await expect(page.getByText("关联 Source", { exact: true })).toBeVisible()
     await expect(page.getByText("CC 售后政策飞书空间", { exact: true })).toBeVisible()
     await expect(page.getByRole("link", { name: "查看解析结果" })).toBeVisible()
-    await expect(page.getByText("当前不提供下载、重新解析或真实存储访问。", { exact: true })).toBeVisible()
+    await expect(page.getByText("来源证据范围", { exact: true })).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+    await expect(page.locator("main").last()).not.toContainText(forbiddenBoundaryCopy)
     await expect(page.getByRole("button", { name: forbiddenActions })).toHaveCount(0)
   })
 

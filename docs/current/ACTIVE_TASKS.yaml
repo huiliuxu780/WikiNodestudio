@@ -1,18 +1,17 @@
 version: 2
-updated_at: "2026-06-26"
+updated_at: "2026-06-27"
 source_of_truth: "current_active_tasks"
 notes:
   - "Each IM is a product capability slice and must stop after local verification and commit."
   - "Do not auto-enter the next IM without explicit user confirmation."
   - "Done history stays in release docs or archive."
 tasks:
-  - id: IM054
-    title: "Quality Issue Console Baseline"
-    status: ready
-    story_ids: [US054]
+  - id: IM055
+    title: "Frontend IA and Boundary-Copy Correction"
+    status: in_progress
+    story_ids: [US055]
     allowed_files:
       - "src/pages/**"
-      - "src/components/quality/**"
       - "src/utils/display-labels.ts"
       - "tests/e2e/**"
       - "docs/current/**"
@@ -25,9 +24,9 @@ tasks:
       - "src/main/java/**"
       - "src/main/resources/db/migration/**"
     gates:
-      - "TDD gate: write or update Playwright coverage for the Quality Issues page before implementation."
-      - "Product gate: keep quality issues WikiNode-centered and show WikiLink, source evidence, Index Segment, and retrieval signals only as issue evidence."
-      - "Boundary gate: no automated quality check runner, repair action, batch operation, export, embedding, external vector-store work, Source import, parser execution, permissions, publishing, or new dependencies."
+      - "IA gate: do not expose roadmap-only Conflicts, Expired Knowledge, or Duplicates as hidden executable routes unless the sidebar and current task explicitly authorize them."
+      - "Product-copy gate: visible UI copy must describe business objects, states, evidence, and review actions instead of implementation boundary explanations."
+      - "Boundary gate: no automated conflict detection, expiration job, duplicate-matching algorithm, resolved or ignore write action, repair action, batch operation, export, embedding, external vector-store work, Source import, parser execution, permissions, publishing, or new dependencies."
       - "Verification gate: pnpm lint, pnpm build, bash scripts/check.sh, focused Playwright, and diff check."
     stop_conditions:
-      - "Backend API changes, DB migration, automated quality check execution, repair action, batch operation, export, external vector DB integration, embedding invocation, permissions, publishing approval, package or lockfile change."
+      - "Backend API changes, DB migration, automated quality execution, resolved or ignore write action, repair action, batch operation, export, external vector DB integration, embedding invocation, permissions, publishing approval, package or lockfile change."

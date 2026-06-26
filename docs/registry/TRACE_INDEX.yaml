@@ -263,6 +263,15 @@ phase2_plans:
     frontend_pages: src/pages
     frontend_components: src/components/quality
     playwright: tests/e2e
+  QUALITY_GOVERNANCE_SURFACES_BASELINE:
+    decision: D055
+    previous_quality_issue_console: QUALITY_ISSUE_CONSOLE_BASELINE
+    story_queue: docs/current/STORY_QUEUE.yaml
+    active_task: docs/current/ACTIVE_TASKS.yaml
+    feature_map: docs/current/FEATURE_MAP.md
+    frontend_pages: src/pages
+    frontend_components: src/components/quality
+    playwright: tests/e2e
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
@@ -360,7 +369,10 @@ tasks:
     implementation: RETRIEVAL_EVALUATION_CONSOLE_BASELINE
   IM054:
     decision: D054
-    plan: QUALITY_ISSUE_CONSOLE_BASELINE
+    implementation: QUALITY_ISSUE_CONSOLE_BASELINE
+  IM055:
+    decision: D055
+    implementation: FRONTEND_IA_BOUNDARY_COPY_CORRECTION
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN

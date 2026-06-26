@@ -22,7 +22,7 @@ export function IndexStatusPage() {
         </CardHeader>
         <CardContent className="grid gap-2 text-sm text-muted-foreground md:grid-cols-3">
           <div className="rounded-md border bg-muted/20 px-3 py-2">
-            索引失败：需要查看失败原因，但本页不执行重试。
+            索引失败：需要查看失败原因、关联 WikiNode 和对应 Index Segment。
           </div>
           <div className="rounded-md border bg-muted/20 px-3 py-2">
             待更新：WikiNode 已变化，需要重新生成或同步 Index Segment。

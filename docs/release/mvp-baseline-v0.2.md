@@ -33,11 +33,12 @@ After the MVP v0.2 baseline, the first Phase 2 implementation sequence has also 
 - `IM050` Retrieval API debug evidence, query logs, and evaluation cases.
 - `IM051` Publishing, index, metadata governance, and admin planning baseline.
 - `IM053` Retrieval evaluation console baseline.
+- `IM054` Quality issue console baseline.
 
-The expected `main` baseline after IM053 is:
+The expected `main` baseline after IM054 is:
 
 ```text
-dbde201 Merge pull request #49 from huiliuxu780/codex/im053-retrieval-evaluation-console-baseline
+ecd6b44 Merge pull request #50 from huiliuxu780/codex/im054-current-queue-definition
 ```
 
 ## Product Scope
@@ -64,6 +65,7 @@ Source / Raw Material / Parsed Document boundary
 - Deterministic local Index Segment generation with trace evidence tied to WikiNode content and source refs.
 - Retrieval API debug evidence, minimal query logs, and evaluation case evidence while preserving WikiNode-first normal results.
 - Read-only Query Logs, Evaluation Cases, and Retrieval Evaluation console surfaces for PM-readable retrieval evidence.
+- Read-only Quality Issues evidence console for PM-readable WikiNode, WikiLink, source evidence, Index Segment, and retrieval-quality risks.
 - shadcn sidebar application shell and product navigation.
 - WikiNode list, create, editor, detail, Markdown preview, save feedback, local publish/re-index feedback.
 - WikiLink parsing, backlinks, broken links, and resolved/broken preview badges.
@@ -86,17 +88,19 @@ Source / Raw Material / Parsed Document boundary
 - Query Logs.
 - Evaluation Cases.
 - Retrieval Evaluation.
+- Quality Issues.
 
 ### Visual Skeleton
 
 - Knowledge Base detail/settings.
 - Parser, Storage, Vector Store, Embedding, Health, Publishing, Vector Sync, Index Jobs.
-- Quality, Tags, Metadata, Admin Users/Roles/Permissions/Audit.
+- Tags, Metadata, Admin Users/Roles/Permissions/Audit.
 
 ### Deferred
 
 - Real Source import, file upload, external connectors, parser execution, OCR, LLM extraction.
 - Parsed Document write path and real Raw Material storage access.
+- Conflict Detection, Expired Knowledge, and Duplicate Knowledge as standalone product pages or workflows.
 - External vector-store sync execution.
 - Real embedding invocation or vector-store sync.
 - Retrieval API return-shape change to raw segments or chunks.
@@ -166,6 +170,7 @@ GitHub evidence:
 - IM050 PR #45 checks passed and merged.
 - IM051 PR #46 checks passed and merged.
 - IM053 PR #49 checks passed and merged.
+- IM054 PR #50 checks passed and merged.
 
 ## Manual Acceptance Routes
 

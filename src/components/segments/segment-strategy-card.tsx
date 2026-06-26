@@ -22,7 +22,7 @@ export function SegmentStrategyCard() {
         <p>Index Segment 在同步到外部向量库前，由 WikiNode 标题、摘要、正文段落、元数据、来源证据和关系证据生成。</p>
         <p>处理策略说明 Source 或 Raw Material 如何变成 WikiNode / Knowledge Object；片段策略说明该对象如何生成受控 Index Segment。</p>
         <p>生成链路：WikiNode / Knowledge Object -&gt; Index Segment -&gt; 外部向量库同步证据。</p>
-        <p>本页只说明受控片段策略，不运行 embedding、不写入外部向量库。</p>
+        <p>片段策略用于约束召回证据的来源、粒度、父级 WikiNode 绑定和外部同步前的检查口径。</p>
         <div className="flex flex-wrap gap-2">
           <Badge variant="outline">绑定 WikiNode</Badge>
           <Badge variant="outline">识别 Knowledge Object</Badge>

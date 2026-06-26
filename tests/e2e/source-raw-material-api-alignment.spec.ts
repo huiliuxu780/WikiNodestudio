@@ -77,7 +77,7 @@ test.describe("Source / Raw Material API alignment", () => {
 
     await page.goto("/sources/src-api-only")
 
-    await expect(page.getByText("API Only Source。当前页面只展示来源配置和生成 WikiNode 的验收基线。")).toBeVisible()
+    await expect(page.getByText("API Only Source。查看来源配置、快照和生成的 WikiNode。")).toBeVisible()
     await expect(page.getByRole("link", { name: /API Only Raw Material/ })).toBeVisible()
   })
 

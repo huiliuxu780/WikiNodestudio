@@ -109,4 +109,4 @@ Use this checklist to verify the MVP v0.2 baseline before demo, handoff, or rele
 - [ ] Confirm no embedding call exists.
 - [ ] Confirm no real vector-store sync exists.
 - [ ] Confirm no permissions, approval, audit, export, or batch operation implementation exists.
-- [ ] Confirm Query Logs, Evaluation Cases, and Retrieval Evaluation are read-only evidence surfaces, while Quality, Admin, Parser/Storage/System routes remain visual skeletons or deferred surfaces.
+- [ ] Confirm Query Logs, Evaluation Cases, Retrieval Evaluation, and Quality Issues are evidence surfaces, while Conflict Detection, Expired Knowledge, Duplicate Knowledge, Admin, Parser/Storage/System workflows remain deferred unless they have product navigation ownership.

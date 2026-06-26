@@ -19,7 +19,7 @@ export function SourcesPage() {
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
         title="知识来源"
-        description="查看 Source、Raw Material、Parsed Document 到 WikiNode 的上游证据链；当前为 MVP 验收基线。"
+        description="查看 Source、Raw Material、Parsed Document 到 WikiNode 的上游证据链。"
       />
       <ApiErrorNotice error={sourcesError} onRetry={reloadSources} />
       <ApiErrorNotice error={nodesError} onRetry={reloadNodes} />
@@ -33,8 +33,8 @@ export function SourcesPage() {
             <p className="mt-1 text-muted-foreground">{"Source -> Raw Material -> Parsed Document -> WikiNode"}</p>
           </div>
           <div className="rounded-md border border-dashed px-3 py-2">
-            <div className="font-medium">当前只读：不会执行真实同步、上传、解析或导入。</div>
-            <p className="mt-1 text-muted-foreground">本页只帮助验收来源、快照、解析预览和生成 WikiNode 的关系。</p>
+            <div className="font-medium">按来源查看快照、解析预览和生成的 WikiNode。</div>
+            <p className="mt-1 text-muted-foreground">用于定位某个业务来源进入知识库后的证据链位置。</p>
           </div>
         </CardContent>
       </Card>
@@ -42,15 +42,15 @@ export function SourcesPage() {
         <CardContent className="grid gap-3 p-4 text-sm md:grid-cols-3">
           <div className="rounded-md border bg-muted/20 px-3 py-2">
             <div className="font-medium">Source 是原始知识的来源。</div>
-            <p className="mt-1 text-muted-foreground">当前仅展示本地样例数据，不执行真实同步、上传或解析。</p>
+            <p className="mt-1 text-muted-foreground">记录来源类型、负责人、同步状态和最近更新时间。</p>
           </div>
           <div className="rounded-md border bg-muted/20 px-3 py-2">
             <div className="font-medium">Raw Material 是来源快照。</div>
-            <p className="mt-1 text-muted-foreground">真实 Source import、文件上传和解析任务留到后续阶段。</p>
+            <p className="mt-1 text-muted-foreground">保留进入标准化处理前的原始材料证据。</p>
           </div>
           <div className="rounded-md border bg-muted/20 px-3 py-2">
             <div className="font-medium">Parsed Document 是标准化预览。</div>
-            <p className="mt-1 text-muted-foreground">当前只用于解释证据链，不运行后台同步任务。</p>
+            <p className="mt-1 text-muted-foreground">帮助评审内容结构、段落证据和后续 WikiNode 建议。</p>
           </div>
         </CardContent>
       </Card>
@@ -76,7 +76,7 @@ export function SourcesPage() {
                 {sources.length === 0 ? (
                   <tr>
                     <td className="p-4 text-sm text-muted-foreground" colSpan={7}>
-                      暂无知识来源。本页当前只展示后端只读证据链，不提供真实 Source import 或文件上传。
+                      暂无知识来源。来源接入后会在这里展示快照、解析预览和关联 WikiNode。
                     </td>
                   </tr>
                 ) : sources.map((source) => (
@@ -103,7 +103,7 @@ export function SourcesPage() {
           <CardContent className="flex flex-col gap-2">
             {selectedNodes.length === 0 ? (
               <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-                当前来源暂无关联 WikiNode。真实生成、同步和解析流程不在 MVP v0.2 范围内。
+                当前来源暂无关联 WikiNode。
               </div>
             ) : selectedNodes.map((node) => (
               <div key={node.nodeId} className="rounded-md border p-3">

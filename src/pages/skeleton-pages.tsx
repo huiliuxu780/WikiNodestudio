@@ -81,8 +81,8 @@ type SuggestionStatusFilter = "all" | DraftWikiNodeSuggestion["status"]
 type SuggestionConflictFilter = "all" | DraftWikiNodeSuggestion["conflictStatus"]
 
 const routeCards = {
-  同步任务: ["当前不执行真实同步任务", "展示 Source 到 Raw Material 的验收边界", "后台任务留到后续阶段"],
-  同步日志: ["当前不写入真实同步日志", "仅展示来源状态口径", "真实任务日志留到后续阶段"],
+  同步任务: ["待同步来源", "最近同步时间", "关联 Raw Material"],
+  同步日志: ["来源名称", "处理结果", "关联快照"],
   Backlinks: ["保修期内维修服务政策", "收费政策", "人为损坏判定规则"],
   影响分析: ["发布影响", "断链影响", "Index Segment 影响"],
   外部向量库同步: ["阿里云配置", "火山引擎配置", "试运行同步状态"],
@@ -95,14 +95,11 @@ const routeCards = {
   节点类型: ["policy", "procedure", "guide", "fee_rule"].map((value) => labelFromMap(nodeTypeLabels, value)),
   元数据字段: ["businessDomain", "brand", "productCategory", "securityLevel"].map((value) => labelFromMap(metadataLabels, value)),
   质量问题: mockQualityIssues.map((issue) => `${issue.issueId} ${issue.nodeTitle}`),
-  冲突检测: ["收费政策 vs 配件价格查询说明", "延保政策 vs 保修政策"],
-  过期知识: ["售后政策术语表", "历史客服口径"],
-  重复知识: ["收费说明重复候选", "安装注意事项重复候选"],
   召回评测: ["TopK 一致性", "WikiNode 命中精度", "片段证据质量"],
   解析引擎: ["Markdown 解析器", "表格解析器", "图片引用"],
   存储引擎: ["原始材料快照", "解析文档存储", "来源证据"],
-  向量模型配置: ["仅配置外部向量库", "MVP 不实现本地向量化流程"],
-  系统健康: ["前端基线可用", "当前页不依赖真实后端", "需要 Harness 检查"],
+  向量模型配置: ["外部向量库", "Index Segment", "同步配置"],
+  系统健康: ["前端可用性", "API 连通性", "索引任务状态"],
   用户: mockUsers.map((user) => `${user.name} ${labelFromMap(userRoleLabels, user.role)} ${labelFromMap(userStatusLabels, user.status)}`),
   角色: ["知识负责人", "编辑者", "审核员", "查看者"],
   权限: ["读取", "编辑", "审核", "管理"],
@@ -153,12 +150,12 @@ export function KnowledgeBaseDetailPage() {
 
 export function KnowledgeBaseSettingsPage() {
   return (
-    <PageScaffold title="知识库设置" description="仅展示召回和索引边界的本地配置基线。">
+    <PageScaffold title="知识库设置" description="配置知识库的召回、索引和默认治理口径。">
       <SummaryGrid items={[
         ["默认返回对象", "WikiNode"],
         ["调试证据", "matchedSegments"],
-        ["向量存储边界", "仅配置外部向量库"],
-        ["审批流", "不在当前范围"],
+        ["向量存储", "外部向量库配置"],
+        ["审核口径", "人工评审"],
       ]} />
     </PageScaffold>
   )
@@ -187,7 +184,7 @@ export function SourceDetailPage() {
   } = useAsyncData(() => activeSourceId ? listSourceOperationsForSource(activeSourceId) : Promise.resolve([]), [], [activeSourceId])
 
   return (
-    <PageScaffold title="知识来源详情" description={source ? `${source.title}。当前页面只展示来源配置和生成 WikiNode 的验收基线。` : "查看 Source 到 Raw Material 的只读证据链。"}>
+    <PageScaffold title="知识来源详情" description={source ? `${source.title}。查看来源配置、快照和生成的 WikiNode。` : "查看 Source 到 Raw Material 的证据链。"}>
       <ApiErrorNotice error={sourceError} onRetry={reloadSource} />
       <ApiErrorNotice error={rawMaterialsError} onRetry={reloadRawMaterials} />
       <ApiErrorNotice error={operationsError} onRetry={reloadOperations} />
@@ -214,12 +211,11 @@ export function SourceDetailPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">下一步只读检查</CardTitle>
+            <CardTitle className="text-base">来源处理状态</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
-            <p>当前阶段不会启动同步、授权连接或后台任务。</p>
-            <p>真实 Source import、文件上传和解析留到后续阶段。</p>
-            <p>当前仅沿着已有样例数据查看 Raw Material 和 WikiNode 证据。</p>
+            <p>按 Source、Raw Material、Parsed Document 和 WikiNode 追踪来源处理进度。</p>
+            <p>重点查看快照数量、解析状态、生成节点和异常提示。</p>
           </CardContent>
         </Card>
       </div>
@@ -232,7 +228,7 @@ export function SourceDetailPage() {
             <LoadingBlock text="正在加载 Raw Material..." />
           ) : relatedRawMaterials.length === 0 ? (
             <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-              当前 Source 暂无关联 Raw Material。真实同步和快照生成不在本轮范围内。
+              当前 Source 暂无关联 Raw Material。
             </div>
           ) : relatedRawMaterials.map((raw) => (
             <Link key={raw.rawMaterialId} to={`/raw-materials/${raw.rawMaterialId}`} className="rounded-md border p-3 text-sm hover:bg-muted/40">
@@ -243,9 +239,9 @@ export function SourceDetailPage() {
         </CardContent>
       </Card>
       <SimpleList items={[
-        "只读来源验收基线",
-        "不执行真实同步、授权连接或后台任务。",
-        "真实 Source import、文件上传和解析留到后续阶段。",
+        "来源配置",
+        "Raw Material 快照",
+        "生成的 WikiNode",
       ]} />
       <SourceOperationLogPanel operations={operations} isLoading={isOperationsLoading} />
     </PageScaffold>
@@ -261,7 +257,7 @@ export function RawMaterialListPage() {
   } = useAsyncData(listRawMaterials, [])
 
   return (
-    <PageScaffold title="原始材料" description="查看 Source 进入 WikiNode 标准化之前保留的原始快照；当前不提供真实上传或解析执行。">
+    <PageScaffold title="原始材料" description="查看 Source 进入 WikiNode 标准化之前保留的原始快照。">
       <ApiErrorNotice error={error} onRetry={reload} />
       <Card>
         <CardHeader>
@@ -273,22 +269,22 @@ export function RawMaterialListPage() {
             <p className="mt-1 text-muted-foreground">Raw Material 是 Source 的快照证据，还不是 WikiNode。</p>
           </div>
           <div className="rounded-md border border-dashed px-3 py-2">
-            <div className="font-medium">当前只读：不会上传、下载、重新解析或访问真实存储。</div>
-            <p className="mt-1 text-muted-foreground">点击条目只进入后端只读详情页。</p>
+            <div className="font-medium">按来源、类型和解析状态查看材料快照。</div>
+            <p className="mt-1 text-muted-foreground">点击条目查看关联 Source、Parsed Document 和 WikiNode 建议。</p>
           </div>
         </CardContent>
       </Card>
       <SimpleList items={[
-        "Raw Material 是 Source 同步或上传后的原始快照。",
-        "当前不提供文件上传或重新解析。",
-        "Parsed Document 仅作为标准化内容预览。",
+        "Raw Material 是 Source 的原始快照。",
+        "解析状态用于判断是否已形成 Parsed Document。",
+        "Parsed Document 用于进入 WikiNode 标准化评审。",
       ]} />
       <Card>
         <CardContent className="grid gap-2 p-4 md:grid-cols-2 xl:grid-cols-3">
           {isLoading ? (
             <LoadingBlock text="正在加载 Raw Material..." />
           ) : rawMaterials.length === 0 ? (
-            <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">暂无 Raw Material。真实上传和同步不在当前范围内。</div>
+            <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">暂无 Raw Material。</div>
           ) : rawMaterials.map((item) => (
             <Link key={item.rawMaterialId} to={`/raw-materials/${item.rawMaterialId}`} className="rounded-md border bg-muted/20 px-3 py-2 text-sm hover:bg-muted/40">
               <div className="font-medium">{item.title}</div>
@@ -334,7 +330,7 @@ export function RawMaterialDetailPage() {
   } = useAsyncData(() => activeRawMaterialId ? listDraftWikiNodeSuggestionsForRawMaterial(activeRawMaterialId) : Promise.resolve([]), [], [activeRawMaterialId])
 
   return (
-    <PageScaffold title="原始材料详情" description={raw?.title ?? "查看 Raw Material 到 Parsed Document 的只读证据链。"}>
+    <PageScaffold title="原始材料详情" description={raw?.title ?? "查看 Raw Material 到 Parsed Document 的证据链。"}>
       <ApiErrorNotice error={rawError} onRetry={reloadRaw} />
       <ApiErrorNotice error={sourceError} onRetry={reloadSource} />
       <ApiErrorNotice error={parsedDocumentsError} onRetry={reloadParsedDocuments} />
@@ -379,16 +375,15 @@ export function RawMaterialDetailPage() {
                 查看解析结果
               </Link>
             ) : (
-              <div className="text-muted-foreground">尚未生成 Parsed Document，本页不会触发解析任务。</div>
+              <div className="text-muted-foreground">尚未生成 Parsed Document。</div>
             )}
-            <p className="text-muted-foreground">当前不提供下载、重新解析或真实存储访问。</p>
           </CardContent>
         </Card>
       </div>
       <SimpleList items={[
-        "仅展示原始材料元数据和解析状态。",
-        "下载、重新解析和真实存储访问均未开放。",
-        "真实文件存储、解析任务和访问控制留到后续阶段。",
+        "材料元数据",
+        "解析状态",
+        "来源证据范围",
       ]} />
       <DraftWikiNodeSuggestionPanel suggestions={suggestions} isLoading={isSuggestionsLoading} mode="summary" />
       <SourceOperationLogPanel operations={operations} isLoading={isOperationsLoading} />
@@ -446,7 +441,7 @@ export function ParsedResultPreviewPage() {
   }
 
   return (
-    <PageScaffold title="解析结果预览" description="查看进入 WikiNode 标准化之前的内容形态和来源证据；当前不运行真实解析器。">
+    <PageScaffold title="解析结果预览" description="查看进入 WikiNode 标准化之前的内容形态和来源证据。">
       <ApiErrorNotice error={rawError} onRetry={reloadRaw} />
       <ApiErrorNotice error={parsedDocumentsError} onRetry={reloadParsedDocuments} />
       <ApiErrorNotice error={sourceError} onRetry={reloadSource} />
@@ -477,7 +472,7 @@ export function ParsedResultPreviewPage() {
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             <p>{source?.title ?? "未知 Source"} / {raw?.title ?? "未知 Raw Material"}</p>
-            <p>当前只展示样例来源证据，不访问真实存储。</p>
+            <p>用于核对 Source、Raw Material 和 Parsed Document 的证据链。</p>
           </CardContent>
         </Card>
       </div>
@@ -490,7 +485,7 @@ export function ParsedResultPreviewPage() {
           </CardHeader>
           <CardContent className="flex flex-col gap-3 text-sm md:flex-row md:items-center md:justify-between">
             <div className="space-y-1">
-              <p className="text-muted-foreground">从当前 Parsed Document 生成一个待审核 WikiNode 建议，不会创建 WikiNode、发布、索引或批量转换。</p>
+              <p className="text-muted-foreground">从当前 Parsed Document 生成一个待审核 WikiNode 建议。</p>
               {generationSummary ? (
                 <p className={generationStatus === "failed" ? "text-destructive" : "text-foreground"}>{generationSummary}</p>
               ) : suggestions.length > 0 ? (
@@ -511,8 +506,8 @@ export function ParsedResultPreviewPage() {
       <DraftWikiNodeSuggestionPanel suggestions={suggestions} isLoading={isSuggestionsLoading} mode="detail" />
       <SimpleList items={[
         "Parsed Document 是解析后的标准化内容预览。",
-        "当前不运行 PDF / Word / 网页 / 数据库 / API 解析。",
-        "这里只说明进入 WikiNode 标准化之前的内容形态。",
+        "内容结构用于后续 WikiNode 建议评审。",
+        "来源证据用于回溯原始材料。",
       ]} />
       <SimpleList items={["标题层级", "段落来源证据", "表格抽取预览", "图片引用"]} />
     </PageScaffold>
@@ -630,7 +625,7 @@ export function DraftWikiNodeSuggestionDetailPage() {
   }
 
   return (
-    <PageScaffold title="WikiNode 建议详情" description="查看 Draft WikiNode Suggestion，并允许单条采纳或拒绝；本页不会发布、索引或批量转换。">
+    <PageScaffold title="WikiNode 建议详情" description="查看 Draft WikiNode Suggestion，并处理单条采纳、拒绝或重新生成。">
       <ApiErrorNotice error={error} onRetry={reload} />
       {isLoading ? <LoadingBlock text="正在加载 WikiNode 建议..." /> : null}
       {suggestion ? (
@@ -642,7 +637,7 @@ export function DraftWikiNodeSuggestionDetailPage() {
             <CardContent className="space-y-3 text-sm">
               <p className="text-muted-foreground">Parsed Document → Draft WikiNode Suggestion → Review Decision</p>
               <p className="rounded-md border bg-muted/20 p-3 text-muted-foreground">
-                当前不会创建 WikiLink、生成 Index Segment、发布、索引、向量同步或批量转换。
+                评审重点包括标题、Knowledge Object 类型、来源证据、关系候选和冲突状态。
               </p>
               <Link className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" to="/draft-wikinode-suggestions">
                 回到建议评审
@@ -662,7 +657,7 @@ export function DraftWikiNodeSuggestionDetailPage() {
           ]} />
           <Card>
             <CardContent className="space-y-3 p-4 text-sm text-muted-foreground">
-              <p>采纳只会创建草稿 WikiNode，并保留来源证据；拒绝或重新生成只会更新建议审核状态和替代关系。本页不会发布、索引、创建 WikiLink 或批量转换。</p>
+              <p>采纳会进入草稿 WikiNode，并保留来源证据；拒绝或重新生成会更新建议审核状态和替代关系。</p>
               <div className="flex flex-wrap gap-2 text-xs">
                 <span className="rounded-md border px-2 py-1">Source {suggestion.sourceId}</span>
                 <span className="rounded-md border px-2 py-1">Raw Material {suggestion.rawMaterialId}</span>
@@ -840,7 +835,7 @@ export function DraftWikiNodeSuggestionReviewConsolePage() {
             Source → Raw Material → Parsed Document → Source Operation → Draft WikiNode Suggestion → 评审决策
           </p>
           <div className="rounded-md border bg-muted/20 p-3 text-muted-foreground">
-            从来源证据进入建议评审，只处理建议状态和证据追踪；不会发布、索引、创建 WikiLink 或批量转换。
+            从来源证据进入建议评审，重点查看建议状态、冲突状态、证据追踪和替代关系。
           </div>
         </CardContent>
       </Card>
@@ -901,7 +896,7 @@ export function DraftWikiNodeSuggestionReviewConsolePage() {
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           <p className="text-muted-foreground">
-            本页只处理 Draft WikiNode Suggestion 的评审状态、替代关系和证据追踪；不会发布、索引、创建 WikiLink 或批量转换。
+            按评审状态、替代关系和证据追踪查看 Draft WikiNode Suggestion。
           </p>
           {isLoading ? <LoadingBlock text="正在加载 WikiNode 建议..." /> : null}
           {!isLoading && filteredSuggestions.length === 0 ? (
@@ -955,7 +950,7 @@ export function WikiNodeDetailPage() {
     .join("；") || "无"
 
   return (
-    <PageScaffold title="WikiNode 详情" description={`${node.title}。WikiNode 是 Knowledge Object carrier，当前页只读展示承载字段。`}>
+    <PageScaffold title="WikiNode 详情" description={`${node.title}。查看 WikiNode 承载的 Knowledge Object 字段、来源证据和关系。`}>
       <SummaryGrid items={[
         ["WikiNode", node.title],
         [metadataLabels.objectType, labelFromMap(objectTypeLabels, node.objectType ?? "Article")],
@@ -1042,12 +1037,12 @@ export function GenericSkeletonPage({ title, description }: { title: keyof typeo
   const isQualityIssuePage = title === "质量问题"
   const pageDescription = isQualityIssuePage
     ? "集中查看影响 WikiNode、WikiLink、来源证据、Index Segment 和召回质量的风险线索。"
-    : description ?? "当前页是 WikiNode Studio 产品信息架构的本地占位基线。"
+    : description ?? "查看 WikiNode Studio 对应模块的业务对象、状态和证据。"
 
   return (
     <PageScaffold title={title} description={pageDescription}>
       {isQualityIssuePage ? null : (
-        <SimpleList items={(routeCards as Record<string, string[]>)[title] ?? ["本地占位模块", "导航目标", "当前不连接真实后端"]} />
+        <SimpleList items={(routeCards as Record<string, string[]>)[title] ?? ["业务对象", "状态", "证据"]} />
       )}
       <SkeletonBoundaryContent title={title} />
       <RetrievalEvaluationConsoleContent title={title} />
@@ -1058,31 +1053,31 @@ export function GenericSkeletonPage({ title, description }: { title: keyof typeo
 
 export function PublishingPage() {
   return (
-    <PageScaffold title="发布与索引" description="展示 WikiNode 发布前的索引检查、片段准备情况和外部同步责任边界。">
+    <PageScaffold title="发布与索引" description="展示 WikiNode 发布前的索引检查、片段准备情况和外部同步状态。">
       <div className="grid gap-4 lg:grid-cols-3">
         <BoundaryCard
-          title="发布前只读检查"
+          title="发布前检查"
           items={[
             "检查 WikiNode 发布状态、断链风险和 Index Segment 准备情况。",
-            "不会执行发布、审批、回滚、批量发布或外部向量同步。",
+            "关注发布前的证据完整性、关系完整性和索引准备度。",
           ]}
         />
         <BoundaryCard
           title="Index Segment 生成状态"
           items={[
-            "展示已索引、待更新、索引失败和未索引的验收口径。",
+            "展示已索引、待更新、索引失败和未索引的状态口径。",
             "Index Segment 是发布前生成的受控索引和召回单元。",
           ]}
         />
         <BoundaryCard
-          title="外部向量库同步边界"
+          title="外部向量库同步"
           items={[
-            "当前只说明同步前置条件和责任边界。",
-            "不执行 embedding，不写入外部向量库，不提供重试或批量操作。",
+            "查看同步前置条件、目标配置和 Index Segment 准备状态。",
+            "同步状态以 WikiNode 和 Index Segment 证据为中心。",
           ]}
         />
       </div>
-      <SimpleList items={["发布状态验收", "索引状态验收", "外部向量库边界"]} />
+      <SimpleList items={["发布状态", "索引状态", "外部向量库同步"]} />
     </PageScaffold>
   )
 }
@@ -1104,19 +1099,19 @@ export function ParserEnginePage() {
   } = useAsyncData(listParserProfiles, [])
 
   return (
-    <PageScaffold title="解析引擎" description="查看允许使用的 Parser Profile；当前页面只读，不运行解析器。">
+    <PageScaffold title="解析引擎" description="查看允许使用的 Parser Profile、适用内容类型和输出结构。">
       <ApiErrorNotice error={error} onRetry={reload} />
       <Card>
         <CardHeader>
-          <h2 className="text-base font-medium leading-snug">Parser Profile 只读注册表</h2>
+          <h2 className="text-base font-medium leading-snug">Parser Profile 注册表</h2>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
-          <p className="text-muted-foreground">只展示允许使用的解析 Profile，不会运行解析器或加载插件。</p>
+          <p className="text-muted-foreground">按 Profile 查看适用来源类型、输出格式和处理策略。</p>
           {isLoading ? (
             <LoadingBlock text="正在加载 Parser Profile..." />
           ) : parserProfiles.length === 0 ? (
             <div className="rounded-md border border-dashed p-3 text-muted-foreground">
-              暂无 Parser Profile。解析执行、插件加载和上传不在当前范围内。
+              暂无 Parser Profile。
             </div>
           ) : (
             <div className="grid gap-3 lg:grid-cols-2">
@@ -1129,8 +1124,8 @@ export function ParserEnginePage() {
       </Card>
       <SimpleList items={[
         "Parser Profile 是解析策略 allowlist，不是可执行插件入口。",
-        "Raw Material 需要匹配 Profile 后才可能进入后续已批准的解析流程。",
-        "当前不提供运行解析、加载插件、上传文件或重试操作。",
+        "Raw Material 需要匹配 Profile 后进入标准化处理。",
+        "输出结构用于 Parsed Document 预览和 WikiNode 建议评审。",
       ]} />
     </PageScaffold>
   )
@@ -1164,35 +1159,35 @@ function SkeletonBoundaryContent({ title }: { title: string }) {
       heading: "标签治理基线",
       items: [
         "标签用于筛选、检索和 Index Segment metadata。",
-        "当前不提供创建、合并、删除或批量打标签。",
+        "标签用于组织 WikiNode、筛选检索结果和补充 Index Segment metadata。",
       ],
     },
     元数据字段: {
       heading: "元数据字段治理基线",
       items: [
         "字段意图、校验规则、索引参与和检索参与在这里说明。",
-        "当前不保存字段配置，不修改 Knowledge Object 模型。",
+        "字段定义用于约束 Knowledge Object 信息展示和检索参与方式。",
       ],
     },
     角色: {
       heading: "角色规划基线",
       items: [
         "角色仅说明协作分工，不做权限 enforcement。",
-        "当前不连接后端鉴权，也不改变用户模型。",
+        "角色用于说明知识维护、评审和查看的协作分工。",
       ],
     },
     权限: {
       heading: "权限维度规划基线",
       items: [
-        "当前不做鉴权、授权、审批或后端 RBAC。",
-        "这里只说明后续可能需要被产品确认的权限维度。",
+        "权限维度用于区分查看、编辑、评审和管理动作。",
+        "页面只呈现产品协作口径，不展示工程实现细节。",
       ],
     },
     审计日志: {
       heading: "审计证据规划基线",
       items: [
-        "当前不写入真实审计日志，不提供导出或删除操作。",
-        "这里只展示 WikiNode、Index Segment 和检索测试的审计证据方向。",
+        "审计证据围绕 WikiNode、Index Segment 和检索测试记录。",
+        "重点查看对象、动作、时间和操作者。",
       ],
     },
   }
@@ -1366,10 +1361,10 @@ function RetrievalEvaluationSummaryPanel({
         </CardContent>
       </Card>
       <BoundaryCard
-        title="执行边界"
+        title="评测说明"
         items={[
-          "当前不运行批量评测、不导出评测结果、不引入新评分算法。",
           "评测结果只解释 Retrieval API 返回 WikiNode 与命中 Index Segment 证据。",
+          "评测用例用于对比查询、期望 WikiNode 和实际返回结果。",
         ]}
       />
       <EvaluationCaseEvidencePanel evaluationCases={evaluationCases} isLoading={areCasesLoading} />
@@ -1462,12 +1457,12 @@ function SourceOperationLogPanel({ operations, isLoading }: { operations: Source
         <h2 className="text-base font-medium leading-snug">操作日志</h2>
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
-        <p className="text-muted-foreground">只读操作日志，不会启动同步、上传、解析或重试。</p>
+        <p className="text-muted-foreground">按时间查看来源处理动作、处理状态、关联对象和错误摘要。</p>
         {isLoading ? (
           <LoadingBlock text="正在加载操作日志..." />
         ) : operations.length === 0 ? (
           <div className="rounded-md border border-dashed p-3 text-muted-foreground">
-            暂无操作日志。当前页面不会创建同步、上传、解析或重试任务。
+            暂无操作日志。
           </div>
         ) : operations.map((operation) => (
           <div key={operation.operationId} className="rounded-md border p-3">
@@ -1517,7 +1512,7 @@ function DraftWikiNodeSuggestionPanel({
           <LoadingBlock text="正在加载 WikiNode 建议..." />
         ) : suggestions.length === 0 ? (
           <div className="rounded-md border border-dashed p-3 text-muted-foreground">
-            暂无 WikiNode 建议。当前页面不会生成、采纳、拒绝或批量转换建议。
+            暂无 WikiNode 建议。
           </div>
         ) : suggestions.map((suggestion) => (
           <div key={suggestion.suggestionId} className="rounded-md border p-3">
@@ -1668,7 +1663,7 @@ function SuggestionLifecycleCard({ suggestion }: { suggestion: DraftWikiNodeSugg
 
 function lifecycleNextStep(suggestion: DraftWikiNodeSuggestion) {
   if (suggestion.status === "accepted") {
-    return "进入草稿 WikiNode 后继续人工编辑；本页不会发布或索引。"
+    return "进入草稿 WikiNode 后继续人工编辑。"
   }
   if (suggestion.status === "rejected") {
     return "保持拒绝记录，可在详情页基于同一 Parsed Document 重新生成。"

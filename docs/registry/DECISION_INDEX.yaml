@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D055
+    date: "2026-06-27"
+    title: "Correct IM055 to frontend IA and boundary-copy cleanup"
+    rationale: "Conflicts, Expired Knowledge, and Duplicates are roadmap capabilities in the full feature map, but they are not current sidebar-owned product routes. IM055 is corrected to remove those hidden executable routes and to clean visible UI copy that exposed implementation boundaries such as current read-only, not executed, or not provided as page content. Quality Issues remains the current governance entry point until a future explicitly scoped capability authorizes the adjacent pages."
+    related:
+      - IM055
+      - US055
+      - FRONTEND_IA_BOUNDARY_COPY_CORRECTION
+      - QUALITY_ISSUE_CONSOLE_BASELINE
   - id: D054
     date: "2026-06-26"
     title: "Define Quality Issue Console as the next Phase 2 capability slice"
