@@ -147,7 +147,7 @@ export function RetrievalTestPage() {
         <section className="flex flex-col gap-3 rounded-md border bg-card p-4">
           <div>
             <h2 className="text-sm font-medium">评测用例证据</h2>
-            <p className="text-xs text-muted-foreground">把当前查询结果保存为最小评测用例，不执行批量评测或导出。</p>
+            <p className="text-xs text-muted-foreground">把当前查询结果保存为最小评测用例，便于后续对比期望 WikiNode 和实际返回结果。</p>
           </div>
           <Button
             variant="outline"

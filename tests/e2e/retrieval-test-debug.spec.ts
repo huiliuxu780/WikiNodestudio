@@ -232,7 +232,7 @@ test.describe("Retrieval Test debug experience", () => {
     await expect(page.getByText("评测用例数")).toBeVisible()
     await expect(page.getByText("通过 1 / 失败 1")).toBeVisible()
     await expect(page.getByText("最近查询日志 2 条")).toBeVisible()
-    await expect(page.getByText("当前不运行批量评测、不导出评测结果、不引入新评分算法。")).toBeVisible()
+    await expect(page.getByText("评测用例用于对比查询、期望 WikiNode 和实际返回结果。")).toBeVisible()
     await expect(page.getByRole("button", { name: /运行评测|批量|导出|评分|同步/ })).toHaveCount(0)
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
   })

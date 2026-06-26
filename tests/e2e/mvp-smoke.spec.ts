@@ -124,7 +124,7 @@ test.describe.serial("MVP browser smoke", () => {
 
     await expect(page.getByRole("heading", { name: "设置" })).toBeVisible()
     await expect(page.getByText("默认设置")).toBeVisible()
-    await expect(page.getByText("系统设置仅展示当前 MVP 的本地配置基线。")).toBeVisible()
+    await expect(page.getByText("查看知识库默认状态、链路检查和断链提醒配置。")).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
   })
 })

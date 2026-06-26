@@ -30,8 +30,8 @@ test.describe("Parser Profile read-only registry", () => {
     await page.goto("/system/parser-engine")
 
     await expect(page.getByRole("heading", { name: "解析引擎" })).toBeVisible()
-    await expect(page.getByRole("heading", { name: "Parser Profile 只读注册表" })).toBeVisible()
-    await expect(page.getByText("只展示允许使用的解析 Profile，不会运行解析器或加载插件。")).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Parser Profile 注册表" })).toBeVisible()
+    await expect(page.getByText("按 Profile 查看适用来源类型、输出格式和处理策略。")).toBeVisible()
     await expect(page.getByText("飞书文章解析 Profile")).toBeVisible()
     await expect(page.getByText("Excel 收费表解析 Profile")).toBeVisible()
     await expect(page.getByText("文档快照")).toBeVisible()

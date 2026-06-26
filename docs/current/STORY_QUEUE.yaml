@@ -1,5 +1,5 @@
 version: 2
-updated_at: "2026-06-26"
+updated_at: "2026-06-27"
 source_of_truth: "current_story_queue"
 notes:
   - "Only ready, in_progress, and blocked stories belong here."
@@ -7,15 +7,14 @@ notes:
   - "Each story is a product capability slice, not a tiny UI patch."
 stories:
   - id: US055
-    title: "Quality governance surfaces baseline"
-    status: ready
-    goal: "Turn the remaining Quality / Evaluation skeleton pages into PM-readable governance surfaces for conflict detection, expired knowledge, and duplicate knowledge while staying aligned with the Quality Issues evidence console."
+    title: "Frontend IA and boundary-copy correction"
+    status: in_progress
+    goal: "Correct the current frontend information architecture and visible copy so roadmap-only quality capabilities are not exposed as hidden pages, and product pages do not display implementation boundary explanations as content."
     acceptance:
-      - "Conflicts page explains policy, time, scope, and coverage-conflict evidence with affected WikiNodes and suggested review owner."
-      - "Expired Knowledge page explains expired, expiring, and no-expiry-date WikiNode risks with lifecycle and indexing implications."
-      - "Duplicates page explains duplicate-title and duplicate-content candidates with affected WikiNodes and evidence summaries."
-      - "The three pages use product-facing governance language and do not leak PR boundary, mock, DTO, repository, or implementation terms."
-      - "Quality Issues, Conflicts, Expired Knowledge, and Duplicates read as one coherent quality-governance area."
+      - "Routes without product navigation ownership for Conflicts, Expired Knowledge, and Duplicates are removed from the executable frontend router and route smoke coverage."
+      - "Raw Materials, Sources, Draft WikiNode Suggestion, Publishing, Parser, Settings, and related skeleton pages use business object, state, evidence, and review language instead of visible execution-boundary explanations."
+      - "Quality Issues remains the current governance entry point in the sidebar; future conflict, expiration, and duplicate capabilities stay in roadmap docs until explicitly scoped."
+      - "Playwright checks include negative coverage for visible boundary copy such as execution boundary, current read-only, not provided, not executed, mock, DTO, and repository terms."
       - "Visible copy avoids Chat API, Chatbot, Agent Platform, Workflow Builder, Vector DB Management, and Chunk Management."
     non_goals:
-      - "No backend API, DB migration, automated conflict detection, automated expiration job, duplicate-matching algorithm, resolved or ignore write action, batch operation, export, publishing approval, external vector DB work, embedding, Source import, parser execution, permissions, package change, or dependency change."
+      - "No new product page, backend API, DB migration, automated quality execution, duplicate matching, conflict workflow, expiration job, batch operation, export, publishing approval, external vector DB work, embedding, Source import, parser execution, permissions, package change, or dependency change."

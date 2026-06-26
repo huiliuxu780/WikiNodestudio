@@ -4,6 +4,7 @@ import { mockSourceEvidenceApi } from "./source-api-fixtures"
 import { routeWikiNodeApiFixtures } from "./wiki-node-api-fixtures"
 
 const forbiddenProductTerms = /Chunk Management|Chat API|Chatbot|Agent Platform|Workflow Builder|Vector DB Management/i
+const forbiddenBoundaryCopy = /执行边界|本地占位基线|验收基线|当前只读|当前不|不运行|不提供|不执行|不会执行|当前只展示|真实上传|真实存储|留到后续/i
 
 test.describe("Frontend skeleton IA", () => {
   test.beforeEach(async ({ page }) => {
@@ -83,9 +84,6 @@ test.describe("Frontend skeleton IA", () => {
       ["/node-types", "节点类型"],
       ["/metadata-fields", "元数据字段"],
       ["/quality-issues", "质量问题"],
-      ["/conflicts", "冲突检测"],
-      ["/expired-knowledge", "过期知识"],
-      ["/duplicates", "重复知识"],
       ["/retrieval-evaluation", "召回评测"],
       ["/system/parser-engine", "解析引擎"],
       ["/system/storage-engine", "存储引擎"],
@@ -107,6 +105,15 @@ test.describe("Frontend skeleton IA", () => {
     }
   })
 
+  test("roadmap-only quality routes are not exposed as hidden product pages", async ({ page }) => {
+    for (const route of ["/conflicts", "/expired-knowledge", "/duplicates"]) {
+      await page.goto(route)
+
+      await expect(page).toHaveURL(/\/wiki-nodes\/wn-001/)
+      await expect(page.getByRole("heading", { name: /冲突检测|过期知识|重复知识/ })).toHaveCount(0)
+    }
+  })
+
   test("detail and admin skeleton pages render mapped Chinese statuses", async ({ page }) => {
     await page.goto("/sources/src-feishu-cc")
     await expect(page.getByText("来源类型")).toBeVisible()
@@ -121,7 +128,7 @@ test.describe("Frontend skeleton IA", () => {
     await expect(page.locator("main").last()).not.toContainText(/\bfailed\b|\bparsing\b|\bnot_parsed\b/i)
 
     await page.goto("/raw-materials/rm-001")
-    await expect(page.getByText("解析状态", { exact: true })).toBeVisible()
+    await expect(page.getByText("解析状态", { exact: true }).first()).toBeVisible()
     await expect(page.getByText("解析完成")).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(/\bparseStatus\b|\bnot_parsed\b|\bparsing\b|\bfailed\b/i)
 
@@ -164,33 +171,38 @@ test.describe("Frontend skeleton IA", () => {
     await expect(page.locator("main").last()).not.toContainText(/\bOwner\b|\bEditor\b|\bReviewer\b|\bViewer\b/)
   })
 
-  test("Sources and Raw Materials explain current MVP boundaries", async ({ page }) => {
+  test("Sources and Raw Materials show evidence-chain work surfaces without boundary copy", async ({ page }) => {
     await page.goto("/sources")
     await expect(page.getByText("Source 是原始知识的来源。")).toBeVisible()
-    await expect(page.getByText("当前仅展示本地样例数据，不执行真实同步、上传或解析。")).toBeVisible()
-    await expect(page.getByText("真实 Source import、文件上传和解析任务留到后续阶段。")).toBeVisible()
+    await expect(page.getByText("记录来源类型、负责人、同步状态和最近更新时间。")).toBeVisible()
+    await expect(page.getByText("保留进入标准化处理前的原始材料证据。")).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
     await expect(page.locator("main").last()).not.toContainText(/mock fallback|DTO|repository/i)
+    await expect(page.locator("main").last()).not.toContainText(forbiddenBoundaryCopy)
 
     await page.goto("/sources/src-feishu-cc")
-    await expect(page.getByText("只读来源验收基线")).toBeVisible()
-    await expect(page.getByText("不执行真实同步、授权连接或后台任务。")).toBeVisible()
+    await expect(page.getByText("来源处理状态")).toBeVisible()
+    await expect(page.getByText("按 Source、Raw Material、Parsed Document 和 WikiNode 追踪来源处理进度。")).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+    await expect(page.locator("main").last()).not.toContainText(forbiddenBoundaryCopy)
 
     await page.goto("/raw-materials")
-    await expect(page.getByText("Raw Material 是 Source 同步或上传后的原始快照。", { exact: true })).toBeVisible()
-    await expect(page.getByText("当前不提供文件上传或重新解析。", { exact: true })).toBeVisible()
+    await expect(page.getByText("Raw Material 是 Source 的原始快照。", { exact: true })).toBeVisible()
+    await expect(page.getByText("解析状态用于判断是否已形成 Parsed Document。", { exact: true })).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+    await expect(page.locator("main").last()).not.toContainText(forbiddenBoundaryCopy)
 
     await page.goto("/raw-materials/rm-001")
-    await expect(page.getByText("仅展示原始材料元数据和解析状态。")).toBeVisible()
-    await expect(page.getByText("不提供下载、重新解析或真实存储访问。")).toBeVisible()
+    await expect(page.getByText("材料元数据")).toBeVisible()
+    await expect(page.getByText("来源证据范围")).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+    await expect(page.locator("main").last()).not.toContainText(forbiddenBoundaryCopy)
 
     await page.goto("/raw-materials/rm-001/parsed-result")
     await expect(page.getByText("Parsed Document 是解析后的标准化内容预览。", { exact: true })).toBeVisible()
-    await expect(page.getByText("当前不运行 PDF / Word / 网页 / 数据库 / API 解析。", { exact: true })).toBeVisible()
+    await expect(page.getByText("内容结构用于后续 WikiNode 建议评审。", { exact: true })).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+    await expect(page.locator("main").last()).not.toContainText(forbiddenBoundaryCopy)
   })
 
   test("index status shows Chinese empty state for groups without nodes", async ({ page }) => {
@@ -217,31 +229,32 @@ test.describe("Frontend skeleton IA", () => {
     await expect(page.getByText("SEG-").first()).toBeVisible()
   })
 
-  test("IM051 back-half pages explain publishing, metadata governance, and admin boundaries", async ({ page }) => {
+  test("IM051 back-half pages show publishing, metadata governance, and admin work surfaces", async ({ page }) => {
     await page.goto("/publishing")
     await expect(page.getByRole("heading", { name: "发布与索引" })).toBeVisible()
-    await expect(page.getByText("发布前只读检查")).toBeVisible()
-    await expect(page.getByText("不会执行发布、审批、回滚、批量发布或外部向量同步。")).toBeVisible()
+    await expect(page.getByText("发布前检查")).toBeVisible()
+    await expect(page.getByText("关注发布前的证据完整性、关系完整性和索引准备度。")).toBeVisible()
     await expect(page.getByText("Index Segment 生成状态")).toBeVisible()
-    await expect(page.getByText("外部向量库同步边界")).toBeVisible()
+    await expect(page.getByText("外部向量库同步").first()).toBeVisible()
     await expect(page.getByRole("button", { name: /发布|审批|回滚|同步|重试|批量/ })).toHaveCount(0)
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+    await expect(page.locator("main").last()).not.toContainText(forbiddenBoundaryCopy)
 
     await page.goto("/index-status")
     await expect(page.getByText("索引状态说明")).toBeVisible()
-    await expect(page.getByText("索引失败：需要查看失败原因，但本页不执行重试。")).toBeVisible()
+    await expect(page.getByText("索引失败：需要查看失败原因、关联 WikiNode 和对应 Index Segment。")).toBeVisible()
     await expect(page.getByText("待更新：WikiNode 已变化，需要重新生成或同步 Index Segment。")).toBeVisible()
     await expect(page.getByText("未索引：尚未进入发布或索引流程。")).toBeVisible()
 
     await page.goto("/tags")
     await expect(page.getByText("标签治理基线")).toBeVisible()
     await expect(page.getByText("标签用于筛选、检索和 Index Segment metadata。")).toBeVisible()
-    await expect(page.getByText("当前不提供创建、合并、删除或批量打标签。")).toBeVisible()
+    await expect(page.getByText("标签用于组织 WikiNode、筛选检索结果和补充 Index Segment metadata。")).toBeVisible()
 
     await page.goto("/metadata-fields")
     await expect(page.getByText("元数据字段治理基线")).toBeVisible()
     await expect(page.getByText("字段意图、校验规则、索引参与和检索参与在这里说明。")).toBeVisible()
-    await expect(page.getByText("当前不保存字段配置，不修改 Knowledge Object 模型。")).toBeVisible()
+    await expect(page.getByText("字段定义用于约束 Knowledge Object 信息展示和检索参与方式。")).toBeVisible()
 
     await page.goto("/admin/roles")
     await expect(page.getByText("角色规划基线")).toBeVisible()
@@ -249,12 +262,13 @@ test.describe("Frontend skeleton IA", () => {
 
     await page.goto("/admin/permissions")
     await expect(page.getByText("权限维度规划基线")).toBeVisible()
-    await expect(page.getByText("当前不做鉴权、授权、审批或后端 RBAC。")).toBeVisible()
+    await expect(page.getByText("权限维度用于区分查看、编辑、评审和管理动作。")).toBeVisible()
 
     await page.goto("/admin/audit-logs")
     await expect(page.getByText("审计证据规划基线")).toBeVisible()
-    await expect(page.getByText("当前不写入真实审计日志，不提供导出或删除操作。")).toBeVisible()
+    await expect(page.getByText("审计证据围绕 WikiNode、Index Segment 和检索测试记录。")).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(/auth enforcement|RBAC backend|audit persistence/i)
+    await expect(page.locator("main").last()).not.toContainText(forbiddenBoundaryCopy)
   })
 
   test("IM054 quality issues page renders read-only WikiNode evidence console", async ({ page }) => {
@@ -287,7 +301,7 @@ test.describe("Frontend skeleton IA", () => {
     await expect(page.getByText("证据：Retrieval API 命中弱，需要检查摘要、标签和 Index Segment 证据。")).toBeVisible()
 
     await expect(main.getByRole("button", { name: /检查|修复|批量|导出|发布|同步|审批|重试/ })).toHaveCount(0)
-    await expect(main).not.toContainText(/执行边界|本地占位基线|不运行|不提供|不执行|当前只展示|不自动/)
+    await expect(main).not.toContainText(forbiddenBoundaryCopy)
     await expect(main).not.toContainText(forbiddenProductTerms)
   })
 

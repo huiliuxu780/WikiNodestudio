@@ -28,7 +28,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-The next executable slice is `IM055 Quality Governance Surfaces Baseline`. Each future IM must run on its own branch, complete verification, commit locally, and stop for user confirmation before push or the next IM.
+The current executable slice is `IM055 Frontend IA and Boundary-Copy Correction`. Each future IM must run on its own branch, complete verification, commit locally, and stop for user confirmation before push or the next IM.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -59,4 +59,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Current recommended next step: run `IM055 Quality Governance Surfaces Baseline` after this queue-definition branch is reviewed. IM055 should make Conflicts, Expired Knowledge, and Duplicates PM-readable using existing WikiNode, WikiLink, source-evidence, Index Segment, and retrieval-quality signals while avoiding automated conflict detection, expiration jobs, duplicate-matching algorithms, resolved or ignore write actions, Source import, parser execution, publishing approval, embedding, external vector sync, permissions, export, batch operations, backend schema changes, package changes, and new dependencies.
+Current recommended next step: complete `IM055 Frontend IA and Boundary-Copy Correction`. IM055 removes no-navigation hidden quality routes, keeps Quality Issues as the current governance entry point, and cleans visible UI copy so product pages describe business objects, states, evidence, and review actions instead of implementation boundary explanations. Future conflict detection, expired knowledge, and duplicate knowledge remain roadmap capabilities until explicitly scoped.

@@ -94,12 +94,13 @@ Source / Raw Material / Parsed Document boundary
 
 - Knowledge Base detail/settings.
 - Parser, Storage, Vector Store, Embedding, Health, Publishing, Vector Sync, Index Jobs.
-- Conflicts, Expired Knowledge, Duplicates, Tags, Metadata, Admin Users/Roles/Permissions/Audit.
+- Tags, Metadata, Admin Users/Roles/Permissions/Audit.
 
 ### Deferred
 
 - Real Source import, file upload, external connectors, parser execution, OCR, LLM extraction.
 - Parsed Document write path and real Raw Material storage access.
+- Conflict Detection, Expired Knowledge, and Duplicate Knowledge as standalone product pages or workflows.
 - External vector-store sync execution.
 - Real embedding invocation or vector-store sync.
 - Retrieval API return-shape change to raw segments or chunks.

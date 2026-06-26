@@ -87,7 +87,7 @@ test.describe("Index Segment Knowledge Object experience", () => {
 
     await page.goto("/index-segments/strategy")
     await expect(page.getByText("生成链路：WikiNode / Knowledge Object -> Index Segment -> 外部向量库同步证据。")).toBeVisible()
-    await expect(page.getByText("本页只说明受控片段策略，不运行 embedding、不写入外部向量库。")).toBeVisible()
+    await expect(page.getByText("片段策略用于约束召回证据的来源、粒度、父级 WikiNode 绑定和外部同步前的检查口径。")).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(/Chunk Management|Vector DB Management|raw chunk/i)
 
     await page.goto("/index-segments/debug")

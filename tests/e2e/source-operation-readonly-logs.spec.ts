@@ -72,7 +72,7 @@ test.describe("Source Operation read-only logs", () => {
     await page.goto("/sources/src-api-only")
 
     await expect(page.getByRole("heading", { name: "操作日志" })).toBeVisible()
-    await expect(page.getByText("只读操作日志，不会启动同步、上传、解析或重试。")).toBeVisible()
+    await expect(page.getByText("按时间查看来源处理动作、处理状态、关联对象和错误摘要。")).toBeVisible()
     await expect(page.getByText("来源同步")).toBeVisible()
     await expect(page.getByText("解析 Raw Material")).toBeVisible()
     await expect(page.getByText("执行人 system")).toHaveCount(2)
@@ -90,6 +90,6 @@ test.describe("Source Operation read-only logs", () => {
     await expect(page.getByText("解析 Raw Material")).toBeVisible()
     await expect(page.getByText("解析失败")).toBeVisible()
     await expect(page.getByText("解析器未在当前阶段启用。")).toBeVisible()
-    await expect(page.getByText("不会启动同步、上传、解析或重试。")).toBeVisible()
+    await expect(page.getByText("按时间查看来源处理动作、处理状态、关联对象和错误摘要。")).toBeVisible()
   })
 })
