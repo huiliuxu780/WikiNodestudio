@@ -2,7 +2,7 @@
 
 ## Current Stage
 
-WikiNode Studio is in Phase 2 execution after the MVP v0.2 baseline and the post-baseline Source, Draft WikiNode Suggestion, and Index Segment read-only API increments.
+WikiNode Studio is in Phase 2 execution after the MVP v0.2 baseline, Source / Raw Material / Parsed Document increments, Draft WikiNode Suggestion increments, and the first Phase 2 API / Index Segment / Retrieval / governance back-half increments.
 
 ## Product Direction
 
@@ -12,7 +12,7 @@ The full product scope is captured in `docs/current/PRODUCT_SCOPE.md`; the roadm
 
 ## Active Boundary
 
-The product baseline includes the React frontend MVP, Spring Boot API, PostgreSQL + Flyway persistence, reset/seed scripts, API smoke, GitHub Actions baseline CI, v0.2 release documentation, Playwright browser coverage, Source / Raw Material / Parsed Document read-only APIs, Draft WikiNode Suggestion review APIs, and Index Segment read-only APIs.
+The product baseline includes the React frontend MVP, Spring Boot API, PostgreSQL + Flyway persistence, reset/seed scripts, API smoke, GitHub Actions baseline CI, v0.2 release documentation, Playwright browser coverage, Source / Raw Material / Parsed Document read-only APIs, Draft WikiNode Suggestion review APIs, WikiNode Knowledge Object API alignment, Index Segment generation and trace evidence, Retrieval API debug evidence, and the publishing / metadata governance / admin planning baseline.
 
 Current development must stay inside confirmed task scope. The standing MVP exclusions remain: no real Source import, file upload, parser execution, vector database implementation, embedding invocation, product-facing Chunk Management, permissions, version management, audit implementation, or publishing approval flow unless explicitly approved by the user.
 
@@ -28,7 +28,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-Each IM must run on its own branch, complete verification, commit locally, and stop for user confirmation before push or the next IM.
+There is no current executable IM after the IM048-IM051 sequence. The next implementation slice must be explicitly defined before opening a new branch. Each future IM must run on its own branch, complete verification, commit locally, and stop for user confirmation before push or the next IM.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -59,4 +59,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Recommended sequencing: run `IM048` first, then continue through `IM049`, `IM050`, and `IM051` only after each prior IM has been reviewed, pushed, and merged. Keep IM051 as a back-half baseline instead of splitting publishing, metadata governance, and admin planning into tiny tasks.
+Current recommended next step: define the next medium-granularity Phase 2 capability slice before implementation. Good candidates should be chosen from `docs/current/PRODUCT_SCOPE.md`, `docs/current/FEATURE_MAP.md`, and the updated release evidence, and must avoid reopening Source import, parser execution, publishing approval, embedding, external vector sync, permissions, export, or batch operations unless explicitly approved.

@@ -24,6 +24,21 @@ The expected `main` baseline after IM022 is:
 dec1f45 Merge IM022 Index Segment preview and debug completion
 ```
 
+## Phase 2 Increment Update
+
+After the MVP v0.2 baseline, the first Phase 2 implementation sequence has also been merged:
+
+- `IM048` WikiNode Knowledge Object API alignment.
+- `IM049` Index Segment generation and trace model.
+- `IM050` Retrieval API debug evidence, query logs, and evaluation cases.
+- `IM051` Publishing, index, metadata governance, and admin planning baseline.
+
+The expected `main` baseline after IM051 is:
+
+```text
+bc40f07 Merge pull request #46 from huiliuxu780/codex/im051-publishing-index-governance-admin-baseline
+```
+
 ## Product Scope
 
 MVP v0.2 is a manually acceptable WikiNode-centered product prototype. It keeps the core product story stable:
@@ -44,6 +59,9 @@ Source / Raw Material / Parsed Document boundary
 - PostgreSQL + Flyway schema and seed flow.
 - `scripts/reset-db.sh` and `scripts/api-smoke.sh`.
 - GitHub Actions backend/frontend baseline CI.
+- WikiNode Knowledge Object fields aligned across Java, DB, API, frontend types/services, detail/editor surfaces, and tests.
+- Deterministic local Index Segment generation with trace evidence tied to WikiNode content and source refs.
+- Retrieval API debug evidence, minimal query logs, and evaluation case evidence while preserving WikiNode-first normal results.
 - shadcn sidebar application shell and product navigation.
 - WikiNode list, create, editor, detail, Markdown preview, save feedback, local publish/re-index feedback.
 - WikiLink parsing, backlinks, broken links, and resolved/broken preview badges.
@@ -59,6 +77,7 @@ Source / Raw Material / Parsed Document boundary
 - WikiNode Detail and Inspector display of Knowledge Object fields: `objectType`, `subtype`, `metadata`, `sourceRefs`, `relations`, and `processingProfile`.
 - Index Segment list, preview, strategy, debug, and editor Segments tab.
 - Index Status grouping by WikiNode index state.
+- Publishing, Index Status, Tags / Metadata, Roles, Permissions, and Audit Logs as read-only planning/boundary surfaces.
 
 ### Visual Skeleton
 
@@ -69,12 +88,11 @@ Source / Raw Material / Parsed Document boundary
 ### Deferred
 
 - Real Source import, file upload, external connectors, parser execution, OCR, LLM extraction.
-- Parsed Document backend model and real Raw Material storage access.
-- Java/DB/API expansion for Knowledge Object or Index Segment.
-- Real Index Segment generation engine.
+- Parsed Document write path and real Raw Material storage access.
+- External vector-store sync execution.
 - Real embedding invocation or vector-store sync.
 - Retrieval API return-shape change to raw segments or chunks.
-- Query log persistence and evaluation runner.
+- Full query log analytics and evaluation runner.
 - Permissions, roles, audit implementation, publishing approval, export, and batch operations.
 
 ## Product Boundaries
@@ -119,12 +137,26 @@ Playwright: 26 passed
 git diff --check origin/main..HEAD: passed
 ```
 
+Latest local evidence from IM051:
+
+```text
+pnpm lint: passed
+pnpm build: passed, with existing Vite chunk size warning
+bash scripts/check.sh: passed
+Playwright: 51 passed
+git diff --check origin/main..HEAD: passed
+```
+
 GitHub evidence:
 
 - IM019 PR #13 checks passed and merged.
 - IM020 PR #14 checks passed and merged.
 - IM021 PR #15 checks passed and merged.
 - IM022 PR #16 checks passed and merged.
+- IM048 PR #43 checks passed and merged.
+- IM049 PR #44 checks passed and merged.
+- IM050 PR #45 checks passed and merged.
+- IM051 PR #46 checks passed and merged.
 
 ## Manual Acceptance Routes
 
@@ -147,23 +179,27 @@ Use `docs/release/mvp-v0.2-acceptance-checklist.md` for step-by-step acceptance.
 - `/index-segments/strategy`
 - `/index-segments/debug`
 - `/index-status`
+- `/publishing`
+- `/tags`
+- `/metadata-fields`
 - `/settings`
 - `/admin/roles`
+- `/admin/permissions`
+- `/admin/audit-logs`
 
 ## Known Limits
 
-- Frontend services still use local mock services for several product surfaces.
-- Backend CRUD and API smoke exist for the earlier WikiNode baseline, but v0.2 frontend mock surfaces are not fully wired to Java APIs.
+- Some navigation modules remain read-only planning surfaces instead of executable workflows.
+- Real Source import, parser execution, publishing approval, external vector sync, permissions, audit persistence, export, and batch operations remain explicitly deferred.
 - Vite production build reports an existing chunk size warning.
 - Current broad navigation intentionally includes skeleton modules that are not real business workflows.
 
 ## Phase 2 Backlog
 
-1. Source / Raw Material / Parsed Document model and import planning.
-2. Java/DB/API alignment for Knowledge Object and Index Segment.
-3. Real Index Segment generation and trace model.
-4. Retrieval API alignment for debug evidence and persisted query logs.
-5. Publishing/index job model and external vector-store sync boundary.
-6. Quality/evaluation runner.
-7. Tags/metadata schema management.
-8. Users, roles, permissions, and audit planning.
+1. Source import, upload, parser execution, and Parsed Document write path.
+2. External vector-store sync boundary and execution design.
+3. Publishing/index job model beyond the read-only baseline.
+4. Retrieval evaluation runner and query log analytics beyond minimal evidence.
+5. Quality issue and retrieval evaluation workflows.
+6. Tags/metadata schema management beyond the planning baseline.
+7. Users, roles, permissions, and audit implementation beyond the planning baseline.

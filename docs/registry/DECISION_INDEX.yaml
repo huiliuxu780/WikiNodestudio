@@ -1,5 +1,48 @@
 version: 1
 decisions:
+  - id: D052
+    date: "2026-06-26"
+    title: "Close the current Phase 2 execution queue after IM048 through IM051"
+    rationale: "After PR #43 through PR #46 merged IM048, IM049, IM050, and IM051 into main, the current executable queue still listed those completed stories and tasks as ready. IM052 clears current ready stories and tasks, moves completion evidence into release documentation, and adds registry lookup entries so the next Phase 2 slice must be explicitly defined instead of continuing from stale current-state files."
+    related:
+      - IM052
+      - IM048
+      - IM049
+      - IM050
+      - IM051
+      - PHASE2_CURRENT_QUEUE_CLOSURE
+      - MVP_V0_2
+  - id: D051
+    date: "2026-06-26"
+    title: "Keep publishing, metadata governance, roles, permissions, and audit as planning surfaces"
+    rationale: "IM051 creates a back-half governance baseline for publishing readiness, Index Segment status explanation, metadata governance, roles, permissions, and audit evidence without implementing publish execution, approval, rollback, external vector sync, auth enforcement, RBAC backend, audit persistence, export, delete, or batch operations."
+    related:
+      - IM051
+      - PUBLISHING_GOVERNANCE_ADMIN_BASELINE
+      - MVP_V0_2
+  - id: D050
+    date: "2026-06-26"
+    title: "Add Retrieval API debug evidence without changing WikiNode-first retrieval"
+    rationale: "IM050 aligns Retrieval API and Retrieval Test around WikiNode-first normal results, debug-mode matchedSegments evidence, minimal query logs, and evaluation case evidence while keeping Chat API, Chatbot, answer generation, raw chunks as primary results, external vector database implementation, complex scoring, export, and batch automation out of scope."
+    related:
+      - IM050
+      - RETRIEVAL_API_DEBUG_EVIDENCE
+  - id: D049
+    date: "2026-06-26"
+    title: "Implement deterministic local Index Segment generation and trace evidence"
+    rationale: "IM049 turns Index Segment from a read-only sample into a controlled local generation and trace model tied to WikiNode content, Knowledge Object metadata, source refs, and segment evidence while keeping embedding, external vector-store writes, real publish flow, approval, batch operation, and Chunk Management naming out of scope."
+    related:
+      - IM049
+      - INDEX_SEGMENT_GENERATION_TRACE_MODEL
+      - WIKINODE_KNOWLEDGE_OBJECT_API_ALIGNMENT
+  - id: D048
+    date: "2026-06-26"
+    title: "Align WikiNode Knowledge Object fields across API and UI"
+    rationale: "IM048 aligns WikiNode Knowledge Object fields across Java, database, API, frontend services, detail/editor surfaces, and tests while preserving WikiNode as the managed business object and keeping Source import, parser execution, publishing approval, embedding, vector sync, permissions, package changes, and dependencies out of scope."
+    related:
+      - IM048
+      - WIKINODE_KNOWLEDGE_OBJECT_API_ALIGNMENT
+      - KNOWLEDGE_OBJECT_MODEL_SPEC
   - id: D043
     date: "2026-06-25"
     title: "Polish Draft WikiNode Suggestion review flow after accept and reject"

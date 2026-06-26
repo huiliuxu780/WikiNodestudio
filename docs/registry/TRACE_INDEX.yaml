@@ -181,6 +181,69 @@ phase2_plans:
     api_contract_test: src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
     repository_test: src/test/java/com/wikinode/studio/repository/JdbcWikiNodeRepositoryTest.java
     playwright: tests/e2e/parser-profile-readonly-registry.spec.ts
+  WIKINODE_KNOWLEDGE_OBJECT_API_ALIGNMENT:
+    decision: D048
+    model_spec: docs/current/KNOWLEDGE_OBJECT_MODEL_SPEC.md
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    model: src/main/java/com/wikinode/studio/model/WikiNode.java
+    repository: src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
+    migration: src/main/resources/db/migration/V8__align_wikinode_knowledge_object_fields.sql
+    frontend_service: src/services/wiki-node-api-service.ts
+    frontend_pages: src/pages/skeleton-pages.tsx
+    api_contract_test: src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+    repository_test: src/test/java/com/wikinode/studio/repository/JdbcWikiNodeRepositoryTest.java
+    playwright: tests/e2e/wikinode-knowledge-object-metadata.spec.ts
+  INDEX_SEGMENT_GENERATION_TRACE_MODEL:
+    decision: D049
+    model_spec: docs/current/KNOWLEDGE_OBJECT_MODEL_SPEC.md
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    model: src/main/java/com/wikinode/studio/model/IndexSegment.java
+    repository: src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
+    migrations:
+      - src/main/resources/db/migration/V7__create_index_segment_schema.sql
+      - src/main/resources/db/migration/V9__add_index_segment_trace_metadata.sql
+    frontend_service: src/services/index-segment-api-service.ts
+    frontend_components: src/components/segments
+    frontend_pages: src/pages/skeleton-pages.tsx
+    api_contract_test: src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+    repository_test: src/test/java/com/wikinode/studio/repository/JdbcWikiNodeRepositoryTest.java
+    playwright: tests/e2e/index-segment-knowledge-object.spec.ts
+  RETRIEVAL_API_DEBUG_EVIDENCE:
+    decision: D050
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    models:
+      - src/main/java/com/wikinode/studio/model/RetrievalQuery.java
+      - src/main/java/com/wikinode/studio/model/RetrievalResult.java
+      - src/main/java/com/wikinode/studio/model/RetrievalMatchedSegment.java
+      - src/main/java/com/wikinode/studio/model/RetrievalLog.java
+      - src/main/java/com/wikinode/studio/model/RetrievalEvaluationCase.java
+    repository: src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
+    frontend_service: src/services/retrieval-api-service.ts
+    frontend_components: src/components/retrieval
+    frontend_page: src/pages/retrieval-test-page.tsx
+    api_contract_test: src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+    playwright: tests/e2e/retrieval-test-debug.spec.ts
+  PUBLISHING_GOVERNANCE_ADMIN_BASELINE:
+    decision: D051
+    release: docs/release/mvp-baseline-v0.2.md
+    acceptance: docs/release/mvp-v0.2-acceptance-checklist.md
+    frontend_pages:
+      - src/pages/skeleton-pages.tsx
+      - src/pages/index-status-page.tsx
+    playwright: tests/e2e/frontend-skeleton.spec.ts
+  PHASE2_CURRENT_QUEUE_CLOSURE:
+    decision: D052
+    current_state:
+      - docs/current/PROJECT_CONTEXT.md
+      - docs/current/STORY_QUEUE.yaml
+      - docs/current/ACTIVE_TASKS.yaml
+      - docs/current/BLOCKERS.md
+    release:
+      - docs/release/mvp-baseline-v0.2.md
+      - docs/release/mvp-v0.2-acceptance-checklist.md
+    registry:
+      - docs/registry/TRACE_INDEX.yaml
+      - docs/registry/DECISION_INDEX.yaml
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
@@ -258,6 +321,21 @@ tasks:
   IM032:
     decision: D032
     plan: FILE_UPLOAD_CONSTRAINT_PLAN
+  IM048:
+    decision: D048
+    implementation: WIKINODE_KNOWLEDGE_OBJECT_API_ALIGNMENT
+  IM049:
+    decision: D049
+    implementation: INDEX_SEGMENT_GENERATION_TRACE_MODEL
+  IM050:
+    decision: D050
+    implementation: RETRIEVAL_API_DEBUG_EVIDENCE
+  IM051:
+    decision: D051
+    implementation: PUBLISHING_GOVERNANCE_ADMIN_BASELINE
+  IM052:
+    decision: D052
+    implementation: PHASE2_CURRENT_QUEUE_CLOSURE
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN

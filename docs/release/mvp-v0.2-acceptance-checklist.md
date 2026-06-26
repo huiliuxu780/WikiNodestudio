@@ -88,6 +88,19 @@ Use this checklist to verify the MVP v0.2 baseline before demo, handoff, or rele
 - [ ] Open `/wiki-nodes/wn-013`, select Inspector `片段`, and confirm object/source evidence appears.
 - [ ] Confirm no product copy says `Chunk Management` or `Vector DB Management`.
 
+## Phase 2 API And Governance Baseline
+
+- [ ] Open `/publishing`.
+- [ ] Confirm the page explains publishing readiness, Index Segment generation state, and external vector-store sync boundaries without exposing publish, approval, rollback, sync, retry, or batch execution buttons.
+- [ ] Open `/index-status`.
+- [ ] Confirm the page explains `索引失败`, `待更新`, and `未索引` states without exposing retry execution.
+- [ ] Open `/tags`.
+- [ ] Confirm tags are described as filtering, retrieval, and Index Segment metadata signals, not as a live tag-management workflow.
+- [ ] Open `/metadata-fields`.
+- [ ] Confirm metadata fields describe field intent, validation, indexing, and retrieval participation without modifying the Knowledge Object model.
+- [ ] Open `/admin/roles`, `/admin/permissions`, and `/admin/audit-logs`.
+- [ ] Confirm these surfaces explain collaboration, permission dimensions, and audit evidence requirements without auth enforcement, RBAC backend, audit persistence, export, delete, or approval actions.
+
 ## Release Boundary
 
 - [ ] Confirm no real Source import exists.
