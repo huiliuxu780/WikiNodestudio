@@ -213,7 +213,7 @@ test.describe("Frontend skeleton IA", () => {
     await expect(page.getByText("Retrieval API 返回知识节点，调试模式仅展示命中的索引片段证据。")).toBeVisible()
     await page.getByLabel("调试模式").click()
     await page.getByRole("button", { name: "检索" }).click()
-    await expect(page.getByText("命中的 Index Segment").nth(1)).toBeVisible()
+    await expect(page.getByText("命中的 Index Segment").first()).toBeVisible()
     await expect(page.getByText("SEG-").first()).toBeVisible()
   })
 

@@ -13,6 +13,10 @@ import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.DraftWikiNodeRelationCandidate;
 import com.wikinode.studio.model.DraftWikiNodeSuggestion;
+import com.wikinode.studio.model.RetrievalEvaluationCase;
+import com.wikinode.studio.model.RetrievalEvaluationRunResult;
+import com.wikinode.studio.model.RetrievalLog;
+import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.SourceItem;
 import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.SourceRef;
@@ -309,6 +313,92 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
     for (IndexSegment segment : segments) {
       insertIndexSegment(segment);
     }
+  }
+
+  @Override
+  protected List<RetrievalLog> loadRetrievalLogs() {
+    return jdbcTemplate.query(
+      """
+      select log_id, query_text, filters_json, returned_node_ids, matched_segment_ids,
+             latency_ms, status, error_summary, created_at
+      from retrieval_query_logs
+      order by created_at desc
+      """,
+      (resultSet, rowNumber) -> new RetrievalLog(
+        resultSet.getString("log_id"),
+        resultSet.getString("query_text"),
+        filtersFromJson(resultSet.getString("filters_json")),
+        splitCsv(resultSet.getString("returned_node_ids")),
+        splitCsv(resultSet.getString("matched_segment_ids")),
+        resultSet.getLong("latency_ms"),
+        resultSet.getString("status"),
+        resultSet.getString("error_summary"),
+        resultSet.getString("created_at")
+      )
+    );
+  }
+
+  @Override
+  protected void insertRetrievalLog(RetrievalLog log) {
+    jdbcTemplate.update(
+      """
+      insert into retrieval_query_logs (
+        log_id, query_text, filters_json, returned_node_ids, matched_segment_ids,
+        latency_ms, status, error_summary, created_at
+      ) values (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      """,
+      log.logId(),
+      log.query(),
+      filtersToJson(log.filters()),
+      joinCsv(log.returnedNodeIds()),
+      joinCsv(log.matchedSegmentIds()),
+      log.latencyMs(),
+      log.status(),
+      log.errorSummary(),
+      log.createdAt()
+    );
+  }
+
+  @Override
+  protected List<RetrievalEvaluationCase> loadRetrievalEvaluationCases() {
+    return jdbcTemplate.query(
+      """
+      select case_id, query_text, filters_json, top_k, expected_node_ids,
+             returned_node_ids, matched_segment_ids, run_status, run_summary,
+             created_at, updated_at
+      from retrieval_evaluation_cases
+      order by created_at desc, case_id
+      """,
+      (resultSet, rowNumber) -> mapRetrievalEvaluationCase(resultSet)
+    );
+  }
+
+  @Override
+  protected void insertRetrievalEvaluationCase(RetrievalEvaluationCase evaluationCase) {
+    jdbcTemplate.update(
+      "delete from retrieval_evaluation_cases where case_id = ?",
+      evaluationCase.caseId()
+    );
+    jdbcTemplate.update(
+      """
+      insert into retrieval_evaluation_cases (
+        case_id, query_text, filters_json, top_k, expected_node_ids,
+        returned_node_ids, matched_segment_ids, run_status, run_summary,
+        created_at, updated_at
+      ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      """,
+      evaluationCase.caseId(),
+      evaluationCase.query(),
+      filtersToJson(evaluationCase.filters()),
+      evaluationCase.topK(),
+      joinCsv(evaluationCase.expectedNodeIds()),
+      joinCsv(evaluationCase.runResult().returnedNodeIds()),
+      joinCsv(evaluationCase.runResult().matchedSegmentIds()),
+      evaluationCase.runResult().status(),
+      evaluationCase.runResult().summary(),
+      evaluationCase.createdAt(),
+      evaluationCase.updatedAt()
+    );
   }
 
   @Override
@@ -723,6 +813,58 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       return List.of();
     }
     return Arrays.stream(value.split(",")).map(String::trim).filter(item -> !item.isBlank()).toList();
+  }
+
+  private String joinCsv(List<String> values) {
+    if (values == null || values.isEmpty()) {
+      return "";
+    }
+    return String.join(",", values);
+  }
+
+  private RetrievalEvaluationCase mapRetrievalEvaluationCase(ResultSet resultSet) throws SQLException {
+    RetrievalEvaluationRunResult runResult = new RetrievalEvaluationRunResult(
+      splitCsv(resultSet.getString("returned_node_ids")),
+      splitCsv(resultSet.getString("matched_segment_ids")),
+      resultSet.getString("run_status"),
+      resultSet.getString("run_summary")
+    );
+    return new RetrievalEvaluationCase(
+      resultSet.getString("case_id"),
+      resultSet.getString("query_text"),
+      filtersFromJson(resultSet.getString("filters_json")),
+      resultSet.getInt("top_k"),
+      splitCsv(resultSet.getString("expected_node_ids")),
+      runResult,
+      resultSet.getString("created_at"),
+      resultSet.getString("updated_at")
+    );
+  }
+
+  @SuppressWarnings("unchecked")
+  private RetrievalQuery.RetrievalFilters filtersFromJson(String json) {
+    Map<String, Object> values = metadataFromJson(json);
+    Object tags = values.get("tags");
+    return new RetrievalQuery.RetrievalFilters(
+      stringValue(values.get("nodeType")),
+      stringValue(values.get("status")),
+      tags instanceof List<?> tagList ? tagList.stream().map(String::valueOf).toList() : List.of()
+    );
+  }
+
+  private String filtersToJson(RetrievalQuery.RetrievalFilters filters) {
+    if (filters == null) {
+      return "{}";
+    }
+    Map<String, Object> values = new LinkedHashMap<>();
+    values.put("nodeType", filters.nodeType());
+    values.put("status", filters.status());
+    values.put("tags", filters.tags() == null ? List.of() : filters.tags());
+    return toJson(values);
+  }
+
+  private String stringValue(Object value) {
+    return value == null ? null : String.valueOf(value);
   }
 
   private Double getNullableDouble(ResultSet resultSet, String columnLabel) throws SQLException {

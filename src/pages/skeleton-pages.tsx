@@ -86,7 +86,7 @@ const routeCards = {
   索引任务: ["已索引", "待更新", "索引失败"],
   召回调试: ["查询链路", "命中的 Index Segment", "WikiNode 结果映射"],
   "Retrieval API 文档": ["POST /api/knowledge/retrieve", "WikiNode 结果", "调试模式 matchedSegments"],
-  查询日志: mockRetrievalLogs.map((log) => `${log.query} -> ${log.topNodeTitle}`),
+  查询日志: mockRetrievalLogs.map((log) => `${log.query} -> ${log.returnedNodeIds[0] ?? "未命中"}`),
   评测用例: ["保修收费", "人为损坏", "预约改约"],
   标签与元数据: ["保修", "收费", "洗碗机", "人为损坏"],
   节点类型: ["policy", "procedure", "guide", "fee_rule"].map((value) => labelFromMap(nodeTypeLabels, value)),

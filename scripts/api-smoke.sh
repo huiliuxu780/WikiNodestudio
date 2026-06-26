@@ -379,6 +379,74 @@ if (retrieval.some((result) => Object.prototype.hasOwnProperty.call(result, "doc
   throw new Error("POST /api/retrieval-test: FAIL response exposed document")
 }
 
+const retrievalDebug = await request("POST /api/retrieval-test debug", "/retrieval-test", {
+  method: "POST",
+  body: JSON.stringify({
+    query: "保修期内维修",
+    filters: {},
+    topK: 3,
+    debug: true,
+  }),
+})
+
+if (!Array.isArray(retrievalDebug) || !retrievalDebug.some((result) => result.node?.nodeId === "wn-001")) {
+  throw new Error("POST /api/retrieval-test debug: FAIL expected WikiNode wn-001")
+}
+
+const debugMatch = retrievalDebug.find((result) => result.node?.nodeId === "wn-001")
+if (!Array.isArray(debugMatch?.matchedSegments) || !debugMatch.matchedSegments.some((segment) => segment.segmentId === "seg-001" && Array.isArray(segment.sourceRefIds))) {
+  throw new Error("POST /api/retrieval-test debug: FAIL expected matched Index Segment evidence")
+}
+
+if (JSON.stringify(retrievalDebug).includes("chunk") || JSON.stringify(retrievalDebug).includes("Chat API")) {
+  throw new Error("POST /api/retrieval-test debug: FAIL response exposed forbidden product wording")
+}
+
+const retrievalLogs = await request("GET /api/retrieval-test/logs", "/retrieval-test/logs")
+if (
+  !Array.isArray(retrievalLogs) ||
+  !retrievalLogs.some((log) =>
+    log.query === "保修期内维修" &&
+    Array.isArray(log.returnedNodeIds) &&
+    log.returnedNodeIds.includes("wn-001") &&
+    Array.isArray(log.matchedSegmentIds) &&
+    log.matchedSegmentIds.includes("seg-001") &&
+    typeof log.latencyMs === "number" &&
+    log.status === "succeeded"
+  )
+) {
+  throw new Error("GET /api/retrieval-test/logs: FAIL expected Retrieval API evidence log")
+}
+
+const evaluationCaseId = `api-smoke-eval-${Date.now()}`
+const evaluationCase = await request("POST /api/retrieval-test/evaluation-cases", "/retrieval-test/evaluation-cases", {
+  method: "POST",
+  body: JSON.stringify({
+    caseId: evaluationCaseId,
+    query: "保修期内维修",
+    filters: {},
+    topK: 3,
+    expectedNodeIds: ["wn-001"],
+  }),
+})
+
+if (
+  evaluationCase.caseId !== evaluationCaseId ||
+  !Array.isArray(evaluationCase.expectedNodeIds) ||
+  !evaluationCase.expectedNodeIds.includes("wn-001") ||
+  evaluationCase.runResult?.status !== "passed" ||
+  !Array.isArray(evaluationCase.runResult?.matchedSegmentIds) ||
+  !evaluationCase.runResult.matchedSegmentIds.includes("seg-001")
+) {
+  throw new Error("POST /api/retrieval-test/evaluation-cases: FAIL expected evaluation evidence")
+}
+
+const evaluationCases = await request("GET /api/retrieval-test/evaluation-cases", "/retrieval-test/evaluation-cases")
+if (!Array.isArray(evaluationCases) || !evaluationCases.some((item) => item.caseId === evaluationCaseId)) {
+  throw new Error("GET /api/retrieval-test/evaluation-cases: FAIL expected saved evaluation case")
+}
+
 console.log("Retrieval node contract: PASS node=true chunk=false document=false")
+console.log("Retrieval evidence contract: PASS debug=true logs=true evaluation=true")
 console.log("API smoke: PASS")
 NODE

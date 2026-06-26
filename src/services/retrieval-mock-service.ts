@@ -55,9 +55,12 @@ export function searchWikiNodes(query: RetrievalQuery): RetrievalResult[] {
               .slice(0, 2)
               .map((segment) => ({
                 segmentId: segment.segmentId,
+                nodeId: segment.nodeId,
                 segmentType: segment.segmentType,
                 score: Math.max(0.55, score - 0.05),
                 contentPreview: segment.contentPreview,
+                sourceRefIds: segment.sourceRefIds,
+                metadataSummary: segment.metadataSummary,
               }))
           : undefined,
       }
