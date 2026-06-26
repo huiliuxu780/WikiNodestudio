@@ -10,6 +10,7 @@ import { mockUsers } from "@/data/mock-users"
 import { mockWikiNodes } from "@/data/mock-wiki-nodes"
 import { ApiErrorNotice } from "@/components/api-error-notice"
 import { PageHeader } from "@/components/layout/page-header"
+import { QualityIssueConsole } from "@/components/quality/quality-issue-console"
 import { SegmentDebugPanel } from "@/components/segments/segment-debug-panel"
 import { SegmentStrategyCard } from "@/components/segments/segment-strategy-card"
 import { IndexSegmentTable } from "@/components/segments/index-segment-table"
@@ -1038,11 +1039,16 @@ export function SegmentDebugPage() {
 }
 
 export function GenericSkeletonPage({ title, description }: { title: keyof typeof routeCards | string; description?: string }) {
+  const isQualityIssuePage = title === "质量问题"
+
   return (
     <PageScaffold title={title} description={description ?? "当前页是 WikiNode Studio 产品信息架构的本地占位基线。"}>
-      <SimpleList items={(routeCards as Record<string, string[]>)[title] ?? ["本地占位模块", "导航目标", "当前不连接真实后端"]} />
+      {isQualityIssuePage ? null : (
+        <SimpleList items={(routeCards as Record<string, string[]>)[title] ?? ["本地占位模块", "导航目标", "当前不连接真实后端"]} />
+      )}
       <SkeletonBoundaryContent title={title} />
       <RetrievalEvaluationConsoleContent title={title} />
+      {isQualityIssuePage ? <QualityIssueConsole issues={mockQualityIssues} /> : null}
     </PageScaffold>
   )
 }
