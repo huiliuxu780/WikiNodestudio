@@ -59,4 +59,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Recommended sequencing: run `IM048` first, then continue through `IM049`, `IM050`, `IM051`, `IM052`, `IM053`, and `IM054` only after each prior IM has been reviewed, pushed, and merged.
+Recommended sequencing: run `IM048` first, then continue through `IM049`, `IM050`, and `IM051` only after each prior IM has been reviewed, pushed, and merged. Keep IM051 as a back-half baseline instead of splitting publishing, metadata governance, and admin planning into tiny tasks.

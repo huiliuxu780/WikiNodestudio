@@ -29,51 +29,26 @@ stories:
     non_goals:
       - "No external vector-store sync, embedding invocation, real publish workflow, approval flow, or Chunk Management naming."
   - id: US050
-    title: "Retrieval API debug evidence and query logs"
+    title: "Retrieval API debug evidence, query logs, and evaluation cases"
     status: ready
-    goal: "Align Retrieval API and Retrieval Test so normal mode returns WikiNodes and debug mode shows matched Index Segment evidence plus persisted query log basics."
+    goal: "Align Retrieval API and Retrieval Test so normal mode returns WikiNodes, debug mode shows matched Index Segment evidence, and basic query logs/evaluation cases are verifiable."
     acceptance:
       - "Normal retrieval remains WikiNode-first."
       - "Debug retrieval can expose matchedSegments and trace evidence without making segments the primary result."
       - "Query logs capture query, filters, returned WikiNodes, matched segments, latency, status, and error summary at a minimum."
+      - "Evaluation cases can store test query, expected WikiNodes, and run result evidence."
       - "Retrieval Test uses the aligned API and keeps product copy clear."
     non_goals:
-      - "No Chat API, Chatbot, answer generation, raw chunk response, external vector DB implementation, or evaluation runner."
+      - "No Chat API, Chatbot, answer generation, raw chunk response, external vector DB implementation, complex scoring engine, export, or batch automation."
   - id: US051
-    title: "Publishing and index job boundary"
+    title: "Publishing, index job, metadata governance, and admin planning baseline"
     status: ready
-    goal: "Define a read-only publishing/index job boundary that shows readiness, validation, segment generation status, and external vector-sync boundary without executing production publishing."
+    goal: "Create a Phase 2 back-half baseline for publishing/index readiness, metadata governance, and admin/audit planning without implementing full production workflows."
     acceptance:
       - "Publishing and index pages distinguish readiness checks, Index Segment generation state, and external vector sync boundary."
-      - "Job/status model is verifiable without invoking external vector stores."
+      - "Job/status baseline is understandable without invoking external vector stores."
       - "Index Status and related pages can explain failed/outdated/not_indexed cases clearly."
+      - "Tags and metadata governance define schema intent, display labels, validation rules, and retrieval/index participation."
+      - "Roles, permissions, and audit surfaces define intended dimensions and evidence requirements without enforcement."
     non_goals:
-      - "No approval workflow, batch publish, rollback, external vector sync, embedding, or destructive operation."
-  - id: US052
-    title: "Quality and evaluation console"
-    status: ready
-    goal: "Create a verifiable quality/evaluation console based on WikiNode, WikiLink, Index Segment, and Retrieval evidence."
-    acceptance:
-      - "Quality issues can represent missing summary, missing sourceRefs, broken links, stale Index Segments, and metadata gaps."
-      - "Evaluation cases can store test query, expected WikiNodes, and run result evidence."
-      - "Console stays read-only or minimally interactive until scoring rules are explicitly approved."
-    non_goals:
-      - "No complex scoring engine, export, batch operations, or production quality automation."
-  - id: US053
-    title: "Tags and metadata governance"
-    status: ready
-    goal: "Add governance surfaces for tags, metadata fields, objectType/subtype display rules, and filter participation after core Knowledge Object alignment."
-    acceptance:
-      - "Tags and metadata field pages show schema intent, display labels, validation rules, and retrieval/index participation."
-      - "Changes stay aligned with Knowledge Object model and do not create a separate object system."
-    non_goals:
-      - "No permission boundary, approval workflow, or broad schema designer beyond confirmed metadata governance."
-  - id: US054
-    title: "Admin roles permissions audit planning"
-    status: ready
-    goal: "Plan users, roles, permissions, and audit logs as a bounded governance capability without enforcing authentication or authorization."
-    acceptance:
-      - "Roles, permissions, and audit surfaces define intended dimensions and evidence requirements."
-      - "Any implementation remains read-only/planning unless auth enforcement is separately confirmed."
-    non_goals:
-      - "No auth enforcement, login flow, permission checks, destructive admin actions, export, or batch operation."
+      - "No approval workflow, batch publish, rollback, external vector sync, embedding, destructive operation, auth enforcement, permission checks, RBAC backend, or audit persistence."
