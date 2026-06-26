@@ -145,6 +145,7 @@ test.describe("Index Segment Knowledge Object experience", () => {
 
   test("WikiNode Inspector Segments tab carries object and source evidence", async ({ page }) => {
     await routeWikiNodeApiFixtures(page)
+    await routeIndexSegmentApi(page)
     await page.goto("/wiki-nodes/wn-013")
 
     await page.getByRole("tab", { name: "片段" }).click()
@@ -154,5 +155,112 @@ test.describe("Index Segment Knowledge Object experience", () => {
     await expect(page.getByTestId("wikinode-inspector")).toContainText("来源证据")
     await expect(page.getByTestId("wikinode-inspector")).toContainText("vec-wn-013")
     await expect(page.locator("main").last()).not.toContainText(/Chunk Management/i)
+  })
+
+  test("WikiNode Inspector can trigger local deterministic segment generation", async ({ page }) => {
+    await routeWikiNodeApiFixtures(page)
+    await routeIndexSegmentApi(page, [])
+    await page.route("**/api/wiki-nodes/wn-013/index-segments/generate", (route) => {
+      return route.fulfill({
+        json: [
+          {
+            segmentId: "seg-wn-013-title",
+            nodeId: "wn-013",
+            nodeTitle: "西门子 WM14U 洗衣机",
+            objectType: "Product",
+            subtype: "product_model",
+            segmentType: "title",
+            title: "西门子 WM14U 洗衣机 / Title segment",
+            content: "西门子 WM14U 洗衣机",
+            contentPreview: "西门子 WM14U 洗衣机",
+            tokenCount: 12,
+            enabled: true,
+            indexStatus: "not_indexed",
+            vectorDocId: null,
+            retrievalHits: 0,
+            sourceRefs: [
+              {
+                sourceId: "src-db-product-master",
+                sourceType: "database",
+                sourceTitle: "PIM 产品主数据表",
+              },
+            ],
+            sourceRefIds: ["src-db-product-master"],
+            processingProfile: "db_product_master_v1",
+            metadataSummary: [
+              { label: "generationMode", value: "local_deterministic" },
+              { label: "traceSource", value: "wiki_node" },
+            ],
+            createdAt: "2026-06-26",
+            updatedAt: "2026-06-26",
+            metadata: {
+              generationMode: "local_deterministic",
+              traceSource: "wiki_node",
+              parentNodeId: "wn-013",
+              nodeType: "product",
+              status: "published",
+              tags: ["WM14U"],
+            },
+          },
+          {
+            segmentId: "seg-wn-013-summary",
+            nodeId: "wn-013",
+            nodeTitle: "西门子 WM14U 洗衣机",
+            objectType: "Product",
+            subtype: "product_model",
+            segmentType: "summary",
+            title: "西门子 WM14U 洗衣机 / Summary segment",
+            content: "西门子 WM14U 洗衣机产品主数据，连接手册、配件目录和服务知识包。",
+            contentPreview: "西门子 WM14U 洗衣机产品主数据，连接手册、配件目录和服务知识包。",
+            tokenCount: 28,
+            enabled: true,
+            indexStatus: "not_indexed",
+            vectorDocId: null,
+            retrievalHits: 0,
+            sourceRefs: [],
+            sourceRefIds: ["src-db-product-master"],
+            processingProfile: "db_product_master_v1",
+            metadataSummary: [{ label: "traceSource", value: "wiki_node" }],
+            createdAt: "2026-06-26",
+            updatedAt: "2026-06-26",
+            metadata: { generationMode: "local_deterministic", traceSource: "wiki_node", parentNodeId: "wn-013" },
+          },
+          {
+            segmentId: "seg-wn-013-body",
+            nodeId: "wn-013",
+            nodeTitle: "西门子 WM14U 洗衣机",
+            objectType: "Product",
+            subtype: "product_model",
+            segmentType: "body",
+            title: "西门子 WM14U 洗衣机 / Body segment",
+            content: "WM14U 属于西门子 iQ500 洗衣机系列。",
+            contentPreview: "WM14U 属于西门子 iQ500 洗衣机系列。",
+            tokenCount: 20,
+            enabled: true,
+            indexStatus: "not_indexed",
+            vectorDocId: null,
+            retrievalHits: 0,
+            sourceRefs: [],
+            sourceRefIds: ["src-db-product-master"],
+            processingProfile: "db_product_master_v1",
+            metadataSummary: [{ label: "traceSource", value: "wiki_node" }],
+            createdAt: "2026-06-26",
+            updatedAt: "2026-06-26",
+            metadata: { generationMode: "local_deterministic", traceSource: "wiki_node", parentNodeId: "wn-013" },
+          },
+        ],
+      })
+    })
+
+    await page.goto("/wiki-nodes/wn-013")
+    await page.getByRole("tab", { name: "片段" }).click()
+    await expect(page.getByTestId("wikinode-inspector")).toContainText("当前 WikiNode 暂无 Index Segment")
+
+    await page.getByRole("button", { name: "生成本地片段" }).click()
+
+    await expect(page.getByTestId("wikinode-inspector")).toContainText("seg-wn-013-title")
+    await expect(page.getByTestId("wikinode-inspector")).toContainText("本地确定性生成")
+    await expect(page.getByTestId("wikinode-inspector")).toContainText("未索引")
+    await expect(page.locator("main").last()).not.toContainText(/Chunk Management|embedding/i)
   })
 })

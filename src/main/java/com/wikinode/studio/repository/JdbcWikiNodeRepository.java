@@ -20,6 +20,7 @@ import com.wikinode.studio.model.WikiNode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -287,12 +288,27 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       select segment_id, node_id, node_title, object_type, subtype, segment_type, content, title,
              content_preview, token_count, enabled, index_status, vector_doc_id, last_indexed_at,
              retrieval_hits, avg_score, processing_profile, metadata_node_type, metadata_status,
-             metadata_tags, created_at, updated_at
+             metadata_tags, metadata_json, created_at, updated_at
       from index_segments
       order by created_at, segment_id
       """,
       (resultSet, rowNumber) -> mapIndexSegment(resultSet)
     );
+  }
+
+  @Override
+  @Transactional
+  protected void replaceGeneratedIndexSegments(String nodeId, List<IndexSegment> segments) {
+    jdbcTemplate.update(
+      "delete from index_segments where node_id = ? and segment_id in (?, ?, ?)",
+      nodeId,
+      "seg-%s-title".formatted(nodeId),
+      "seg-%s-summary".formatted(nodeId),
+      "seg-%s-body".formatted(nodeId)
+    );
+    for (IndexSegment segment : segments) {
+      insertIndexSegment(segment);
+    }
   }
 
   @Override
@@ -506,6 +522,12 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
   private IndexSegment mapIndexSegment(ResultSet resultSet) throws SQLException {
     String segmentId = resultSet.getString("segment_id");
     List<SourceRef> sourceRefs = loadIndexSegmentSourceRefs(segmentId);
+    Map<String, Object> metadata = new LinkedHashMap<>(metadataFromJson(resultSet.getString("metadata_json")));
+    metadata.putIfAbsent("nodeType", resultSet.getString("metadata_node_type"));
+    metadata.putIfAbsent("status", resultSet.getString("metadata_status"));
+    metadata.putIfAbsent("tags", splitCsv(resultSet.getString("metadata_tags")));
+    metadata.putIfAbsent("objectType", resultSet.getString("object_type"));
+    metadata.putIfAbsent("subtype", resultSet.getString("subtype"));
     return new IndexSegment(
       segmentId,
       resultSet.getString("node_id"),
@@ -529,13 +551,7 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       loadIndexSegmentMetadataSummary(segmentId),
       resultSet.getString("created_at"),
       resultSet.getString("updated_at"),
-      Map.of(
-        "nodeType", resultSet.getString("metadata_node_type"),
-        "status", resultSet.getString("metadata_status"),
-        "tags", splitCsv(resultSet.getString("metadata_tags")),
-        "objectType", resultSet.getString("object_type"),
-        "subtype", resultSet.getString("subtype")
-      )
+      metadata
     );
   }
 
@@ -767,6 +783,89 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
         relation.confidence(),
         relation.createdBy() == null ? "system" : relation.createdBy(),
         relation.evidence() == null ? null : relation.evidence().sourceRefId()
+      );
+    }
+  }
+
+  private void insertIndexSegment(IndexSegment segment) {
+    jdbcTemplate.update(
+      """
+      insert into index_segments (
+        segment_id, node_id, node_title, object_type, subtype, segment_type, content, title,
+        content_preview, token_count, enabled, index_status, vector_doc_id, last_indexed_at,
+        retrieval_hits, avg_score, processing_profile, metadata_node_type, metadata_status,
+        metadata_tags, metadata_json, created_at, updated_at
+      ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      """,
+      segment.segmentId(),
+      segment.nodeId(),
+      segment.nodeTitle(),
+      segment.objectType(),
+      segment.subtype(),
+      segment.segmentType(),
+      segment.content(),
+      segment.title(),
+      segment.contentPreview(),
+      segment.tokenCount(),
+      segment.enabled(),
+      segment.indexStatus(),
+      segment.vectorDocId(),
+      segment.lastIndexedAt(),
+      segment.retrievalHits(),
+      segment.avgScore(),
+      segment.processingProfile(),
+      String.valueOf(segment.metadata().getOrDefault("nodeType", "")),
+      String.valueOf(segment.metadata().getOrDefault("status", "")),
+      metadataTags(segment),
+      toJson(segment.metadata()),
+      segment.createdAt(),
+      segment.updatedAt()
+    );
+    insertIndexSegmentSourceRefs(segment);
+    insertIndexSegmentMetadataSummary(segment);
+  }
+
+  private String metadataTags(IndexSegment segment) {
+    Object tags = segment.metadata().get("tags");
+    if (tags instanceof List<?> tagList) {
+      return tagList.stream().map(String::valueOf).reduce((left, right) -> left + "," + right).orElse("");
+    }
+    return String.valueOf(tags == null ? "" : tags);
+  }
+
+  private void insertIndexSegmentSourceRefs(IndexSegment segment) {
+    for (int index = 0; index < segment.sourceRefs().size(); index++) {
+      SourceRef sourceRef = segment.sourceRefs().get(index);
+      jdbcTemplate.update(
+        """
+        insert into index_segment_source_refs (
+          segment_id, position, source_id, source_type, source_title, source_url, paragraph_ref, version
+        ) values (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        segment.segmentId(),
+        index,
+        sourceRef.sourceId(),
+        sourceRef.sourceType(),
+        sourceRef.sourceTitle(),
+        sourceRef.sourceUrl(),
+        sourceRef.paragraphRef(),
+        sourceRef.version()
+      );
+    }
+  }
+
+  private void insertIndexSegmentMetadataSummary(IndexSegment segment) {
+    for (int index = 0; index < segment.metadataSummary().size(); index++) {
+      IndexSegmentMetadataSummaryItem item = segment.metadataSummary().get(index);
+      jdbcTemplate.update(
+        """
+        insert into index_segment_metadata_summary (segment_id, position, label, value)
+        values (?, ?, ?, ?)
+        """,
+        segment.segmentId(),
+        index,
+        item.label(),
+        item.value()
       );
     }
   }

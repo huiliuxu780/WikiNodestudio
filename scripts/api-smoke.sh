@@ -290,6 +290,27 @@ if (created.nodeId !== slug || created.slug !== slug || created.objectType !== "
   throw new Error("POST /api/wiki-nodes: FAIL response does not contain created WikiNode")
 }
 
+const generatedIndexSegments = await request("POST /api/wiki-nodes/{id}/index-segments/generate", `/wiki-nodes/${created.nodeId}/index-segments/generate`, {
+  method: "POST",
+  body: JSON.stringify({}),
+})
+const generatedSegmentPrefix = `seg-${created.nodeId}-`
+if (!Array.isArray(generatedIndexSegments) || generatedIndexSegments.length !== 3) {
+  throw new Error("POST /api/wiki-nodes/{id}/index-segments/generate: FAIL expected 3 local Index Segments")
+}
+
+if (!generatedIndexSegments.some((segment) => segment.segmentId === `${generatedSegmentPrefix}title` && segment.indexStatus === "not_indexed" && segment.vectorDocId == null && segment.metadata?.generationMode === "local_deterministic" && segment.metadata?.traceSource === "wiki_node")) {
+  throw new Error("POST /api/wiki-nodes/{id}/index-segments/generate: FAIL expected deterministic title segment trace metadata")
+}
+
+if (!generatedIndexSegments.every((segment) => segment.nodeId === created.nodeId && segment.metadata?.parentNodeId === created.nodeId)) {
+  throw new Error("POST /api/wiki-nodes/{id}/index-segments/generate: FAIL expected parent WikiNode trace")
+}
+
+if (JSON.stringify(generatedIndexSegments).includes("chunk") || JSON.stringify(generatedIndexSegments).includes("embedding")) {
+  throw new Error("POST /api/wiki-nodes/{id}/index-segments/generate: FAIL response exposed forbidden internals")
+}
+
 const updated = await request("PUT /api/wiki-nodes/{id}", `/wiki-nodes/${slug}`, {
   method: "PUT",
   body: JSON.stringify({

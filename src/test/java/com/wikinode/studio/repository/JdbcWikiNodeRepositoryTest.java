@@ -3,6 +3,7 @@ package com.wikinode.studio.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.wikinode.studio.model.IndexSegment;
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
@@ -161,6 +162,43 @@ class JdbcWikiNodeRepositoryTest {
       assertThat(node.relations().getFirst().relationType()).isEqualTo("has_policy");
       assertThat(node.relations().getFirst().evidence().sourceRefId()).isEqualTo("ref-persistent");
     });
+  }
+
+  @Test
+  void generatesDeterministicLocalIndexSegmentsWithTraceEvidence() {
+    JdbcTemplate jdbcTemplate = jdbcTemplateWithIndexSegments();
+    JdbcWikiNodeRepository repository = new JdbcWikiNodeRepository(jdbcTemplate);
+
+    List<IndexSegment> generated = repository.generateIndexSegmentsForNode("wn-001");
+    List<IndexSegment> regenerated = repository.generateIndexSegmentsForNode("wn-001");
+
+    assertThat(generated)
+      .extracting(IndexSegment::segmentId)
+      .containsExactly("seg-wn-001-title", "seg-wn-001-summary", "seg-wn-001-body");
+    assertThat(regenerated)
+      .extracting(IndexSegment::segmentId)
+      .containsExactly("seg-wn-001-title", "seg-wn-001-summary", "seg-wn-001-body");
+    assertThat(repository.listIndexSegmentsForNode("wn-001"))
+      .filteredOn(segment -> segment.segmentId().startsWith("seg-wn-001-"))
+      .hasSize(3)
+      .allSatisfy(segment -> {
+        assertThat(segment.nodeId()).isEqualTo("wn-001");
+        assertThat(segment.nodeTitle()).isEqualTo("保修政策");
+        assertThat(segment.objectType()).isEqualTo("Article");
+        assertThat(segment.subtype()).isEqualTo("service_fee_policy");
+        assertThat(segment.sourceRefs()).isNotEmpty();
+        assertThat(segment.sourceRefIds()).contains("src-feishu-cc");
+        assertThat(segment.indexStatus()).isEqualTo("not_indexed");
+        assertThat(segment.vectorDocId()).isNull();
+        assertThat(segment.metadata()).containsEntry("generationMode", "local_deterministic");
+        assertThat(segment.metadata()).containsEntry("parentNodeId", "wn-001");
+        assertThat(segment.metadata()).containsEntry("traceSource", "wiki_node");
+        assertThat(segment.metadataSummary())
+          .anySatisfy(item -> {
+            assertThat(item.label()).isEqualTo("traceSource");
+            assertThat(item.value()).isEqualTo("wiki_node");
+          });
+      });
   }
 
   @Test
@@ -615,6 +653,25 @@ class JdbcWikiNodeRepositoryTest {
       new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
       new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql"),
       new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql")
+    );
+    populator.execute(dataSource);
+    return new JdbcTemplate(dataSource);
+  }
+
+  private JdbcTemplate jdbcTemplateWithIndexSegments() {
+    SingleConnectionDataSource dataSource = new SingleConnectionDataSource(
+      "jdbc:h2:mem:wikinode-index-segments-%s;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;NON_KEYWORDS=VALUE".formatted(System.nanoTime()),
+      "sa",
+      "",
+      true
+    );
+    ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
+      new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
+      new ClassPathResource("db/migration/V2__seed_wikinode_data.sql"),
+      new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql"),
+      new ClassPathResource("db/migration/V7__create_index_segment_schema.sql"),
+      new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql"),
+      new ClassPathResource("db/migration/V9__add_index_segment_trace_metadata.sql")
     );
     populator.execute(dataSource);
     return new JdbcTemplate(dataSource);
