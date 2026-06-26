@@ -217,6 +217,46 @@ test.describe("Frontend skeleton IA", () => {
     await expect(page.getByText("SEG-").first()).toBeVisible()
   })
 
+  test("IM051 back-half pages explain publishing, metadata governance, and admin boundaries", async ({ page }) => {
+    await page.goto("/publishing")
+    await expect(page.getByRole("heading", { name: "发布与索引" })).toBeVisible()
+    await expect(page.getByText("发布前只读检查")).toBeVisible()
+    await expect(page.getByText("不会执行发布、审批、回滚、批量发布或外部向量同步。")).toBeVisible()
+    await expect(page.getByText("Index Segment 生成状态")).toBeVisible()
+    await expect(page.getByText("外部向量库同步边界")).toBeVisible()
+    await expect(page.getByRole("button", { name: /发布|审批|回滚|同步|重试|批量/ })).toHaveCount(0)
+    await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+
+    await page.goto("/index-status")
+    await expect(page.getByText("索引状态说明")).toBeVisible()
+    await expect(page.getByText("索引失败：需要查看失败原因，但本页不执行重试。")).toBeVisible()
+    await expect(page.getByText("待更新：WikiNode 已变化，需要重新生成或同步 Index Segment。")).toBeVisible()
+    await expect(page.getByText("未索引：尚未进入发布或索引流程。")).toBeVisible()
+
+    await page.goto("/tags")
+    await expect(page.getByText("标签治理基线")).toBeVisible()
+    await expect(page.getByText("标签用于筛选、检索和 Index Segment metadata。")).toBeVisible()
+    await expect(page.getByText("当前不提供创建、合并、删除或批量打标签。")).toBeVisible()
+
+    await page.goto("/metadata-fields")
+    await expect(page.getByText("元数据字段治理基线")).toBeVisible()
+    await expect(page.getByText("字段意图、校验规则、索引参与和检索参与在这里说明。")).toBeVisible()
+    await expect(page.getByText("当前不保存字段配置，不修改 Knowledge Object 模型。")).toBeVisible()
+
+    await page.goto("/admin/roles")
+    await expect(page.getByText("角色规划基线")).toBeVisible()
+    await expect(page.getByText("角色仅说明协作分工，不做权限 enforcement。")).toBeVisible()
+
+    await page.goto("/admin/permissions")
+    await expect(page.getByText("权限维度规划基线")).toBeVisible()
+    await expect(page.getByText("当前不做鉴权、授权、审批或后端 RBAC。")).toBeVisible()
+
+    await page.goto("/admin/audit-logs")
+    await expect(page.getByText("审计证据规划基线")).toBeVisible()
+    await expect(page.getByText("当前不写入真实审计日志，不提供导出或删除操作。")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/auth enforcement|RBAC backend|audit persistence/i)
+  })
+
   test("WikiNode editor inspector includes Segments tab", async ({ page }) => {
     await page.goto("/wiki-nodes/wn-001")
 

@@ -16,6 +16,22 @@ export function IndexStatusPage() {
     <div className="flex flex-col gap-6 p-6">
       <PageHeader title="索引状态" description="查看知识节点发布状态与索引状态是否可被验收。" />
       <ApiErrorNotice error={error} onRetry={reload} />
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">索引状态说明</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-2 text-sm text-muted-foreground md:grid-cols-3">
+          <div className="rounded-md border bg-muted/20 px-3 py-2">
+            索引失败：需要查看失败原因，但本页不执行重试。
+          </div>
+          <div className="rounded-md border bg-muted/20 px-3 py-2">
+            待更新：WikiNode 已变化，需要重新生成或同步 Index Segment。
+          </div>
+          <div className="rounded-md border bg-muted/20 px-3 py-2">
+            未索引：尚未进入发布或索引流程。
+          </div>
+        </CardContent>
+      </Card>
       <div className="grid gap-4 lg:grid-cols-4">
         {groups.map((status) => {
           const groupNodes = nodes.filter((node) => node.indexStatus === status)
