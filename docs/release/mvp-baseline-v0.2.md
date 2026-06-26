@@ -32,11 +32,12 @@ After the MVP v0.2 baseline, the first Phase 2 implementation sequence has also 
 - `IM049` Index Segment generation and trace model.
 - `IM050` Retrieval API debug evidence, query logs, and evaluation cases.
 - `IM051` Publishing, index, metadata governance, and admin planning baseline.
+- `IM053` Retrieval evaluation console baseline.
 
-The expected `main` baseline after IM051 is:
+The expected `main` baseline after IM053 is:
 
 ```text
-bc40f07 Merge pull request #46 from huiliuxu780/codex/im051-publishing-index-governance-admin-baseline
+dbde201 Merge pull request #49 from huiliuxu780/codex/im053-retrieval-evaluation-console-baseline
 ```
 
 ## Product Scope
@@ -62,6 +63,7 @@ Source / Raw Material / Parsed Document boundary
 - WikiNode Knowledge Object fields aligned across Java, DB, API, frontend types/services, detail/editor surfaces, and tests.
 - Deterministic local Index Segment generation with trace evidence tied to WikiNode content and source refs.
 - Retrieval API debug evidence, minimal query logs, and evaluation case evidence while preserving WikiNode-first normal results.
+- Read-only Query Logs, Evaluation Cases, and Retrieval Evaluation console surfaces for PM-readable retrieval evidence.
 - shadcn sidebar application shell and product navigation.
 - WikiNode list, create, editor, detail, Markdown preview, save feedback, local publish/re-index feedback.
 - WikiLink parsing, backlinks, broken links, and resolved/broken preview badges.
@@ -79,11 +81,17 @@ Source / Raw Material / Parsed Document boundary
 - Index Status grouping by WikiNode index state.
 - Publishing, Index Status, Tags / Metadata, Roles, Permissions, and Audit Logs as read-only planning/boundary surfaces.
 
+### Read-only Evidence Surfaces
+
+- Query Logs.
+- Evaluation Cases.
+- Retrieval Evaluation.
+
 ### Visual Skeleton
 
 - Knowledge Base detail/settings.
 - Parser, Storage, Vector Store, Embedding, Health, Publishing, Vector Sync, Index Jobs.
-- Query Logs, Evaluation Cases, Quality, Tags, Metadata, Admin Users/Roles/Permissions/Audit.
+- Quality, Tags, Metadata, Admin Users/Roles/Permissions/Audit.
 
 ### Deferred
 
@@ -157,6 +165,7 @@ GitHub evidence:
 - IM049 PR #44 checks passed and merged.
 - IM050 PR #45 checks passed and merged.
 - IM051 PR #46 checks passed and merged.
+- IM053 PR #49 checks passed and merged.
 
 ## Manual Acceptance Routes
 

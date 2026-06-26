@@ -6,15 +6,13 @@ notes:
   - "Do not auto-enter the next IM without explicit user confirmation."
   - "Done history stays in release docs or archive."
 tasks:
-  - id: IM053
-    title: "Retrieval Evaluation Console Baseline"
+  - id: IM054
+    title: "Quality Issue Console Baseline"
     status: ready
-    story_ids: [US053]
+    story_ids: [US054]
     allowed_files:
-      - "src/services/retrieval-api-service.ts"
-      - "src/types/retrieval.ts"
       - "src/pages/**"
-      - "src/components/retrieval/**"
+      - "src/components/quality/**"
       - "src/utils/display-labels.ts"
       - "tests/e2e/**"
       - "docs/current/**"
@@ -27,9 +25,9 @@ tasks:
       - "src/main/java/**"
       - "src/main/resources/db/migration/**"
     gates:
-      - "TDD gate: write or update Playwright coverage for Query Logs, Evaluation Cases, and Retrieval Evaluation pages before implementation."
-      - "Product gate: keep Retrieval API results WikiNode-first and show Index Segment only as evidence."
-      - "Boundary gate: no batch evaluation runner, export, scoring engine, embedding, external vector-store work, Source import, parser execution, permissions, publishing, or new dependencies."
+      - "TDD gate: write or update Playwright coverage for the Quality Issues page before implementation."
+      - "Product gate: keep quality issues WikiNode-centered and show WikiLink, source evidence, Index Segment, and retrieval signals only as issue evidence."
+      - "Boundary gate: no automated quality check runner, repair action, batch operation, export, embedding, external vector-store work, Source import, parser execution, permissions, publishing, or new dependencies."
       - "Verification gate: pnpm lint, pnpm build, bash scripts/check.sh, focused Playwright, and diff check."
     stop_conditions:
-      - "Backend API changes, DB migration, new scoring algorithm, batch evaluation execution, export, answer generation, external vector DB integration, embedding invocation, permissions, publishing approval, package or lockfile change."
+      - "Backend API changes, DB migration, automated quality check execution, repair action, batch operation, export, external vector DB integration, embedding invocation, permissions, publishing approval, package or lockfile change."

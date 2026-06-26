@@ -14,7 +14,7 @@ The full product scope is captured in `docs/current/PRODUCT_SCOPE.md`; the roadm
 
 The product baseline includes the React frontend MVP, Spring Boot API, PostgreSQL + Flyway persistence, reset/seed scripts, API smoke, GitHub Actions baseline CI, v0.2 release documentation, Playwright browser coverage, Source / Raw Material / Parsed Document read-only APIs, Draft WikiNode Suggestion review APIs, WikiNode Knowledge Object API alignment, Index Segment generation and trace evidence, Retrieval API debug evidence, and the publishing / metadata governance / admin planning baseline.
 
-Current development must stay inside confirmed task scope. The standing MVP exclusions remain: no real Source import, file upload, parser execution, vector database implementation, embedding invocation, product-facing Chunk Management, permissions, version management, audit implementation, or publishing approval flow unless explicitly approved by the user.
+Current development must stay inside confirmed task scope. The standing MVP exclusions remain: no real Source import, file upload, parser execution, vector database implementation, embedding invocation, product-facing Chunk Management, automated quality repair, batch operation, export, permissions, version management, audit implementation, or publishing approval flow unless explicitly approved by the user.
 
 ## Current Queue
 
@@ -28,7 +28,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-The next executable slice is `IM053 Retrieval Evaluation Console Baseline`. Each future IM must run on its own branch, complete verification, commit locally, and stop for user confirmation before push or the next IM.
+The next executable slice is `IM054 Quality Issue Console Baseline`. Each future IM must run on its own branch, complete verification, commit locally, and stop for user confirmation before push or the next IM.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -59,4 +59,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Current recommended next step: run `IM053 Retrieval Evaluation Console Baseline` after the queue-definition branch is reviewed. IM053 should deepen Query Logs, Evaluation Cases, and Retrieval Evaluation pages using existing Retrieval API evidence while avoiding Source import, parser execution, publishing approval, embedding, external vector sync, permissions, export, batch operations, backend schema changes, package changes, and new dependencies.
+Current recommended next step: run `IM054 Quality Issue Console Baseline` after this queue-definition branch is reviewed. IM054 should make the Quality Issues page PM-readable using existing WikiNode, WikiLink, source-evidence, Index Segment, and retrieval-quality signals while avoiding automated quality check execution, repair actions, Source import, parser execution, publishing approval, embedding, external vector sync, permissions, export, batch operations, backend schema changes, package changes, and new dependencies.

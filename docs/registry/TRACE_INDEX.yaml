@@ -254,6 +254,15 @@ phase2_plans:
     frontend_pages: src/pages/skeleton-pages.tsx
     frontend_components: src/components/retrieval
     playwright: tests/e2e
+  QUALITY_ISSUE_CONSOLE_BASELINE:
+    decision: D054
+    previous_retrieval_console: RETRIEVAL_EVALUATION_CONSOLE_BASELINE
+    story_queue: docs/current/STORY_QUEUE.yaml
+    active_task: docs/current/ACTIVE_TASKS.yaml
+    feature_map: docs/current/FEATURE_MAP.md
+    frontend_pages: src/pages
+    frontend_components: src/components/quality
+    playwright: tests/e2e
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
@@ -349,6 +358,9 @@ tasks:
   IM053:
     decision: D053
     implementation: RETRIEVAL_EVALUATION_CONSOLE_BASELINE
+  IM054:
+    decision: D054
+    plan: QUALITY_ISSUE_CONSOLE_BASELINE
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN

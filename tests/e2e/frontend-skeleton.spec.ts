@@ -257,6 +257,40 @@ test.describe("Frontend skeleton IA", () => {
     await expect(page.locator("main").last()).not.toContainText(/auth enforcement|RBAC backend|audit persistence/i)
   })
 
+  test("IM054 quality issues page renders read-only WikiNode evidence console", async ({ page }) => {
+    await page.goto("/quality-issues")
+
+    const main = page.locator("main").last()
+    await expect(page.getByRole("heading", { name: "质量问题" })).toBeVisible()
+    await expect(page.getByText("质量问题证据控制台")).toBeVisible()
+    await expect(page.getByText("集中查看影响 WikiNode、WikiLink、来源证据、Index Segment 和召回质量的风险线索。")).toBeVisible()
+    await expect(page.getByText("质量概览")).toBeVisible()
+    await expect(page.getByText("按 WikiNode / Knowledge Object 聚合质量风险，帮助负责人优先处理影响检索和发布的证据问题。")).toBeVisible()
+
+    await expect(page.getByText("断链与关系风险")).toBeVisible()
+    await expect(page.getByText("来源与元数据风险")).toBeVisible()
+    await expect(page.getByText("Index Segment 风险")).toBeVisible()
+    await expect(page.getByText("召回质量风险")).toBeVisible()
+
+    await expect(page.getByText("保修期内维修服务政策")).toBeVisible()
+    await expect(page.getByText("影响 WikiNode：wn-001")).toBeVisible()
+    await expect(page.getByText("问题类型：断链风险").first()).toBeVisible()
+    await expect(page.getByText("证据：存在未解析 WikiLink，需要在断链检查中确认目标 WikiNode。").first()).toBeVisible()
+    await expect(page.getByText("建议处理：确认 WikiLink 指向，并在关系证据中记录处理结论。").first()).toBeVisible()
+
+    await expect(page.getByText("延保服务政策")).toBeVisible()
+    await expect(page.getByText("问题类型：缺少来源证据")).toBeVisible()
+    await expect(page.getByText("证据：sourceRefs 证据不足，发布前需要补充 Source / Raw Material 引用。")).toBeVisible()
+
+    await expect(page.getByText("洗碗机上门服务流程")).toBeVisible()
+    await expect(page.getByText("问题类型：召回质量偏低")).toBeVisible()
+    await expect(page.getByText("证据：Retrieval API 命中弱，需要检查摘要、标签和 Index Segment 证据。")).toBeVisible()
+
+    await expect(main.getByRole("button", { name: /检查|修复|批量|导出|发布|同步|审批|重试/ })).toHaveCount(0)
+    await expect(main).not.toContainText(/执行边界|本地占位基线|不运行|不提供|不执行|当前只展示|不自动/)
+    await expect(main).not.toContainText(forbiddenProductTerms)
+  })
+
   test("WikiNode editor inspector includes Segments tab", async ({ page }) => {
     await page.goto("/wiki-nodes/wn-001")
 

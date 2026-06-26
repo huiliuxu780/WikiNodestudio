@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D054
+    date: "2026-06-26"
+    title: "Define Quality Issue Console as the next Phase 2 capability slice"
+    rationale: "After IM053 made Retrieval API query logs, evaluation cases, and retrieval evaluation evidence PM-readable, the next medium-granularity Phase 2 slice should address the Quality / Evaluation roadmap by turning the existing Quality Issues page into a read-only evidence console. IM054 should explain missing metadata or source evidence, broken WikiLinks, Index Segment risks, duplicate or expired knowledge, and retrieval-quality risks while keeping automated quality check execution, repair actions, backend API changes, database migrations, batch operations, export, external vector DB integration, embedding, permissions, publishing approval, package changes, and new dependencies out of scope."
+    related:
+      - IM054
+      - US054
+      - QUALITY_ISSUE_CONSOLE_BASELINE
+      - RETRIEVAL_EVALUATION_CONSOLE_BASELINE
   - id: D053
     date: "2026-06-26"
     title: "Define Retrieval Evaluation Console as the next Phase 2 capability slice"
