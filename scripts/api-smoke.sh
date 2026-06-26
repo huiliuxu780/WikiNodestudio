@@ -73,7 +73,10 @@ if (!Array.isArray(nodes) || nodes.length < 5) {
   throw new Error("GET /api/wiki-nodes: FAIL expected at least 5 nodes")
 }
 
-await request("GET /api/wiki-nodes/{id}", "/wiki-nodes/wn-001")
+const nodeDetail = await request("GET /api/wiki-nodes/{id}", "/wiki-nodes/wn-001")
+if (nodeDetail.objectType !== "Article" || !nodeDetail.subtype || !nodeDetail.metadata || !Array.isArray(nodeDetail.relations) || !nodeDetail.processingProfile) {
+  throw new Error("GET /api/wiki-nodes/{id}: FAIL expected Knowledge Object fields")
+}
 
 const sources = await request("GET /api/sources", "/sources")
 if (!Array.isArray(sources) || !sources.some((source) => source.sourceId === "src-feishu-cc" && source.rawMaterialCount >= 1)) {
@@ -257,6 +260,23 @@ const created = await request("POST /api/wiki-nodes", "/wiki-nodes", {
     slug,
     title: "API Smoke Node",
     nodeType: "term",
+    objectType: "Article",
+    subtype: "term",
+    metadata: {
+      businessDomain: "after_sales",
+      language: "zh-CN",
+    },
+    relations: [{
+      targetNodeId: "wn-001",
+      relationType: "references",
+      direction: "outgoing",
+      confidence: 0.7,
+      createdBy: "user",
+      evidence: {
+        sourceRefId: "api-smoke-ref",
+      },
+    }],
+    processingProfile: "manual_article_v1",
     summary: "Created by repeatable API smoke",
     contentMarkdown: "API smoke create content.",
     tags: ["api-smoke"],
@@ -266,7 +286,7 @@ const created = await request("POST /api/wiki-nodes", "/wiki-nodes", {
   }),
 })
 
-if (created.nodeId !== slug || created.slug !== slug) {
+if (created.nodeId !== slug || created.slug !== slug || created.objectType !== "Article" || created.processingProfile !== "manual_article_v1") {
   throw new Error("POST /api/wiki-nodes: FAIL response does not contain created WikiNode")
 }
 
@@ -276,6 +296,24 @@ const updated = await request("PUT /api/wiki-nodes/{id}", `/wiki-nodes/${slug}`,
     slug,
     title: "API Smoke Node Updated",
     nodeType: "term",
+    objectType: "Article",
+    subtype: "term",
+    metadata: {
+      businessDomain: "after_sales",
+      language: "zh-CN",
+      scenario: "api_smoke",
+    },
+    relations: [{
+      targetNodeId: "wn-001",
+      relationType: "references",
+      direction: "outgoing",
+      confidence: 0.8,
+      createdBy: "user",
+      evidence: {
+        sourceRefId: "api-smoke-ref",
+      },
+    }],
+    processingProfile: "manual_article_v2",
     summary: "Updated by repeatable API smoke",
     contentMarkdown: "API smoke updated content is searchable.",
     tags: ["api-smoke", "updated"],
@@ -286,7 +324,7 @@ const updated = await request("PUT /api/wiki-nodes/{id}", `/wiki-nodes/${slug}`,
   }),
 })
 
-if (updated.title !== "API Smoke Node Updated") {
+if (updated.title !== "API Smoke Node Updated" || updated.processingProfile !== "manual_article_v2" || updated.metadata?.scenario !== "api_smoke") {
   throw new Error("PUT /api/wiki-nodes/{id}: FAIL response does not contain updated title")
 }
 

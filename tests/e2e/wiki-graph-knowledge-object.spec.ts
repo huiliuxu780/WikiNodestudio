@@ -1,6 +1,11 @@
 import { expect, test } from "@playwright/test"
+import { routeWikiNodeApiFixtures } from "./wiki-node-api-fixtures"
 
 test.describe("WikiGraph Knowledge Object workspace", () => {
+  test.beforeEach(async ({ page }) => {
+    await routeWikiNodeApiFixtures(page)
+  })
+
   test("renders Knowledge Object relationships with selection, filters, source evidence, and safe naming", async ({ page }) => {
     await page.goto("/wiki-graph")
 

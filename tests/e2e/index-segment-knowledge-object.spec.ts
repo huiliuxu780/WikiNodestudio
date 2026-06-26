@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test"
 import { routeIndexSegmentApi } from "./index-segment-api-fixtures"
+import { routeWikiNodeApiFixtures } from "./wiki-node-api-fixtures"
 
 test.describe("Index Segment Knowledge Object experience", () => {
   test("renders API-backed Index Segments with WikiNode evidence", async ({ page }) => {
@@ -143,6 +144,7 @@ test.describe("Index Segment Knowledge Object experience", () => {
   })
 
   test("WikiNode Inspector Segments tab carries object and source evidence", async ({ page }) => {
+    await routeWikiNodeApiFixtures(page)
     await page.goto("/wiki-nodes/wn-013")
 
     await page.getByRole("tab", { name: "片段" }).click()

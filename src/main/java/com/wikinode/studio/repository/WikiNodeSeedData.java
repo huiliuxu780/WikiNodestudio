@@ -2,6 +2,8 @@ package com.wikinode.studio.repository;
 
 import com.wikinode.studio.model.IndexSegment;
 import com.wikinode.studio.model.IndexSegmentMetadataSummaryItem;
+import com.wikinode.studio.model.KnowledgeRelation;
+import com.wikinode.studio.model.KnowledgeRelationEvidence;
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParsedDocumentSourceRef;
 import com.wikinode.studio.model.ParserProfile;
@@ -354,6 +356,18 @@ final class WikiNodeSeedData {
         "wn-001",
         "保修政策",
         "policy",
+        "Article",
+        "service_fee_policy",
+        Map.of(
+          "businessDomain", "after_sales",
+          "language", "zh-CN",
+          "lifecycleStatus", "published"
+        ),
+        List.of(
+          new KnowledgeRelation("rel-wn-001-wn-002", "wn-001", "wn-002", "has_policy", "outgoing", 0.92, "system", new KnowledgeRelationEvidence("ref-web-service-fee")),
+          new KnowledgeRelation("rel-wn-001-wn-003", "wn-001", "wn-003", "references", "outgoing", 0.88, "system", new KnowledgeRelationEvidence("ref-web-service-fee"))
+        ),
+        "web_article_policy_v1",
         "保修期内产品故障的维修原则和例外条件。",
         """
         ## 适用范围

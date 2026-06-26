@@ -15,10 +15,13 @@ import com.wikinode.studio.model.DraftWikiNodeSuggestionRejectRequest;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionRetryRequest;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionRetryResult;
 import com.wikinode.studio.model.DraftWikiNodeSuggestionReviewResult;
+import com.wikinode.studio.model.KnowledgeRelation;
+import com.wikinode.studio.model.KnowledgeRelationEvidence;
 import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.WikiNode;
 import com.wikinode.studio.model.WikiNodeUpsertRequest;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -71,6 +74,92 @@ class JdbcWikiNodeRepositoryTest {
       assertThat(node.tags()).containsExactly("persisted", "updated");
       assertThat(node.status()).isEqualTo("published");
       assertThat(node.indexStatus()).isEqualTo("indexed");
+    });
+  }
+
+  @Test
+  void createAndUpdatePersistKnowledgeObjectFieldsAcrossRepositoryInstances() {
+    JdbcTemplate jdbcTemplate = jdbcTemplate();
+    JdbcWikiNodeRepository firstRepository = new JdbcWikiNodeRepository(jdbcTemplate);
+
+    WikiNode created = firstRepository.createNode(new WikiNodeUpsertRequest(
+      null,
+      "persistent-knowledge-object",
+      "Persistent Knowledge Object",
+      "product",
+      "Product",
+      "product_model",
+      Map.of(
+        "brand", "Siemens",
+        "productCategory", "washing_machine",
+        "businessDomain", "after_sales"
+      ),
+      List.of(new KnowledgeRelation(
+        "rel-persistent-knowledge-object-wn-001",
+        "persistent-knowledge-object",
+        "wn-001",
+        "has_policy",
+        "outgoing",
+        0.86,
+        "user",
+        new KnowledgeRelationEvidence("ref-persistent")
+      )),
+      "db_product_master_v1",
+      "Created in repository test",
+      "Content that should preserve Knowledge Object fields.",
+      List.of("persisted"),
+      "draft",
+      List.of(),
+      "not_indexed",
+      null,
+      null,
+      null
+    ));
+    firstRepository.updateNode(created.nodeId(), new WikiNodeUpsertRequest(
+      created.nodeId(),
+      "persistent-knowledge-object",
+      "Persistent Knowledge Object Updated",
+      "product",
+      "Product",
+      "product_model",
+      Map.of(
+        "brand", "Siemens",
+        "productCategory", "washing_machine",
+        "businessDomain", "after_sales",
+        "scenario", "warranty_service"
+      ),
+      List.of(new KnowledgeRelation(
+        "rel-persistent-knowledge-object-wn-001",
+        "persistent-knowledge-object",
+        "wn-001",
+        "has_policy",
+        "outgoing",
+        0.91,
+        "user",
+        new KnowledgeRelationEvidence("ref-persistent")
+      )),
+      "db_product_master_v2",
+      "Updated in repository test",
+      "Updated content preserves Knowledge Object fields.",
+      List.of("persisted", "updated"),
+      "draft",
+      List.of(),
+      "not_indexed",
+      created.createdAt(),
+      null,
+      null
+    ));
+
+    JdbcWikiNodeRepository secondRepository = new JdbcWikiNodeRepository(jdbcTemplate);
+
+    assertThat(secondRepository.findNode("persistent-knowledge-object")).hasValueSatisfying(node -> {
+      assertThat(node.objectType()).isEqualTo("Product");
+      assertThat(node.subtype()).isEqualTo("product_model");
+      assertThat(node.metadata()).containsEntry("scenario", "warranty_service");
+      assertThat(node.processingProfile()).isEqualTo("db_product_master_v2");
+      assertThat(node.relations()).hasSize(1);
+      assertThat(node.relations().getFirst().relationType()).isEqualTo("has_policy");
+      assertThat(node.relations().getFirst().evidence().sourceRefId()).isEqualTo("ref-persistent");
     });
   }
 
@@ -508,7 +597,8 @@ class JdbcWikiNodeRepositoryTest {
       true
     );
     ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
-      new ClassPathResource("db/migration/V1__create_wikinode_schema.sql")
+      new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
+      new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql")
     );
     populator.execute(dataSource);
     return new JdbcTemplate(dataSource);
@@ -523,6 +613,7 @@ class JdbcWikiNodeRepositoryTest {
     );
     ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
       new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
+      new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql"),
       new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql")
     );
     populator.execute(dataSource);
@@ -538,6 +629,7 @@ class JdbcWikiNodeRepositoryTest {
     );
     ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
       new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
+      new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql"),
       new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql"),
       new ClassPathResource("db/migration/V4__create_source_operation_schema.sql")
     );
@@ -554,6 +646,7 @@ class JdbcWikiNodeRepositoryTest {
     );
     ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
       new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
+      new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql"),
       new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql"),
       new ClassPathResource("db/migration/V4__create_source_operation_schema.sql"),
       new ClassPathResource("db/migration/V5__create_parser_profile_schema.sql")
@@ -571,6 +664,7 @@ class JdbcWikiNodeRepositoryTest {
     );
     ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
       new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
+      new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql"),
       new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql"),
       new ClassPathResource("db/migration/V4__create_source_operation_schema.sql"),
       new ClassPathResource("db/migration/V5__create_parser_profile_schema.sql"),

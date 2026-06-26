@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test"
 import { routeIndexSegmentApi } from "./index-segment-api-fixtures"
 import { mockSourceEvidenceApi } from "./source-api-fixtures"
+import { routeWikiNodeApiFixtures } from "./wiki-node-api-fixtures"
 
 const forbiddenProductTerms = /Chunk Management|Chat API|Chatbot|Agent Platform|Workflow Builder|Vector DB Management/i
 
@@ -8,6 +9,7 @@ test.describe("Frontend skeleton IA", () => {
   test.beforeEach(async ({ page }) => {
     await mockSourceEvidenceApi(page)
     await routeIndexSegmentApi(page)
+    await routeWikiNodeApiFixtures(page)
   })
 
   test("sidebar exposes the complete product navigation groups", async ({ page }) => {

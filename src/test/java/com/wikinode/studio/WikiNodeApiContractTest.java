@@ -34,6 +34,25 @@ class WikiNodeApiContractTest {
   }
 
   @Test
+  void exposesWikiNodeKnowledgeObjectFieldsInListAndDetail() throws Exception {
+    HttpResponse<String> list = get("/api/wiki-nodes");
+    HttpResponse<String> detail = get("/api/wiki-nodes/wn-001");
+
+    assertThat(list.statusCode()).isEqualTo(200);
+    assertThat(list.body()).contains("\"objectType\":\"Article\"");
+    assertThat(list.body()).contains("\"subtype\":\"service_fee_policy\"");
+    assertThat(list.body()).contains("\"processingProfile\":\"web_article_policy_v1\"");
+    assertThat(list.body()).contains("\"metadata\":");
+    assertThat(list.body()).contains("\"businessDomain\":\"after_sales\"");
+
+    assertThat(detail.statusCode()).isEqualTo(200);
+    assertThat(detail.body()).contains("\"relations\"");
+    assertThat(detail.body()).contains("\"relationType\":\"has_policy\"");
+    assertThat(detail.body()).contains("\"targetNodeId\":\"wn-002\"");
+    assertThat(detail.body()).contains("\"evidence\"");
+  }
+
+  @Test
   void returnsWikiNodeDetailsAndLinks() throws Exception {
     HttpResponse<String> detail = get("/api/wiki-nodes/wn-001");
     HttpResponse<String> links = get("/api/wiki-nodes/wn-001/links");
@@ -532,6 +551,94 @@ class WikiNodeApiContractTest {
     assertThat(retrieval.body()).contains("\"node\":");
     assertThat(retrieval.body()).contains("\"nodeId\":\"new-node\"");
     assertThat(retrieval.body()).doesNotContain("\"chunk\"");
+  }
+
+  @Test
+  void createAndUpdatePreserveKnowledgeObjectFields() throws Exception {
+    String newNode = """
+      {
+        "slug": "api-knowledge-object-node",
+        "title": "API Knowledge Object 节点",
+        "nodeType": "product",
+        "objectType": "Product",
+        "subtype": "product_model",
+        "metadata": {
+          "brand": "Siemens",
+          "productCategory": "washing_machine",
+          "modelCode": "WM14U",
+          "businessDomain": "after_sales"
+        },
+        "relations": [
+          {
+            "targetNodeId": "wn-001",
+            "relationType": "has_policy",
+            "confidence": 0.81,
+            "createdBy": "user",
+            "evidence": {
+              "sourceRefId": "ref-api-product"
+            }
+          }
+        ],
+        "processingProfile": "db_product_master_v1",
+        "summary": "用于验证 Knowledge Object 字段通过 API 保存。",
+        "contentMarkdown": "## 产品主数据\\n\\n关联 [[保修政策]]。",
+        "tags": ["产品", "主数据"],
+        "status": "draft",
+        "sourceRefs": [],
+        "indexStatus": "not_indexed"
+      }
+      """;
+    String updatedNode = """
+      {
+        "nodeId": "api-knowledge-object-node",
+        "slug": "api-knowledge-object-node",
+        "title": "API Knowledge Object 节点",
+        "nodeType": "product",
+        "objectType": "Product",
+        "subtype": "product_model",
+        "metadata": {
+          "brand": "Siemens",
+          "productCategory": "washing_machine",
+          "modelCode": "WM14U",
+          "businessDomain": "after_sales",
+          "scenario": "warranty_service"
+        },
+        "relations": [
+          {
+            "targetNodeId": "wn-001",
+            "relationType": "has_policy",
+            "confidence": 0.86,
+            "createdBy": "user",
+            "evidence": {
+              "sourceRefId": "ref-api-product"
+            }
+          }
+        ],
+        "processingProfile": "db_product_master_v2",
+        "summary": "用于验证 Knowledge Object 字段更新后仍通过 API 保存。",
+        "contentMarkdown": "## 产品主数据\\n\\n继续关联 [[保修政策]]。",
+        "tags": ["产品", "主数据"],
+        "status": "draft",
+        "sourceRefs": [],
+        "indexStatus": "not_indexed"
+      }
+      """;
+
+    HttpResponse<String> create = post("/api/wiki-nodes", newNode);
+    HttpResponse<String> update = put("/api/wiki-nodes/api-knowledge-object-node", updatedNode);
+    HttpResponse<String> detail = get("/api/wiki-nodes/api-knowledge-object-node");
+
+    assertThat(create.statusCode()).isEqualTo(200);
+    assertThat(create.body()).contains("\"objectType\":\"Product\"");
+    assertThat(create.body()).contains("\"processingProfile\":\"db_product_master_v1\"");
+    assertThat(create.body()).contains("\"relationType\":\"has_policy\"");
+    assertThat(update.statusCode()).isEqualTo(200);
+    assertThat(update.body()).contains("\"processingProfile\":\"db_product_master_v2\"");
+    assertThat(update.body()).contains("\"scenario\":\"warranty_service\"");
+    assertThat(detail.statusCode()).isEqualTo(200);
+    assertThat(detail.body()).contains("\"metadata\"");
+    assertThat(detail.body()).contains("\"modelCode\":\"WM14U\"");
+    assertThat(detail.body()).contains("\"sourceRefId\":\"ref-api-product\"");
   }
 
   @Test
