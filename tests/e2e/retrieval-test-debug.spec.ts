@@ -145,4 +145,95 @@ test.describe("Retrieval Test debug experience", () => {
     await expect(page.getByText("命中预期 WikiNode。")).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
   })
+
+  test("IM053 renders retrieval evaluation console pages from existing evidence", async ({ page }) => {
+    await page.route("**/api/retrieval-test/logs", (route) => route.fulfill({
+      json: [
+        {
+          logId: "rlog-console-001",
+          query: "保修期内维修",
+          filters: { nodeType: "policy", status: "published" },
+          returnedNodeIds: ["wn-001"],
+          matchedSegmentIds: ["seg-001", "seg-002"],
+          latencyMs: 24,
+          status: "succeeded",
+          createdAt: "2026-06-26",
+        },
+        {
+          logId: "rlog-console-002",
+          query: "未知问题",
+          filters: {},
+          returnedNodeIds: [],
+          matchedSegmentIds: [],
+          latencyMs: 15,
+          status: "failed",
+          errorSummary: "没有可用的 WikiNode 结果。",
+          createdAt: "2026-06-26",
+        },
+      ],
+    }))
+    await page.route("**/api/retrieval-test/evaluation-cases", (route) => route.fulfill({
+      json: [
+        {
+          caseId: "eval-console-001",
+          query: "保修期内维修",
+          filters: { nodeType: "policy" },
+          topK: 5,
+          expectedNodeIds: ["wn-001"],
+          runResult: {
+            returnedNodeIds: ["wn-001"],
+            matchedSegmentIds: ["seg-001"],
+            status: "passed",
+            summary: "命中预期 WikiNode。",
+          },
+          createdAt: "2026-06-26",
+          updatedAt: "2026-06-26",
+        },
+        {
+          caseId: "eval-console-002",
+          query: "延保范围",
+          filters: {},
+          topK: 3,
+          expectedNodeIds: ["wn-004"],
+          runResult: {
+            returnedNodeIds: ["wn-002"],
+            matchedSegmentIds: ["seg-009"],
+            status: "failed",
+            summary: "返回 WikiNode 与预期不一致。",
+          },
+          createdAt: "2026-06-26",
+          updatedAt: "2026-06-26",
+        },
+      ],
+    }))
+
+    await page.goto("/query-logs")
+    await expect(page.getByRole("heading", { name: "查询日志" })).toBeVisible()
+    await expect(page.getByText("Retrieval API 查询日志证据")).toBeVisible()
+    await expect(page.getByText("rlog-console-001")).toBeVisible()
+    await expect(page.getByText("返回 WikiNode：wn-001")).toBeVisible()
+    await expect(page.getByText("命中 Index Segment：seg-001、seg-002")).toBeVisible()
+    await expect(page.getByText("状态：成功 · 24ms")).toBeVisible()
+    await expect(page.getByText("没有可用的 WikiNode 结果。")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+
+    await page.goto("/evaluation-cases")
+    await expect(page.getByRole("heading", { name: "评测用例" })).toBeVisible()
+    await expect(page.getByText("Retrieval Evaluation Case 证据")).toBeVisible()
+    await expect(page.getByText("eval-console-001")).toBeVisible()
+    await expect(page.getByText("预期 WikiNode：wn-001")).toBeVisible()
+    await expect(page.getByText("返回 WikiNode：wn-001")).toBeVisible()
+    await expect(page.getByText("运行结果：通过")).toBeVisible()
+    await expect(page.getByText("返回 WikiNode 与预期不一致。")).toBeVisible()
+
+    await page.goto("/retrieval-evaluation")
+    await expect(page.getByRole("heading", { name: "召回评测" })).toBeVisible()
+    await expect(page.getByText("召回评测基线")).toBeVisible()
+    await expect(page.getByText("评测用例数")).toBeVisible()
+    await expect(page.getByText("通过 1 / 失败 1")).toBeVisible()
+    await expect(page.getByText("最近查询日志 2 条")).toBeVisible()
+    await expect(page.getByText("当前不运行批量评测、不导出评测结果、不引入新评分算法。")).toBeVisible()
+    await expect(page.getByRole("button", { name: /运行评测|批量|导出|评分|同步/ })).toHaveCount(0)
+    await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+  })
 })
