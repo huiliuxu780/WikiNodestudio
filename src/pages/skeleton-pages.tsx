@@ -1039,12 +1039,40 @@ export function GenericSkeletonPage({ title, description }: { title: keyof typeo
   return (
     <PageScaffold title={title} description={description ?? "当前页是 WikiNode Studio 产品信息架构的本地占位基线。"}>
       <SimpleList items={(routeCards as Record<string, string[]>)[title] ?? ["本地占位模块", "导航目标", "当前不连接真实后端"]} />
+      <SkeletonBoundaryContent title={title} />
     </PageScaffold>
   )
 }
 
 export function PublishingPage() {
-  return <GenericSkeletonPage title="发布与索引" description="展示发布、索引和外部向量库同步的本地占位基线。" />
+  return (
+    <PageScaffold title="发布与索引" description="展示 WikiNode 发布前的索引检查、片段准备情况和外部同步责任边界。">
+      <div className="grid gap-4 lg:grid-cols-3">
+        <BoundaryCard
+          title="发布前只读检查"
+          items={[
+            "检查 WikiNode 发布状态、断链风险和 Index Segment 准备情况。",
+            "不会执行发布、审批、回滚、批量发布或外部向量同步。",
+          ]}
+        />
+        <BoundaryCard
+          title="Index Segment 生成状态"
+          items={[
+            "展示已索引、待更新、索引失败和未索引的验收口径。",
+            "Index Segment 是发布前生成的受控索引和召回单元。",
+          ]}
+        />
+        <BoundaryCard
+          title="外部向量库同步边界"
+          items={[
+            "当前只说明同步前置条件和责任边界。",
+            "不执行 embedding，不写入外部向量库，不提供重试或批量操作。",
+          ]}
+        />
+      </div>
+      <SimpleList items={["发布状态验收", "索引状态验收", "外部向量库边界"]} />
+    </PageScaffold>
+  )
 }
 
 export function SystemVectorStorePage() {
@@ -1115,6 +1143,64 @@ function SummaryGrid({ items }: { items: Array<[string, string]> }) {
         </Card>
       ))}
     </div>
+  )
+}
+
+function SkeletonBoundaryContent({ title }: { title: string }) {
+  const sections: Record<string, { heading: string; items: string[] }> = {
+    标签与元数据: {
+      heading: "标签治理基线",
+      items: [
+        "标签用于筛选、检索和 Index Segment metadata。",
+        "当前不提供创建、合并、删除或批量打标签。",
+      ],
+    },
+    元数据字段: {
+      heading: "元数据字段治理基线",
+      items: [
+        "字段意图、校验规则、索引参与和检索参与在这里说明。",
+        "当前不保存字段配置，不修改 Knowledge Object 模型。",
+      ],
+    },
+    角色: {
+      heading: "角色规划基线",
+      items: [
+        "角色仅说明协作分工，不做权限 enforcement。",
+        "当前不连接后端鉴权，也不改变用户模型。",
+      ],
+    },
+    权限: {
+      heading: "权限维度规划基线",
+      items: [
+        "当前不做鉴权、授权、审批或后端 RBAC。",
+        "这里只说明后续可能需要被产品确认的权限维度。",
+      ],
+    },
+    审计日志: {
+      heading: "审计证据规划基线",
+      items: [
+        "当前不写入真实审计日志，不提供导出或删除操作。",
+        "这里只展示 WikiNode、Index Segment 和检索测试的审计证据方向。",
+      ],
+    },
+  }
+  const section = sections[title]
+
+  return section ? <BoundaryCard title={section.heading} items={section.items} /> : null
+}
+
+function BoundaryCard({ title, items }: { title: string; items: string[] }) {
+  return (
+    <Card>
+      <CardHeader>
+        <div className="text-base font-medium leading-snug">{title}</div>
+      </CardHeader>
+      <CardContent className="space-y-2 text-sm text-muted-foreground">
+        {items.map((item) => (
+          <p key={item}>{item}</p>
+        ))}
+      </CardContent>
+    </Card>
   )
 }
 
