@@ -6,15 +6,16 @@ notes:
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
 stories:
-  - id: US054
-    title: "Quality issue console baseline"
+  - id: US055
+    title: "Quality governance surfaces baseline"
     status: ready
-    goal: "Turn the existing Quality / Evaluation roadmap into a PM-readable quality issue console baseline that explains WikiNode, WikiLink, source evidence, Index Segment, and retrieval-quality risks without running automated quality checks."
+    goal: "Turn the remaining Quality / Evaluation skeleton pages into PM-readable governance surfaces for conflict detection, expired knowledge, and duplicate knowledge while staying aligned with the Quality Issues evidence console."
     acceptance:
-      - "Quality Issues page groups PM-readable issue evidence by missing metadata/source evidence, broken WikiLinks, stale or risky Index Segments, duplicate/expired knowledge, and retrieval-quality risks."
-      - "Each issue row or card identifies the affected WikiNode or Knowledge Object, severity, issue type, evidence summary, and safe next action."
-      - "Quality issue copy stays read-only and does not imply automated repair, batch processing, publishing approval, vector sync, parser execution, or permissions enforcement."
-      - "Existing Broken Links, Index Segment, Retrieval Evaluation, and WikiNode-centered terminology remain consistent."
+      - "Conflicts page explains policy, time, scope, and coverage-conflict evidence with affected WikiNodes and suggested review owner."
+      - "Expired Knowledge page explains expired, expiring, and no-expiry-date WikiNode risks with lifecycle and indexing implications."
+      - "Duplicates page explains duplicate-title and duplicate-content candidates with affected WikiNodes and evidence summaries."
+      - "The three pages use product-facing governance language and do not leak PR boundary, mock, DTO, repository, or implementation terms."
+      - "Quality Issues, Conflicts, Expired Knowledge, and Duplicates read as one coherent quality-governance area."
       - "Visible copy avoids Chat API, Chatbot, Agent Platform, Workflow Builder, Vector DB Management, and Chunk Management."
     non_goals:
-      - "No backend API, DB migration, quality check runner, automated repair, batch operation, export, publishing approval, external vector DB work, embedding, Source import, parser execution, permissions, package change, or dependency change."
+      - "No backend API, DB migration, automated conflict detection, automated expiration job, duplicate-matching algorithm, resolved or ignore write action, batch operation, export, publishing approval, external vector DB work, embedding, Source import, parser execution, permissions, package change, or dependency change."

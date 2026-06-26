@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D055
+    date: "2026-06-26"
+    title: "Define Quality Governance Surfaces as the next Phase 2 capability slice"
+    rationale: "After IM054 established the Quality Issues evidence console, the next medium-granularity Phase 2 slice should complete the adjacent Quality / Evaluation skeleton surfaces as one coherent quality-governance area. IM055 should make Conflicts, Expired Knowledge, and Duplicates PM-readable while keeping automated conflict detection, expiration jobs, duplicate-matching algorithms, resolved or ignore write actions, backend API changes, database migrations, batch operations, export, external vector DB integration, embedding, permissions, publishing approval, package changes, and new dependencies out of scope."
+    related:
+      - IM055
+      - US055
+      - QUALITY_GOVERNANCE_SURFACES_BASELINE
+      - QUALITY_ISSUE_CONSOLE_BASELINE
   - id: D054
     date: "2026-06-26"
     title: "Define Quality Issue Console as the next Phase 2 capability slice"

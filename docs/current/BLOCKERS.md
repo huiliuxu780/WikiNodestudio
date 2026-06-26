@@ -6,8 +6,8 @@ None.
 
 ## Active Scope Constraints
 
-- `IM054` may turn the Quality Issues page into a read-only, PM-readable evidence console using existing WikiNode, WikiLink, source-evidence, Index Segment, and retrieval-quality signals.
-- `IM054` must not add backend API changes, database migrations, automated quality check execution, repair actions, batch operations, export, external vector DB integration, embedding invocation, permissions, publishing approval, package changes, or new dependencies.
+- `IM055` may turn Conflicts, Expired Knowledge, and Duplicates into read-only, PM-readable governance surfaces using existing WikiNode, WikiLink, source-evidence, Index Segment, and retrieval-quality signals.
+- `IM055` must not add backend API changes, database migrations, automated conflict detection, expiration jobs, duplicate-matching algorithms, resolved or ignore write actions, repair actions, batch operations, export, external vector DB integration, embedding invocation, permissions, publishing approval, package changes, or new dependencies.
 - Future frontend work must follow `docs/quality/frontend-ux-guidelines.md`.
 
 ## Standing Constraints
