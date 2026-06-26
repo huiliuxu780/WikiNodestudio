@@ -98,9 +98,38 @@ test.describe("WikiNode Knowledge Object metadata surface", () => {
     await expect(inspector).toContainText("人为损坏判定规则")
     await expect(inspector).toContainText("系统生成")
     await expect(inspector).toContainText("证据：Siemens service fee web page")
-    await expect(inspector).not.toContainText("添加关系")
-    await expect(inspector).not.toContainText("编辑关系")
+    await expect(inspector.getByRole("button", { name: "添加关系" })).toBeVisible()
+    await expect(inspector.getByRole("button", { name: "编辑关系" }).first()).toBeVisible()
+    await expect(inspector).not.toContainText(/批量|审批|智能推荐|自动修复/)
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+  })
+
+  test("editor inspector can add, update, and delete one Knowledge Relation", async ({ page }) => {
+    await routeDefaultWikiNodeApi(page)
+    await page.goto("/wiki-nodes/wn-001")
+
+    const inspector = page.getByTestId("wikinode-inspector")
+    await inspector.getByRole("tab", { name: "关联关系" }).click()
+    await inspector.getByRole("button", { name: "添加关系" }).click()
+    await inspector.getByLabel("目标 WikiNode").selectOption("wn-002")
+    await inspector.getByLabel("关系类型").selectOption("applies_to")
+    await inspector.getByLabel("关系说明").fill("适用于收费政策。")
+    await inspector.getByRole("button", { name: "保存关系" }).click()
+
+    await expect(inspector).toContainText("适用于")
+    await expect(inspector).toContainText("适用于收费政策。")
+
+    await inspector.getByRole("button", { name: "编辑关系" }).first().click()
+    await inspector.getByLabel("关系类型").selectOption("conflicts_with")
+    await inspector.getByLabel("关系说明").fill("冲突关系需要复核。")
+    await inspector.getByRole("button", { name: "保存关系" }).click()
+
+    await expect(inspector).toContainText("冲突")
+    await expect(inspector).toContainText("冲突关系需要复核。")
+
+    await inspector.getByRole("button", { name: "删除关系" }).first().click()
+
+    await expect(inspector).not.toContainText("冲突关系需要复核。")
   })
 })
 
@@ -166,14 +195,85 @@ async function routeDefaultWikiNodeApi(page: import("@playwright/test").Page) {
     updatedAt: "2026-06-18",
     lastIndexedAt: "2026-06-18",
   }
+  let currentNode = { ...defaultNode, relations: [...defaultNode.relations] }
   const relatedNodes = [
-    defaultNode,
+    currentNode,
     { ...defaultNode, nodeId: "wn-002", slug: "wn-002", title: "收费政策", relations: [] },
     { ...defaultNode, nodeId: "wn-003", slug: "wn-003", title: "人为损坏判定规则", relations: [] },
   ]
 
-  await page.route("**/api/wiki-nodes", (route) => route.fulfill({ json: relatedNodes }))
-  await page.route("**/api/wiki-nodes/wn-001", (route) => route.fulfill({ json: defaultNode }))
+  await page.route("**/api/wiki-nodes", (route) => route.fulfill({ json: [currentNode, ...relatedNodes.slice(1)] }))
+  await page.route("**/api/wiki-nodes/wn-001", (route) => route.fulfill({ json: currentNode }))
+  await page.route("**/api/wiki-nodes/wn-001/relations", async (route) => {
+    if (route.request().method() === "POST") {
+      const input = route.request().postDataJSON() as {
+        targetNodeId: string
+        relationType: string
+        status?: string
+        source?: string
+        confidence?: number
+        anchorText?: string
+        note?: string
+        evidenceSourceRefId?: string
+      }
+      const relation = {
+        id: `rel-test-${Date.now()}`,
+        sourceNodeId: "wn-001",
+        targetNodeId: input.targetNodeId,
+        relationType: input.relationType,
+        status: input.status ?? "active",
+        source: input.source ?? "manual",
+        direction: "outgoing",
+        confidence: input.confidence ?? 0.8,
+        createdBy: "user",
+        anchorText: input.anchorText,
+        note: input.note,
+        evidence: input.evidenceSourceRefId ? { sourceRefId: input.evidenceSourceRefId } : undefined,
+      }
+      currentNode = { ...currentNode, relations: [...currentNode.relations, relation] }
+      return route.fulfill({ json: relation })
+    }
+    return route.fulfill({ json: currentNode.relations })
+  })
+  await page.route("**/api/wiki-nodes/wn-001/relations/*", async (route) => {
+    const relationId = route.request().url().split("/").pop()
+    if (route.request().method() === "PATCH") {
+      const input = route.request().postDataJSON() as {
+        targetNodeId: string
+        relationType: string
+        status?: string
+        source?: string
+        confidence?: number
+        anchorText?: string
+        note?: string
+        evidenceSourceRefId?: string
+      }
+      const relation = {
+        id: relationId,
+        sourceNodeId: "wn-001",
+        targetNodeId: input.targetNodeId,
+        relationType: input.relationType,
+        status: input.status ?? "active",
+        source: input.source ?? "manual",
+        direction: "outgoing",
+        confidence: input.confidence ?? 0.8,
+        createdBy: "user",
+        anchorText: input.anchorText,
+        note: input.note,
+        evidence: input.evidenceSourceRefId ? { sourceRefId: input.evidenceSourceRefId } : undefined,
+      }
+      currentNode = {
+        ...currentNode,
+        relations: currentNode.relations.map((item) => item.id === relationId ? relation : item),
+      }
+      return route.fulfill({ json: relation })
+    }
+    if (route.request().method() === "DELETE") {
+      currentNode = { ...currentNode, relations: currentNode.relations.filter((item) => item.id !== relationId) }
+      return route.fulfill({ status: 204, body: "" })
+    }
+    return route.fulfill({ status: 404, json: { message: "not found" } })
+  })
   await page.route("**/api/wiki-nodes/wn-001/links", (route) => route.fulfill({
     json: [
       {

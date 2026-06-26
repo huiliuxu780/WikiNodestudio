@@ -6,12 +6,11 @@ notes:
   - "Do not auto-enter the next IM without explicit user confirmation."
   - "Done history stays in release docs or archive."
 tasks:
-  - id: IM056
-    title: "Knowledge Relation Management Read Surface"
+  - id: IM057
+    title: "Knowledge Relation Management Mutation Baseline"
     status: in_progress
-    story_ids: [US056]
+    story_ids: [US057]
     allowed_files:
-      - "docs/current/KNOWLEDGE_RELATION_MANAGEMENT_PRD.md"
       - "docs/current/STORY_QUEUE.yaml"
       - "docs/current/ACTIVE_TASKS.yaml"
       - "docs/current/PROJECT_CONTEXT.md"
@@ -19,27 +18,33 @@ tasks:
       - "docs/registry/DECISION_INDEX.yaml"
       - "docs/registry/TRACE_INDEX.yaml"
       - "src/types/wiki.ts"
-      - "src/utils/display-labels.ts"
+      - "src/services/api-client.ts"
+      - "src/services/wiki-node-api-service.ts"
+      - "src/pages/wiki-node-edit-page.tsx"
       - "src/components/wiki/wiki-node-inspector.tsx"
-      - "src/components/wiki/link-list.tsx"
-      - "src/pages/broken-links-page.tsx"
+      - "src/main/java/com/wikinode/studio/api/WikiNodeController.java"
+      - "src/main/java/com/wikinode/studio/model/KnowledgeRelation.java"
+      - "src/main/java/com/wikinode/studio/model/KnowledgeRelationRequest.java"
+      - "src/main/java/com/wikinode/studio/repository/AbstractWikiNodeRepository.java"
+      - "src/main/java/com/wikinode/studio/repository/JdbcWikiNodeRepository.java"
+      - "src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java"
+      - "src/main/resources/db/migration/V11__add_knowledge_relation_mutation_fields.sql"
+      - "src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java"
+      - "src/test/java/com/wikinode/studio/repository/JdbcWikiNodeRepositoryTest.java"
       - "tests/e2e/wikinode-knowledge-object-metadata.spec.ts"
-      - "tests/e2e/frontend-skeleton.spec.ts"
-      - "tests/e2e/mvp-smoke.spec.ts"
-      - "tests/e2e/retrieval-test-debug.spec.ts"
-      - "tests/e2e/retrieval-api-fixtures.ts"
       - "docs/current/**"
       - "docs/registry/**"
     forbidden_files:
-      - "src/main/**"
-      - "src/main/resources/db/migration/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/workflows/**"
+      - "src/main/resources/db/migration/V12__*.sql"
+      - "src/main/java/com/wikinode/studio/api/*Permission*"
+      - "src/main/java/com/wikinode/studio/api/*Approval*"
     gates:
-      - "Read-only relation gate: implement only current-contract frontend relation surfaces."
-      - "Contract gate: separate current WikiLink/KnowledgeRelation/schema/API reality from future implementation permission."
-      - "No fake action gate: do not expose relation add/edit/delete, Broken Link repair, associate, ignore, create, export, batch, or approval actions without implementation."
-      - "Verification gate: pnpm lint, pnpm build, bash scripts/check-state.sh, bash scripts/check.sh, focused Playwright, full Playwright, and diff check."
+      - "Single relation mutation gate: implement only one-record Knowledge Relation CRUD under a WikiNode."
+      - "WikiNode-centered gate: keep WikiLink, Knowledge Relation, sourceRefs, and Index Segment evidence separate and traceable."
+      - "No fake action gate: expose only actions backed by repository/API/frontend implementation and tests."
+      - "Verification gate: focused repository/API tests, pnpm lint, pnpm build, bash scripts/check-state.sh, bash scripts/check.sh, full Playwright, and diff check."
     stop_conditions:
-      - "Any frontend implementation, backend API change, Java model change, DB migration, relation write action, manual relation drawer, Broken Link repair action, graph algorithm change, Source import, parser execution, vector retrieval change, AI relation suggestion, permissions, package or lockfile change."
+      - "Any batch relation operation, approval flow, permission boundary, Source import, parser execution, vector sync, AI relation suggestion, graph algorithm change, package change, lockfile change, or dependency change."

@@ -1,6 +1,6 @@
 import * as mockService from "@/services/wiki-node-mock-service"
-import { apiGet, apiPost, apiPut, withMockFallback } from "@/services/api-client"
-import type { BrokenLink, GraphEdge, GraphNode, WikiLink, WikiNode, WikiNodeCreateInput } from "@/types/wiki"
+import { apiDelete, apiGet, apiPatch, apiPost, apiPut, withMockFallback } from "@/services/api-client"
+import type { BrokenLink, GraphEdge, GraphNode, KnowledgeRelation, KnowledgeRelationInput, WikiLink, WikiNode, WikiNodeCreateInput } from "@/types/wiki"
 
 export type WikiNodeLinks = {
   outgoingLinks: WikiLink[]
@@ -38,6 +38,66 @@ export async function updateWikiNode(nodeId: string, node: WikiNode) {
   return withMockFallback(
     apiPut<WikiNode>(`/wiki-nodes/${nodeId}`, node),
     () => mockService.updateWikiNode(nodeId, node),
+  )
+}
+
+export function listKnowledgeRelations(nodeId: string) {
+  return withMockFallback(
+    apiGet<KnowledgeRelation[]>(`/wiki-nodes/${nodeId}/relations`),
+    () => mockService.getWikiNodeById(nodeId)?.relations ?? [],
+  )
+}
+
+export function createKnowledgeRelation(nodeId: string, input: KnowledgeRelationInput) {
+  return withMockFallback(
+    apiPost<KnowledgeRelation>(`/wiki-nodes/${nodeId}/relations`, input),
+    () => {
+      const relation: KnowledgeRelation = {
+        id: `rel-${nodeId}-${Date.now()}`,
+        sourceNodeId: nodeId,
+        targetNodeId: input.targetNodeId,
+        relationType: input.relationType,
+        status: input.status ?? "active",
+        source: input.source ?? "manual",
+        direction: "outgoing",
+        confidence: input.confidence,
+        createdBy: "user",
+        anchorText: input.anchorText,
+        note: input.note,
+        evidence: input.evidenceSourceRefId ? { sourceRefId: input.evidenceSourceRefId } : undefined,
+      }
+      return relation
+    },
+  )
+}
+
+export function updateKnowledgeRelation(nodeId: string, relationId: string, input: KnowledgeRelationInput) {
+  return withMockFallback(
+    apiPatch<KnowledgeRelation>(`/wiki-nodes/${nodeId}/relations/${relationId}`, input),
+    () => {
+      const relation: KnowledgeRelation = {
+        id: relationId,
+        sourceNodeId: nodeId,
+        targetNodeId: input.targetNodeId,
+        relationType: input.relationType,
+        status: input.status ?? "active",
+        source: input.source ?? "manual",
+        direction: "outgoing",
+        confidence: input.confidence,
+        createdBy: "user",
+        anchorText: input.anchorText,
+        note: input.note,
+        evidence: input.evidenceSourceRefId ? { sourceRefId: input.evidenceSourceRefId } : undefined,
+      }
+      return relation
+    },
+  )
+}
+
+export function deleteKnowledgeRelation(nodeId: string, relationId: string) {
+  return withMockFallback(
+    apiDelete<void>(`/wiki-nodes/${nodeId}/relations/${relationId}`),
+    () => undefined,
   )
 }
 

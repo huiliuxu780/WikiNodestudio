@@ -6,6 +6,8 @@ import com.wikinode.studio.model.IndexStatusSummary;
 import com.wikinode.studio.model.IndexSegment;
 import com.wikinode.studio.model.IndexSegmentMetadataSummaryItem;
 import com.wikinode.studio.model.KnowledgeRelation;
+import com.wikinode.studio.model.KnowledgeRelationEvidence;
+import com.wikinode.studio.model.KnowledgeRelationRequest;
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParsedDocumentSourceRef;
 import com.wikinode.studio.model.ParserProfile;
@@ -115,6 +117,42 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
     ensureSlugAvailable(node.slug(), node.nodeId(), nodeId);
     replaceNode(nodeId, node);
     return findNode(nodeId).orElse(node);
+  }
+
+  @Override
+  public List<KnowledgeRelation> listKnowledgeRelations(String nodeId) {
+    WikiNode node = loadNode(nodeId).orElseThrow(() -> new IllegalArgumentException("WikiNode not found"));
+    return List.copyOf(node.relations());
+  }
+
+  @Override
+  public KnowledgeRelation createKnowledgeRelation(String nodeId, KnowledgeRelationRequest request) {
+    WikiNode node = loadNode(nodeId).orElseThrow(() -> new IllegalArgumentException("WikiNode not found"));
+    KnowledgeRelation relation = relationFromRequest(nodeId, null, request);
+    List<KnowledgeRelation> relations = new ArrayList<>(node.relations());
+    relations.add(relation);
+    replaceNode(nodeId, nodeWithRelations(node, relations));
+    return relation;
+  }
+
+  @Override
+  public KnowledgeRelation updateKnowledgeRelation(String nodeId, String relationId, KnowledgeRelationRequest request) {
+    WikiNode node = loadNode(nodeId).orElseThrow(() -> new IllegalArgumentException("WikiNode not found"));
+    List<KnowledgeRelation> relations = new ArrayList<>(node.relations());
+    int index = relationIndex(relations, relationId);
+    KnowledgeRelation relation = relationFromRequest(nodeId, relationId, request);
+    relations.set(index, relation);
+    replaceNode(nodeId, nodeWithRelations(node, relations));
+    return relation;
+  }
+
+  @Override
+  public void deleteKnowledgeRelation(String nodeId, String relationId) {
+    WikiNode node = loadNode(nodeId).orElseThrow(() -> new IllegalArgumentException("WikiNode not found"));
+    List<KnowledgeRelation> relations = new ArrayList<>(node.relations());
+    int index = relationIndex(relations, relationId);
+    relations.remove(index);
+    replaceNode(nodeId, nodeWithRelations(node, relations));
   }
 
   @Override
@@ -1312,6 +1350,79 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       valueOrDefault(request.updatedAt(), today),
       request.lastIndexedAt() == null && existing != null ? existing.lastIndexedAt() : request.lastIndexedAt()
     );
+  }
+
+  private KnowledgeRelation relationFromRequest(String nodeId, String existingRelationId, KnowledgeRelationRequest request) {
+    if (request == null) {
+      throw new IllegalArgumentException("关系内容不能为空。");
+    }
+    String targetNodeId = Optional.ofNullable(request.targetNodeId()).orElse("").trim();
+    if (targetNodeId.isBlank()) {
+      throw new IllegalArgumentException("目标 WikiNode 不能为空。");
+    }
+    if (loadNode(targetNodeId).isEmpty()) {
+      throw new IllegalArgumentException("目标 WikiNode 不存在。");
+    }
+    String relationType = valueOrDefault(request.relationType(), "references");
+    String status = valueOrDefault(request.status(), "active");
+    String source = valueOrDefault(request.source(), "manual");
+    String relationId = existingRelationId == null || existingRelationId.isBlank()
+      ? "rel-%s-%s".formatted(nodeId, UUID.randomUUID())
+      : existingRelationId;
+
+    return new KnowledgeRelation(
+      relationId,
+      nodeId,
+      targetNodeId,
+      relationType,
+      status,
+      source,
+      "outgoing",
+      request.confidence(),
+      "manual".equals(source) ? "user" : "system",
+      blankToNull(request.anchorText()),
+      blankToNull(request.note()),
+      blankToNull(request.evidenceSourceRefId()) == null ? null : new KnowledgeRelationEvidence(request.evidenceSourceRefId())
+    );
+  }
+
+  private int relationIndex(List<KnowledgeRelation> relations, String relationId) {
+    for (int index = 0; index < relations.size(); index++) {
+      if (relationId.equals(relations.get(index).id())) {
+        return index;
+      }
+    }
+    throw new IllegalArgumentException("Knowledge Relation not found");
+  }
+
+  private WikiNode nodeWithRelations(WikiNode node, List<KnowledgeRelation> relations) {
+    return new WikiNode(
+      node.nodeId(),
+      node.slug(),
+      node.title(),
+      node.nodeType(),
+      node.objectType(),
+      node.subtype(),
+      node.metadata(),
+      relations,
+      node.processingProfile(),
+      node.summary(),
+      node.contentMarkdown(),
+      node.tags(),
+      node.status(),
+      node.sourceRefs(),
+      node.indexStatus(),
+      0,
+      0,
+      0,
+      node.createdAt(),
+      LocalDate.now().toString(),
+      node.lastIndexedAt()
+    );
+  }
+
+  private String blankToNull(String value) {
+    return value == null || value.isBlank() ? null : value;
   }
 
   private void ensureSlugAvailable(String slug, String nodeId, String exceptNodeId) {

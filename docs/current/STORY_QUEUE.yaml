@@ -6,17 +6,15 @@ notes:
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
 stories:
-  - id: US056
-    title: "Knowledge relation management read surface"
+  - id: US057
+    title: "Knowledge relation management mutation baseline"
     status: in_progress
-    goal: "Make Knowledge Relation a first-class read-only WikiNode surface using the current frontend, API, and data contracts."
+    goal: "Make one Knowledge Relation editable from a WikiNode while preserving the current WikiNode-centered model and relation read surface."
     acceptance:
-      - "Adds `docs/current/KNOWLEDGE_RELATION_MANAGEMENT_PRD.md` as the current relation-management planning and execution baseline."
-      - "Audits existing WikiLink, KnowledgeRelation, wiki_node_relations, WikiGraph, Broken Links, and WikiNode detail/editor relation surfaces."
-      - "Defines accepted product direction for Markdown WikiLink plus first-class Knowledge Relation and implements the current read-only frontend surface."
-      - "Defines relation type/status/source direction and maps the external PRD enum style to the current lowercase contract direction."
-      - "WikiNode Inspector includes a dedicated relation surface with structured relations, Markdown WikiLinks, unresolved relation counts, relation status/source, target object, and evidence."
-      - "Broken Links displays unresolved relation context without fake create, associate, ignore, repair, or batch actions."
-      - "No backend, database, API, Java model, package, lockfile, or CI files are changed."
+      - "Adds backend, repository, migration, and API support for single Knowledge Relation create, update, delete, and list operations scoped to one WikiNode."
+      - "WikiNode Inspector supports adding, editing, and deleting one structured Knowledge Relation with target WikiNode, relation type, manual source, status, note, and evidence link."
+      - "The existing Markdown WikiLink and Broken Link read surfaces remain separate from the structured Knowledge Relation mutation path."
+      - "Repository, API contract, frontend build, and Playwright coverage validate the single-relation mutation path."
+      - "No batch relation operations, approval workflow, AI suggestion, Source import, parser execution, vector sync, permissions, package change, or dependency change."
     non_goals:
-      - "No relation CRUD, relation drawer, manual add/edit/delete action, backend API, DB migration, Java model change, frontend implementation, graph algorithm, Broken Link repair action, Source import, parser execution, vector retrieval change, AI relation suggestion, permission flow, package change, or dependency change."
+      - "No batch create/update/delete, relation approval workflow, relation suggestion, automatic conflict resolution, graph algorithm, Broken Link repair action, Source import, parser execution, vector retrieval change, AI relation suggestion, permission flow, package change, or dependency change."

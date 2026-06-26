@@ -2,6 +2,8 @@ package com.wikinode.studio.api;
 
 import com.wikinode.studio.model.IndexStatusSummary;
 import com.wikinode.studio.model.IndexSegment;
+import com.wikinode.studio.model.KnowledgeRelation;
+import com.wikinode.studio.model.KnowledgeRelationRequest;
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
@@ -29,13 +31,16 @@ import com.wikinode.studio.repository.WikiNodeRepository;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
@@ -85,6 +90,50 @@ public class WikiNodeController {
       return repository.updateNode(id, request);
     } catch (IllegalArgumentException error) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, error.getMessage());
+    }
+  }
+
+  @GetMapping("/wiki-nodes/{id}/relations")
+  public List<KnowledgeRelation> listKnowledgeRelations(@PathVariable String id) {
+    ensureNodeExists(id);
+    return repository.listKnowledgeRelations(id);
+  }
+
+  @PostMapping("/wiki-nodes/{id}/relations")
+  public KnowledgeRelation createKnowledgeRelation(@PathVariable String id, @RequestBody KnowledgeRelationRequest request) {
+    ensureNodeExists(id);
+    try {
+      return repository.createKnowledgeRelation(id, request);
+    } catch (IllegalArgumentException error) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, error.getMessage());
+    }
+  }
+
+  @PatchMapping("/wiki-nodes/{id}/relations/{relationId}")
+  public KnowledgeRelation updateKnowledgeRelation(
+    @PathVariable String id,
+    @PathVariable String relationId,
+    @RequestBody KnowledgeRelationRequest request
+  ) {
+    ensureNodeExists(id);
+    try {
+      return repository.updateKnowledgeRelation(id, relationId, request);
+    } catch (IllegalArgumentException error) {
+      throw new ResponseStatusException(
+        "Knowledge Relation not found".equals(error.getMessage()) ? HttpStatus.NOT_FOUND : HttpStatus.BAD_REQUEST,
+        error.getMessage()
+      );
+    }
+  }
+
+  @DeleteMapping("/wiki-nodes/{id}/relations/{relationId}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteKnowledgeRelation(@PathVariable String id, @PathVariable String relationId) {
+    ensureNodeExists(id);
+    try {
+      repository.deleteKnowledgeRelation(id, relationId);
+    } catch (IllegalArgumentException error) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, error.getMessage());
     }
   }
 

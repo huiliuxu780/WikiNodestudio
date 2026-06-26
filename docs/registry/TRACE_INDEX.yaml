@@ -289,6 +289,30 @@ phase2_plans:
       - src/main/java/com/wikinode/studio/model/WikiLink.java
       - src/main/java/com/wikinode/studio/model/GraphEdge.java
     current_schema: src/main/resources/db/migration/V8__align_wikinode_knowledge_object_fields.sql
+  KNOWLEDGE_RELATION_MANAGEMENT_MUTATION_BASELINE:
+    decision: D057
+    previous_relation_surface: KNOWLEDGE_RELATION_MANAGEMENT_READ_SURFACE
+    story_queue: docs/current/STORY_QUEUE.yaml
+    active_task: docs/current/ACTIVE_TASKS.yaml
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    repository:
+      - src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
+      - src/main/java/com/wikinode/studio/repository/AbstractWikiNodeRepository.java
+      - src/main/java/com/wikinode/studio/repository/JdbcWikiNodeRepository.java
+    relation_models:
+      - src/main/java/com/wikinode/studio/model/KnowledgeRelation.java
+      - src/main/java/com/wikinode/studio/model/KnowledgeRelationRequest.java
+    migration: src/main/resources/db/migration/V11__add_knowledge_relation_mutation_fields.sql
+    frontend:
+      - src/types/wiki.ts
+      - src/services/api-client.ts
+      - src/services/wiki-node-api-service.ts
+      - src/pages/wiki-node-edit-page.tsx
+      - src/components/wiki/wiki-node-inspector.tsx
+    tests:
+      - src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+      - src/test/java/com/wikinode/studio/repository/JdbcWikiNodeRepositoryTest.java
+      - tests/e2e/wikinode-knowledge-object-metadata.spec.ts
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
@@ -393,6 +417,9 @@ tasks:
   IM056:
     decision: D056
     implementation: KNOWLEDGE_RELATION_MANAGEMENT_READ_SURFACE
+  IM057:
+    decision: D057
+    implementation: KNOWLEDGE_RELATION_MANAGEMENT_MUTATION_BASELINE
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN

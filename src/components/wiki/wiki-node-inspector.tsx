@@ -1,15 +1,16 @@
-import type { ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { Link } from "react-router-dom"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { mockWikiNodes } from "@/data/mock-wiki-nodes"
 import { IndexStatusBadge } from "@/components/wiki/index-status-badge"
 import { LinkList } from "@/components/wiki/link-list"
 import { SourceRefList } from "@/components/wiki/source-ref-list"
 import type { IndexSegment } from "@/types/index-segment"
-import type { KnowledgeRelation, WikiLink, WikiNode } from "@/types/wiki"
+import type { KnowledgeRelation, KnowledgeRelationInput, KnowledgeRelationType, WikiLink, WikiNode } from "@/types/wiki"
 import {
   commonLabels,
   indexStatusLabels,
@@ -29,19 +30,27 @@ import {
 
 export function WikiNodeInspector({
   node,
+  availableNodes = [],
   outgoingLinks,
   incomingLinks,
   brokenLinks,
   indexSegments,
+  onCreateRelation,
+  onUpdateRelation,
+  onDeleteRelation,
   onGenerateIndexSegments,
   isGeneratingIndexSegments = false,
   segmentGenerationFeedback = "",
 }: {
   node: WikiNode
+  availableNodes?: WikiNode[]
   outgoingLinks: WikiLink[]
   incomingLinks: WikiLink[]
   brokenLinks: WikiLink[]
   indexSegments: IndexSegment[]
+  onCreateRelation?: (input: KnowledgeRelationInput) => Promise<void>
+  onUpdateRelation?: (relationId: string, input: KnowledgeRelationInput) => Promise<void>
+  onDeleteRelation?: (relationId: string) => Promise<void>
   onGenerateIndexSegments?: () => void
   isGeneratingIndexSegments?: boolean
   segmentGenerationFeedback?: string
@@ -111,8 +120,12 @@ export function WikiNodeInspector({
         <TabsContent value="relations" className="mt-0 min-h-0 overflow-y-auto text-sm">
           <RelationSurface
             node={node}
+            availableNodes={availableNodes}
             outgoingLinks={outgoingLinks}
             brokenLinks={brokenLinks}
+            onCreateRelation={onCreateRelation}
+            onUpdateRelation={onUpdateRelation}
+            onDeleteRelation={onDeleteRelation}
           />
         </TabsContent>
         <TabsContent value="links" className="mt-0 min-h-0 overflow-y-auto">
@@ -229,16 +242,70 @@ function MetaRow({ label, value }: { label: string; value: ReactNode }) {
 
 function RelationSurface({
   node,
+  availableNodes,
   outgoingLinks,
   brokenLinks,
+  onCreateRelation,
+  onUpdateRelation,
+  onDeleteRelation,
 }: {
   node: WikiNode
+  availableNodes: WikiNode[]
   outgoingLinks: WikiLink[]
   brokenLinks: WikiLink[]
+  onCreateRelation?: (input: KnowledgeRelationInput) => Promise<void>
+  onUpdateRelation?: (relationId: string, input: KnowledgeRelationInput) => Promise<void>
+  onDeleteRelation?: (relationId: string) => Promise<void>
 }) {
   const structuredRelations = node.relations ?? []
   const markdownRelations = outgoingLinks
   const unresolvedRelations = brokenLinks
+  const [formMode, setFormMode] = useState<"closed" | "create" | "edit">("closed")
+  const [editingRelationId, setEditingRelationId] = useState("")
+  const [form, setForm] = useState<RelationFormState>(() => emptyRelationForm(node, availableNodes))
+  const [isSaving, setIsSaving] = useState(false)
+
+  function openCreateForm() {
+    setEditingRelationId("")
+    setForm(emptyRelationForm(node, availableNodes))
+    setFormMode("create")
+  }
+
+  function openEditForm(relation: KnowledgeRelation) {
+    setEditingRelationId(relation.id ?? "")
+    setForm({
+      targetNodeId: relation.targetNodeId,
+      relationType: relation.relationType,
+      note: relation.note ?? relation.anchorText ?? "",
+    })
+    setFormMode("edit")
+  }
+
+  async function submitRelation() {
+    if (!form.targetNodeId) return
+    setIsSaving(true)
+    const input: KnowledgeRelationInput = {
+      targetNodeId: form.targetNodeId,
+      relationType: form.relationType,
+      status: "active",
+      source: "manual",
+      anchorText: form.note,
+      note: form.note,
+      confidence: 0.8,
+      evidenceSourceRefId: node.sourceRefs[0]?.id ?? node.sourceRefs[0]?.sourceId,
+    }
+    try {
+      if (formMode === "edit" && editingRelationId && onUpdateRelation) {
+        await onUpdateRelation(editingRelationId, input)
+      } else if (formMode === "create" && onCreateRelation) {
+        await onCreateRelation(input)
+      }
+      setFormMode("closed")
+      setEditingRelationId("")
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   return (
     <div className="flex flex-col gap-4 pr-1">
@@ -251,7 +318,27 @@ function RelationSurface({
       </PanelSection>
 
       <PanelSection title="结构化关系">
-        <KnowledgeRelationList relations={structuredRelations} sourceRefs={node.sourceRefs} />
+        {onCreateRelation ? (
+          <div className="flex justify-end">
+            <Button size="sm" variant="outline" onClick={openCreateForm}>添加关系</Button>
+          </div>
+        ) : null}
+        {formMode !== "closed" ? (
+          <RelationForm
+            form={form}
+            nodes={availableNodes.filter((item) => item.nodeId !== node.nodeId)}
+            isSaving={isSaving}
+            onChange={setForm}
+            onCancel={() => setFormMode("closed")}
+            onSubmit={submitRelation}
+          />
+        ) : null}
+        <KnowledgeRelationList
+          relations={structuredRelations}
+          sourceRefs={node.sourceRefs}
+          onEdit={onUpdateRelation ? openEditForm : undefined}
+          onDelete={onDeleteRelation}
+        />
       </PanelSection>
 
       <PanelSection title="正文双链">
@@ -261,6 +348,85 @@ function RelationSurface({
       <PanelSection title="断链 / 待确认">
         <WikiLinkRelationList links={unresolvedRelations} emptyText="暂无未解析关系。" />
       </PanelSection>
+    </div>
+  )
+}
+
+type RelationFormState = {
+  targetNodeId: string
+  relationType: KnowledgeRelationType
+  note: string
+}
+
+function emptyRelationForm(node: WikiNode, availableNodes: WikiNode[]): RelationFormState {
+  return {
+    targetNodeId: availableNodes.find((item) => item.nodeId !== node.nodeId)?.nodeId ?? "",
+    relationType: "references",
+    note: "",
+  }
+}
+
+function RelationForm({
+  form,
+  nodes,
+  isSaving,
+  onChange,
+  onCancel,
+  onSubmit,
+}: {
+  form: RelationFormState
+  nodes: WikiNode[]
+  isSaving: boolean
+  onChange: (form: RelationFormState) => void
+  onCancel: () => void
+  onSubmit: () => void
+}) {
+  return (
+    <div className="grid gap-3 rounded-md border bg-background p-3">
+      <div className="grid gap-2">
+        <label className="text-xs font-medium text-muted-foreground" htmlFor="relation-target-node">目标 WikiNode</label>
+        <select
+          id="relation-target-node"
+          aria-label="目标 WikiNode"
+          className="h-8 rounded-lg border bg-background px-2 text-sm"
+          value={form.targetNodeId}
+          onChange={(event) => onChange({ ...form, targetNodeId: event.target.value })}
+        >
+          {nodes.map((item) => (
+            <option key={item.nodeId} value={item.nodeId}>{item.title}</option>
+          ))}
+        </select>
+      </div>
+      <div className="grid gap-2">
+        <label className="text-xs font-medium text-muted-foreground" htmlFor="relation-type">关系类型</label>
+        <select
+          id="relation-type"
+          aria-label="关系类型"
+          className="h-8 rounded-lg border bg-background px-2 text-sm"
+          value={form.relationType}
+          onChange={(event) => onChange({ ...form, relationType: event.target.value as KnowledgeRelationType })}
+        >
+          {(["references", "related_to", "applies_to", "replaces", "conflicts_with", "derived_from"] as KnowledgeRelationType[]).map((relationType) => (
+            <option key={relationType} value={relationType}>{labelFromMap(relationTypeLabels, relationType)}</option>
+          ))}
+        </select>
+      </div>
+      <div className="grid gap-2">
+        <label className="text-xs font-medium text-muted-foreground" htmlFor="relation-note">关系说明</label>
+        <Input
+          id="relation-note"
+          aria-label="关系说明"
+          value={form.note}
+          onChange={(event) => onChange({ ...form, note: event.target.value })}
+          placeholder="补充适用范围、冲突原因或来源说明"
+        />
+      </div>
+      <div className="flex justify-end gap-2">
+        <Button type="button" size="sm" variant="ghost" onClick={onCancel}>取消</Button>
+        <Button type="button" size="sm" onClick={onSubmit} disabled={isSaving || !form.targetNodeId}>
+          {isSaving ? "保存中..." : "保存关系"}
+        </Button>
+      </div>
     </div>
   )
 }
@@ -277,9 +443,13 @@ function RelationCount({ label, value }: { label: string; value: number }) {
 function KnowledgeRelationList({
   relations,
   sourceRefs,
+  onEdit,
+  onDelete,
 }: {
   relations: KnowledgeRelation[] | undefined
   sourceRefs: WikiNode["sourceRefs"]
+  onEdit?: (relation: KnowledgeRelation) => void
+  onDelete?: (relationId: string) => void
 }) {
   if (!relations?.length) {
     return <p className="rounded-md border bg-background p-3 text-sm text-muted-foreground">暂无结构化关系。</p>
@@ -294,6 +464,7 @@ function KnowledgeRelationList({
         const status = relation.status ?? (target ? "active" : "broken")
         const source = relation.source ?? (relation.createdBy === "user" ? "manual" : "system")
         const group = relationGroupLabel(relation.relationType)
+        const relationId = relation.id
 
         return (
           <div key={relation.id ?? `${relation.relationType}-${relation.targetNodeId}`} className="rounded-md border bg-background p-3 text-sm">
@@ -307,6 +478,10 @@ function KnowledgeRelationList({
                   <Badge variant="outline">{labelFromMap(relationSourceLabels, source)}</Badge>
                 </div>
                 <div className="mt-2 font-medium">{relationLabel} -&gt; {target?.title ?? relation.targetNodeId}</div>
+              </div>
+              <div className="flex shrink-0 gap-1">
+                {onEdit ? <Button size="sm" variant="ghost" onClick={() => onEdit(relation)}>编辑关系</Button> : null}
+                {onDelete && relationId ? <Button size="sm" variant="ghost" onClick={() => onDelete(relationId)}>删除关系</Button> : null}
               </div>
             </div>
             <div className="mt-3 grid gap-2 text-xs text-muted-foreground">

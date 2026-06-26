@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D057
+    date: "2026-06-27"
+    title: "Implement single Knowledge Relation mutation baseline"
+    rationale: "After IM056 established Knowledge Relation as a first-class read surface, IM057 adds the first write-capable baseline for one Knowledge Relation under a WikiNode. The slice adds repository/API/database/frontend service support and WikiNode Inspector controls for single create, update, delete, and list operations while keeping Markdown WikiLink, Broken Link evidence, and structured Knowledge Relation mutation separate. It does not add batch relation operations, approvals, AI suggestions, Source import, parser execution, vector sync, permissions, packages, dependencies, or graph algorithm changes."
+    related:
+      - IM057
+      - US057
+      - KNOWLEDGE_RELATION_MANAGEMENT_MUTATION_BASELINE
+      - KNOWLEDGE_RELATION_MANAGEMENT_READ_SURFACE
   - id: D056
     date: "2026-06-27"
     title: "Implement current-contract Knowledge Relation read surface"
