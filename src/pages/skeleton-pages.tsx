@@ -22,6 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { LinkList } from "@/components/wiki/link-list"
 import { useAsyncData } from "@/hooks/use-async-data"
+import { listIndexSegments } from "@/services/index-segment-api-service"
 import { listParserProfiles } from "@/services/parser-profile-api-service"
 import {
   acceptDraftWikiNodeSuggestion,
@@ -960,12 +961,21 @@ export function BacklinksPage() {
 }
 
 export function IndexSegmentListPage() {
+  const {
+    data: segments,
+    error,
+    isLoading,
+    reload,
+  } = useAsyncData(listIndexSegments, [])
+
   return (
     <PageScaffold
       title="Index Segment"
       description="Index Segment 是从 WikiNode / Knowledge Object 生成的受控索引和召回单元，并始终关联父级 WikiNode。平台管理的是 WikiNode 发布前的 Index Segment，不管理外部向量库内部片段。"
     >
-      <IndexSegmentTable segments={mockIndexSegments} />
+      <ApiErrorNotice error={error} onRetry={reload} />
+      {isLoading ? <LoadingBlock text="正在加载 Index Segment..." /> : null}
+      <IndexSegmentTable segments={segments} />
     </PageScaffold>
   )
 }
@@ -979,9 +989,19 @@ export function SegmentStrategyPage() {
 }
 
 export function SegmentDebugPage() {
+  const {
+    data: segments,
+    error,
+    isLoading,
+    reload,
+  } = useAsyncData(listIndexSegments, [])
+  const segment = segments[0] ?? mockIndexSegments[0]
+
   return (
     <PageScaffold title="片段调试" description="查看 Index Segment 证据，但不把片段作为主要召回结果。">
-      <SegmentDebugPanel segment={mockIndexSegments[0]} />
+      <ApiErrorNotice error={error} onRetry={reload} />
+      {isLoading ? <LoadingBlock text="正在加载 Index Segment 调试样例..." /> : null}
+      <SegmentDebugPanel segment={segment} />
     </PageScaffold>
   )
 }

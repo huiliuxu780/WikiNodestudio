@@ -1,6 +1,7 @@
 package com.wikinode.studio.repository;
 
 import com.wikinode.studio.model.IndexStatusSummary;
+import com.wikinode.studio.model.IndexSegment;
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
@@ -67,6 +68,12 @@ public interface WikiNodeRepository {
   Optional<SourceOperation> findSourceOperation(String operationId);
 
   List<ParserProfile> listParserProfiles();
+
+  List<IndexSegment> listIndexSegments();
+
+  Optional<IndexSegment> findIndexSegment(String segmentId);
+
+  List<IndexSegment> listIndexSegmentsForNode(String nodeId);
 
   List<DraftWikiNodeSuggestion> listDraftWikiNodeSuggestions();
 

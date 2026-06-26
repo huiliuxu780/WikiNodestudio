@@ -3,6 +3,7 @@ package com.wikinode.studio.repository;
 import com.wikinode.studio.model.GraphEdge;
 import com.wikinode.studio.model.GraphNode;
 import com.wikinode.studio.model.IndexStatusSummary;
+import com.wikinode.studio.model.IndexSegment;
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParsedDocumentSourceRef;
 import com.wikinode.studio.model.ParserProfile;
@@ -62,6 +63,8 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   protected abstract List<SourceOperation> loadSourceOperations();
 
   protected abstract List<ParserProfile> loadParserProfiles();
+
+  protected abstract List<IndexSegment> loadIndexSegments();
 
   protected abstract List<DraftWikiNodeSuggestion> loadDraftWikiNodeSuggestions();
 
@@ -185,6 +188,25 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   @Override
   public List<ParserProfile> listParserProfiles() {
     return List.copyOf(loadParserProfiles());
+  }
+
+  @Override
+  public List<IndexSegment> listIndexSegments() {
+    return List.copyOf(loadIndexSegments());
+  }
+
+  @Override
+  public Optional<IndexSegment> findIndexSegment(String segmentId) {
+    return loadIndexSegments().stream()
+      .filter(segment -> segment.segmentId().equals(segmentId))
+      .findFirst();
+  }
+
+  @Override
+  public List<IndexSegment> listIndexSegmentsForNode(String nodeId) {
+    return loadIndexSegments().stream()
+      .filter(segment -> segment.nodeId().equals(nodeId))
+      .toList();
   }
 
   @Override

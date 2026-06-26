@@ -1,6 +1,7 @@
 package com.wikinode.studio.api;
 
 import com.wikinode.studio.model.IndexStatusSummary;
+import com.wikinode.studio.model.IndexSegment;
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
@@ -178,6 +179,23 @@ public class WikiNodeController {
   @GetMapping("/parser-profiles")
   public List<ParserProfile> listParserProfiles() {
     return repository.listParserProfiles();
+  }
+
+  @GetMapping("/index-segments")
+  public List<IndexSegment> listIndexSegments() {
+    return repository.listIndexSegments();
+  }
+
+  @GetMapping("/index-segments/{segmentId}")
+  public IndexSegment getIndexSegment(@PathVariable String segmentId) {
+    return repository.findIndexSegment(segmentId)
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Index Segment not found"));
+  }
+
+  @GetMapping("/wiki-nodes/{id}/index-segments")
+  public List<IndexSegment> listWikiNodeIndexSegments(@PathVariable String id) {
+    ensureNodeExists(id);
+    return repository.listIndexSegmentsForNode(id);
   }
 
   @GetMapping("/draft-wikinode-suggestions")

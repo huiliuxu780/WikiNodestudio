@@ -142,6 +142,25 @@ if (JSON.stringify(parserProfiles).includes("credential") || JSON.stringify(pars
   throw new Error("GET /api/parser-profiles: FAIL response exposed forbidden internals")
 }
 
+const indexSegments = await request("GET /api/index-segments", "/index-segments")
+if (!Array.isArray(indexSegments) || !indexSegments.some((segment) => segment.segmentId === "seg-001" && segment.nodeId === "wn-001")) {
+  throw new Error("GET /api/index-segments: FAIL expected Index Segment list")
+}
+
+if (JSON.stringify(indexSegments).includes("chunk") || JSON.stringify(indexSegments).includes("embedding")) {
+  throw new Error("GET /api/index-segments: FAIL response exposed forbidden internals")
+}
+
+const indexSegmentDetail = await request("GET /api/index-segments/{id}", "/index-segments/seg-001")
+if (indexSegmentDetail.nodeId !== "wn-001" || indexSegmentDetail.indexStatus !== "indexed" || !Array.isArray(indexSegmentDetail.sourceRefs)) {
+  throw new Error("GET /api/index-segments/{id}: FAIL expected Index Segment detail")
+}
+
+const wikiNodeIndexSegments = await request("GET /api/wiki-nodes/{id}/index-segments", "/wiki-nodes/wn-001/index-segments")
+if (!Array.isArray(wikiNodeIndexSegments) || !wikiNodeIndexSegments.some((segment) => segment.segmentId === "seg-001")) {
+  throw new Error("GET /api/wiki-nodes/{id}/index-segments: FAIL expected WikiNode scoped Index Segments")
+}
+
 const suggestions = await request("GET /api/draft-wikinode-suggestions", "/draft-wikinode-suggestions")
 if (!Array.isArray(suggestions) || !suggestions.some((suggestion) => suggestion.suggestionId === "sug-001" && suggestion.status === "draft")) {
   throw new Error("GET /api/draft-wikinode-suggestions: FAIL expected Draft WikiNode Suggestion list")

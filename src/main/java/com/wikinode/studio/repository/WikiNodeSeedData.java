@@ -1,5 +1,7 @@
 package com.wikinode.studio.repository;
 
+import com.wikinode.studio.model.IndexSegment;
+import com.wikinode.studio.model.IndexSegmentMetadataSummaryItem;
 import com.wikinode.studio.model.ParsedDocument;
 import com.wikinode.studio.model.ParsedDocumentSourceRef;
 import com.wikinode.studio.model.ParserProfile;
@@ -240,6 +242,98 @@ final class WikiNodeSeedData {
         "structured_table",
         true,
         "v1"
+      )
+    );
+  }
+
+  static List<IndexSegment> indexSegments() {
+    SourceRef feishuPolicyRef = new SourceRef(
+      "src-feishu-cc",
+      "feishu",
+      "CC 售后政策飞书空间",
+      "https://feishu.example.com/wiki/after-sales",
+      "P-12",
+      "2026.06"
+    );
+    SourceRef excelFeeRef = new SourceRef(
+      "src-excel-fee",
+      "excel",
+      "维修收费标准 Excel",
+      null,
+      "Sheet1:R2",
+      "2026.06"
+    );
+
+    return List.of(
+      new IndexSegment(
+        "seg-001",
+        "wn-001",
+        "保修政策",
+        "Article",
+        "service_fee_policy",
+        "body",
+        "保修期内维修不收取人工费，收费例外需要关联人为损坏判定规则。",
+        "保修政策 / Body section segment",
+        "保修期内维修不收取人工费，收费例外需要关联人为损坏判定规则。",
+        28,
+        true,
+        "indexed",
+        "vec-wn-001-body",
+        "2026-06-18",
+        23,
+        0.88,
+        List.of(feishuPolicyRef),
+        List.of(feishuPolicyRef.sourceId()),
+        "feishu_article_v1",
+        List.of(
+          new IndexSegmentMetadataSummaryItem("objectType", "Article"),
+          new IndexSegmentMetadataSummaryItem("subtype", "service_fee_policy"),
+          new IndexSegmentMetadataSummaryItem("businessDomain", "after_sales")
+        ),
+        "2026-06-18",
+        "2026-06-18",
+        Map.of(
+          "nodeType", "policy",
+          "status", "published",
+          "tags", List.of("保修", "售后", "政策"),
+          "objectType", "Article",
+          "subtype", "service_fee_policy"
+        )
+      ),
+      new IndexSegment(
+        "seg-002",
+        "wn-002",
+        "收费政策",
+        "Article",
+        "fee_policy",
+        "summary",
+        "保外维修、上门服务和配件费用的收费规则。",
+        "收费政策 / Summary segment",
+        "保外维修、上门服务和配件费用的收费规则。",
+        18,
+        true,
+        "indexed",
+        "vec-wn-002-summary",
+        "2026-06-17",
+        18,
+        0.81,
+        List.of(excelFeeRef),
+        List.of(excelFeeRef.sourceId()),
+        "excel_fee_table_v1",
+        List.of(
+          new IndexSegmentMetadataSummaryItem("objectType", "Article"),
+          new IndexSegmentMetadataSummaryItem("subtype", "fee_policy"),
+          new IndexSegmentMetadataSummaryItem("businessDomain", "service_fee")
+        ),
+        "2026-06-17",
+        "2026-06-17",
+        Map.of(
+          "nodeType", "policy",
+          "status", "published",
+          "tags", List.of("收费", "保外", "维修"),
+          "objectType", "Article",
+          "subtype", "fee_policy"
+        )
       )
     );
   }
