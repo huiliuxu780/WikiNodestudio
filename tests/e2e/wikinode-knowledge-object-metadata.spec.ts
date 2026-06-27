@@ -194,6 +194,36 @@ test.describe("WikiNode Knowledge Object metadata surface", () => {
     await expect(inspector).toContainText("解析目标：未解析")
     await expect(inspector).toContainText("关系状态：断链")
   })
+
+  test("editor inspector can review pending conflict Knowledge Relations", async ({ page }) => {
+    await routeDefaultWikiNodeApi(page)
+    await page.goto("/wiki-nodes/wn-001")
+
+    const inspector = page.getByTestId("wikinode-inspector")
+    await inspector.getByRole("tab", { name: "关联关系" }).click()
+    await inspector.getByRole("button", { name: "添加关系" }).click()
+    const relationPanel = page.getByRole("dialog", { name: "添加知识关系" })
+    await relationPanel.getByRole("button", { name: "收费政策" }).click()
+    await relationPanel.getByLabel("关系类型").selectOption("conflicts_with")
+    await relationPanel.getByLabel("关系状态").selectOption("pending_review")
+    await relationPanel.getByLabel("关系说明").fill("收费政策存在口径冲突，需要复核。")
+    await relationPanel.getByRole("button", { name: "保存关系" }).click()
+
+    const conflictRelation = inspector
+      .getByTestId("knowledge-relation-card")
+      .filter({ hasText: "收费政策存在口径冲突，需要复核。" })
+    await expect(conflictRelation).toContainText("风险关系")
+    await expect(conflictRelation).toContainText("待确认")
+    await conflictRelation.getByLabel("关系评审备注").fill("评审结论：当前口径不成立。")
+    await conflictRelation.getByRole("button", { name: "驳回关系" }).click()
+
+    await expect(page.getByText("关系已更新")).toBeVisible()
+    const rejectedRelation = inspector
+      .getByTestId("knowledge-relation-card")
+      .filter({ hasText: "评审结论：当前口径不成立。" })
+    await expect(rejectedRelation).toContainText("已驳回")
+    await expect(rejectedRelation).toContainText("评审结论：当前口径不成立。")
+  })
 })
 
 async function routeDefaultWikiNodeApi(page: import("@playwright/test").Page) {

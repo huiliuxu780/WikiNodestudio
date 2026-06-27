@@ -363,6 +363,12 @@ phase2_plans:
     list_component: src/components/wiki/link-list.tsx
     fixtures: tests/e2e/wiki-node-api-fixtures.ts
     playwright: tests/e2e/frontend-skeleton.spec.ts
+  RELATION_REVIEW_AND_GOVERNANCE:
+    decision: D063
+    requirement_trace: KNOWLEDGE_RELATION_REQUIREMENT_TRACE
+    previous_broken_link_governance: BROKEN_LINK_GOVERNANCE_ACTIONS
+    inspector: src/components/wiki/wiki-node-inspector.tsx
+    playwright: tests/e2e/wikinode-knowledge-object-metadata.spec.ts
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
@@ -485,6 +491,9 @@ tasks:
   IM062:
     decision: D062
     implementation: BROKEN_LINK_GOVERNANCE_ACTIONS
+  IM063:
+    decision: D063
+    implementation: RELATION_REVIEW_AND_GOVERNANCE
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN

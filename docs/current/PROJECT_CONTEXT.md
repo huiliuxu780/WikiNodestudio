@@ -28,7 +28,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-The current executable slice is `IM062 Broken Link Governance Actions`. IM062 makes Broken Links a clearer governance evidence surface by showing source WikiNode, anchor text, target identifier, resolved target, relation type, relation source, relation status, and safe navigation to the source WikiNode. It does not expose unimplemented repair, ignore, batch, create-target, approval, AI, backend API, database migration, Java model, package, dependency, retrieval, parser, or Source import behavior.
+The current executable slice is `IM063 Relation Review and Governance`. IM063 adds lightweight confirm and reject controls for pending or conflict Knowledge Relations in the WikiNode Inspector by reusing the existing relation update contract and relation note field. It does not add a full approval workflow, permission model, audit persistence, backend API, database migration, Java model, package, dependency, batch operation, repair action, AI suggestion, retrieval behavior, parser execution, vector sync, or Source import behavior.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -59,4 +59,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Current recommended next step: complete `IM062 Broken Link Governance Actions`, then continue with the next medium-sized requirement packet from `docs/current/KNOWLEDGE_RELATION_REQUIREMENT_TRACE.md` after merge.
+Current recommended next step: complete `IM063 Relation Review and Governance`, then continue with the next medium-sized requirement packet from `docs/current/KNOWLEDGE_RELATION_REQUIREMENT_TRACE.md` after merge.

@@ -6,9 +6,9 @@ None.
 
 ## Active Scope Constraints
 
-- `IM062` may update Broken Links evidence display, safe source WikiNode navigation, and Playwright coverage.
-- `IM062` must keep Broken Links evidence-oriented and must not expose fake repair, ignore, batch, create-target, approval, or AI actions.
-- `IM062` must not change backend API, Java model, database migrations, package files, dependencies, graph behavior, retrieval behavior, approvals, permissions, Source import, parser execution, vector sync, AI suggestions, batch repair, automatic repair, or persistent broken-link lifecycle state.
+- `IM063` may update WikiNode Inspector relation review controls and Playwright coverage.
+- `IM063` must use the existing Knowledge Relation update contract and existing relation note field.
+- `IM063` must not change backend API, Java model, database migrations, package files, dependencies, full approval workflow, permission model, audit persistence, graph behavior, retrieval behavior, Source import, parser execution, vector sync, AI suggestions, batch operations, or repair actions.
 - Future frontend work must follow `docs/quality/frontend-ux-guidelines.md`.
 
 ## Standing Constraints
