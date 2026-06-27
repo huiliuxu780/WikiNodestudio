@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D065
+    date: "2026-06-27"
+    title: "Close the Knowledge Relation PRD follow-up queue after IM059 through IM064"
+    rationale: "After IM059 through IM064 merged, the Knowledge Relation PRD follow-up sequence is complete for current MVP scope. IM065 updates the requirement trace from open gaps to completed/deferred status, clears the current story and task queues, and records that the next implementation packet must be explicitly defined from current product requirements before work starts. It does not change product code, backend API, Java model, database migrations, package files, dependencies, or runtime behavior."
+    related:
+      - IM065
+      - KNOWLEDGE_RELATION_FOLLOWUP_CLOSURE
+      - KNOWLEDGE_RELATION_REQUIREMENT_TRACE
+      - RELATION_AWARE_RETRIEVAL_EVIDENCE
   - id: D064
     date: "2026-06-27"
     title: "Add relation-aware Retrieval debug evidence while preserving WikiNode-first results"

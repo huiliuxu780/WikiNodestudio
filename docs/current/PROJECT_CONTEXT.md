@@ -28,7 +28,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-The current executable slice is `IM064 Relation-Aware Retrieval Evidence`. IM064 adds `matchedRelations` debug evidence to Retrieval Test so Knowledge Relations can explain why a WikiNode result was returned. The primary Retrieval API result remains WikiNode-first. It does not add Chat API, answer generation, raw chunk-first output, external vector database implementation, backend API changes, database migrations, Java model changes, package changes, dependency changes, parser execution, vector sync, Source import, permissions, approval workflow, batch operations, or export behavior.
+There is no active executable story or task in `docs/current/STORY_QUEUE.yaml` or `docs/current/ACTIVE_TASKS.yaml`. The Knowledge Relation PRD follow-up sequence from IM059 through IM064 is complete for current MVP scope. The next executable slice must be explicitly defined from current product requirements before implementation starts.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -59,4 +59,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Current recommended next step: complete `IM064 Relation-Aware Retrieval Evidence`, then close the Knowledge Relation PRD follow-up sequence or define the next medium-sized packet from current product requirements after merge.
+Current recommended next step: define the next medium-sized executable packet from current product requirements, then add it to `docs/current/STORY_QUEUE.yaml` and `docs/current/ACTIVE_TASKS.yaml` before implementation.
