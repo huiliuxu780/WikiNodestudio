@@ -6,15 +6,17 @@ notes:
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
 stories:
-  - id: US058
-    title: "Knowledge relation requirement reconciliation"
+  - id: US059
+    title: "Knowledge relation editor experience completion"
     status: in_progress
-    goal: "Reconcile the external Knowledge Relation Management PRD with current IM056 and IM057 implementation, and define remaining medium-sized capability packets."
+    goal: "Complete the WikiNode Inspector relation editor experience while keeping Knowledge Relation management WikiNode-only and within the existing mutation baseline."
     acceptance:
-      - "Adds a current requirement trace that maps PRD acceptance items, user stories, and phase recommendations to Done, Partial, Not started, and next-packet status."
-      - "Documents that IM056 and IM057 do not complete the full Knowledge Relation Management PRD."
-      - "Defines remaining medium-sized implementation packets for relation editor completion, Markdown mapping, WikiGraph filters, Broken Links governance, relation review, and relation-aware retrieval evidence."
-      - "Updates current and registry state so future work starts from the reconciled requirement trace rather than the older IM056 read-surface plan."
-      - "No source code, backend, database, API, frontend behavior, package, lockfile, dependency, or test implementation changes."
+      - "Relation add/edit uses a compact drawer or side panel instead of an inline form."
+      - "The drawer supports target WikiNode search, relation type selection, relation status selection, and relation note entry."
+      - "Target object type is visible with WikiNode as the enabled target type."
+      - "Structured relation cards are grouped by semantic section such as applicability, reference, replacement, risk, source evidence, and broken or pending context."
+      - "Create, update, and delete actions keep Chinese feedback visible."
+      - "Playwright covers add, edit, delete, status selection, target search, and grouped relation display."
     non_goals:
-      - "No relation UI implementation, relation API change, database migration, graph change, Broken Link action, retrieval change, approval flow, Source import, parser execution, AI suggestion, permission flow, package change, or dependency change."
+      - "No Source, Document, Product, or non-WikiNode target mutation."
+      - "No approval, confirm, reject, review lifecycle, batch operation, repair, AI suggestion, permissions, retrieval behavior, graph filter, backend API, database migration, package change, or dependency change."

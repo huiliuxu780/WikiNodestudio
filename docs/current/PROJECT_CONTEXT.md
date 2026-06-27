@@ -28,7 +28,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-The current executable slice is `IM058 Knowledge Relation Requirement Reconciliation`. IM058 reconciles the external Knowledge Relation Management PRD with the current IM056 and IM057 baselines, documents which PRD requirements are done, partial, or not started, and defines medium-sized future packets for the remaining relation editor, Markdown mapping, WikiGraph, Broken Links governance, relation review, and retrieval-evidence work. It does not change source code, backend API, database migrations, frontend behavior, tests, packages, or dependencies.
+The current executable slice is `IM059 Knowledge Relation Editor Experience Completion`. IM059 completes the WikiNode Inspector relation editor experience by replacing the inline form with a compact drawer, adding target WikiNode search, exposing relation status selection, showing WikiNode as the enabled target object type, grouping structured relations by semantic section, and covering add/edit/delete with Playwright. It stays inside the existing Knowledge Relation mutation baseline and does not change backend API, database migrations, Java model, packages, dependencies, graph filters, retrieval behavior, approval workflow, or non-WikiNode relation targets.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -59,4 +59,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Current recommended next step: complete `IM058 Knowledge Relation Requirement Reconciliation`. IM058 should add a requirement trace, update current and registry state, and leave all implementation for later explicitly confirmed medium-sized packets.
+Current recommended next step: complete `IM059 Knowledge Relation Editor Experience Completion`, then continue with the next medium-sized requirement packet from `docs/current/KNOWLEDGE_RELATION_REQUIREMENT_TRACE.md` after merge.

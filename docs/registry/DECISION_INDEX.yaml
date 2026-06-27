@@ -1,5 +1,15 @@
 version: 1
 decisions:
+  - id: D059
+    date: "2026-06-27"
+    title: "Complete Knowledge Relation editor experience inside the existing WikiNode contract"
+    rationale: "IM059 turns the single-relation mutation baseline into a PM-usable editor experience by moving add and edit into a compact drawer, adding target WikiNode search, exposing active and pending-review status selection, showing WikiNode as the enabled target object type, grouping structured relations by semantic section, and covering add, edit, delete, status selection, and grouping with Playwright. It preserves the current frontend/backend contract and does not add non-WikiNode targets, approval lifecycle, repair actions, graph filters, retrieval behavior, backend API changes, database migrations, package changes, or dependencies."
+    related:
+      - IM059
+      - US059
+      - KNOWLEDGE_RELATION_EDITOR_EXPERIENCE_COMPLETION
+      - KNOWLEDGE_RELATION_REQUIREMENT_TRACE
+      - KNOWLEDGE_RELATION_MANAGEMENT_MUTATION_BASELINE
   - id: D058
     date: "2026-06-27"
     title: "Reconcile Knowledge Relation PRD completion after IM056 and IM057"

@@ -328,6 +328,16 @@ phase2_plans:
       - IM062_BROKEN_LINK_GOVERNANCE_ACTIONS
       - IM063_RELATION_REVIEW_AND_GOVERNANCE
       - IM064_RELATION_AWARE_RETRIEVAL_EVIDENCE
+  KNOWLEDGE_RELATION_EDITOR_EXPERIENCE_COMPLETION:
+    decision: D059
+    requirement_trace: KNOWLEDGE_RELATION_REQUIREMENT_TRACE
+    mutation_baseline: KNOWLEDGE_RELATION_MANAGEMENT_MUTATION_BASELINE
+    story_queue: docs/current/STORY_QUEUE.yaml
+    active_task: docs/current/ACTIVE_TASKS.yaml
+    frontend:
+      - src/components/wiki/wiki-node-inspector.tsx
+    tests:
+      - tests/e2e/wikinode-knowledge-object-metadata.spec.ts
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
@@ -438,6 +448,9 @@ tasks:
   IM058:
     decision: D058
     reconciliation: KNOWLEDGE_RELATION_REQUIREMENT_TRACE
+  IM059:
+    decision: D059
+    implementation: KNOWLEDGE_RELATION_EDITOR_EXPERIENCE_COMPLETION
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN

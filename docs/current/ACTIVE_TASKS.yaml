@@ -6,30 +6,31 @@ notes:
   - "Do not auto-enter the next IM without explicit user confirmation."
   - "Done history stays in release docs or archive."
 tasks:
-  - id: IM058
-    title: "Knowledge Relation Requirement Reconciliation"
+  - id: IM059
+    title: "Knowledge Relation Editor Experience Completion"
     status: in_progress
-    story_ids: [US058]
+    story_ids: [US059]
     allowed_files:
-      - "docs/current/KNOWLEDGE_RELATION_MANAGEMENT_PRD.md"
-      - "docs/current/KNOWLEDGE_RELATION_REQUIREMENT_TRACE.md"
+      - "src/components/wiki/wiki-node-inspector.tsx"
+      - "tests/e2e/wikinode-knowledge-object-metadata.spec.ts"
       - "docs/current/STORY_QUEUE.yaml"
       - "docs/current/ACTIVE_TASKS.yaml"
       - "docs/current/PROJECT_CONTEXT.md"
       - "docs/current/BLOCKERS.md"
       - "docs/registry/DECISION_INDEX.yaml"
       - "docs/registry/TRACE_INDEX.yaml"
-      - "docs/current/**"
-      - "docs/registry/**"
     forbidden_files:
-      - "src/**"
+      - "src/main/**"
+      - "src/services/**"
+      - "src/data/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/workflows/**"
     gates:
-      - "Requirement reconciliation gate: separate implemented baselines from remaining PRD requirements."
-      - "Medium-packet gate: recommend future slices as PM-verifiable capabilities rather than tiny UI patches."
-      - "No implementation gate: do not change source code, tests, migrations, APIs, package files, or dependencies."
-      - "Verification gate: bash scripts/check-state.sh, bash scripts/check.sh, and diff check."
+      - "Editor UX gate: replace inline relation form with a compact drawer or side panel."
+      - "WikiNode-only target gate: show WikiNode as the enabled relation target object type and do not mutate Source, Document, Product, or other target types."
+      - "Relation grouping gate: group structured relation cards by semantic section without changing the backend contract."
+      - "Feedback gate: keep relation create, update, and delete feedback in Chinese."
+      - "Verification gate: focused Playwright, pnpm lint, pnpm build, bash scripts/check-state.sh, bash scripts/check.sh, full Playwright, and diff check."
     stop_conditions:
-      - "Any source code, API, database, frontend behavior, package, lockfile, dependency, Source import, parser execution, vector sync, AI suggestion, approval, permission, or batch-operation change."
+      - "Any backend API, Java model, database migration, Source or Document target mutation, Product target mutation, approval lifecycle, confirm or reject operation, batch operation, repair action, AI suggestion, permission flow, retrieval behavior, graph filter, package, lockfile, dependency, parser execution, vector sync, or Source import change."

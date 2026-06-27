@@ -4,6 +4,7 @@ import { Link } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { mockWikiNodes } from "@/data/mock-wiki-nodes"
 import { IndexStatusBadge } from "@/components/wiki/index-status-badge"
@@ -276,7 +277,9 @@ function RelationSurface({
     setForm({
       targetNodeId: relation.targetNodeId,
       relationType: relation.relationType,
+      status: editableRelationStatus(relation.status),
       note: relation.note ?? relation.anchorText ?? "",
+      targetQuery: targetTitle(relation.targetNodeId, availableNodes),
     })
     setFormMode("edit")
   }
@@ -287,7 +290,7 @@ function RelationSurface({
     const input: KnowledgeRelationInput = {
       targetNodeId: form.targetNodeId,
       relationType: form.relationType,
-      status: "active",
+      status: form.status,
       source: "manual",
       anchorText: form.note,
       note: form.note,
@@ -323,18 +326,9 @@ function RelationSurface({
             <Button size="sm" variant="outline" onClick={openCreateForm}>添加关系</Button>
           </div>
         ) : null}
-        {formMode !== "closed" ? (
-          <RelationForm
-            form={form}
-            nodes={availableNodes.filter((item) => item.nodeId !== node.nodeId)}
-            isSaving={isSaving}
-            onChange={setForm}
-            onCancel={() => setFormMode("closed")}
-            onSubmit={submitRelation}
-          />
-        ) : null}
         <KnowledgeRelationList
           relations={structuredRelations}
+          availableNodes={availableNodes}
           sourceRefs={node.sourceRefs}
           onEdit={onUpdateRelation ? openEditForm : undefined}
           onDelete={onDeleteRelation}
@@ -348,6 +342,29 @@ function RelationSurface({
       <PanelSection title="断链 / 待确认">
         <WikiLinkRelationList links={unresolvedRelations} emptyText="暂无未解析关系。" />
       </PanelSection>
+      <Sheet open={formMode !== "closed"} onOpenChange={(open) => {
+        if (!open) {
+          setFormMode("closed")
+          setEditingRelationId("")
+        }
+      }}>
+        <SheetContent className="w-[min(420px,92vw)] overflow-y-auto sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle>{formMode === "edit" ? "编辑知识关系" : "添加知识关系"}</SheetTitle>
+            <SheetDescription>
+              选择目标 WikiNode、关系类型和关系状态。
+            </SheetDescription>
+          </SheetHeader>
+          <RelationForm
+            form={form}
+            nodes={availableNodes.filter((item) => item.nodeId !== node.nodeId)}
+            isSaving={isSaving}
+            onChange={setForm}
+            onCancel={() => setFormMode("closed")}
+            onSubmit={submitRelation}
+          />
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }
@@ -355,15 +372,24 @@ function RelationSurface({
 type RelationFormState = {
   targetNodeId: string
   relationType: KnowledgeRelationType
+  status: "active" | "pending_review"
   note: string
+  targetQuery: string
 }
 
 function emptyRelationForm(node: WikiNode, availableNodes: WikiNode[]): RelationFormState {
+  const target = availableNodes.find((item) => item.nodeId !== node.nodeId)
   return {
-    targetNodeId: availableNodes.find((item) => item.nodeId !== node.nodeId)?.nodeId ?? "",
+    targetNodeId: target?.nodeId ?? "",
     relationType: "references",
+    status: "active",
     note: "",
+    targetQuery: "",
   }
+}
+
+function editableRelationStatus(status: KnowledgeRelation["status"]): RelationFormState["status"] {
+  return status === "pending_review" ? "pending_review" : "active"
 }
 
 function RelationForm({
@@ -381,21 +407,51 @@ function RelationForm({
   onCancel: () => void
   onSubmit: () => void
 }) {
+  const filteredNodes = nodes.filter((item) => {
+    const query = form.targetQuery.trim().toLowerCase()
+    if (!query) return true
+    return item.title.toLowerCase().includes(query) || item.slug.toLowerCase().includes(query) || item.nodeId.toLowerCase().includes(query)
+  })
+  const selectedNode = nodes.find((item) => item.nodeId === form.targetNodeId)
+
   return (
-    <div className="grid gap-3 rounded-md border bg-background p-3">
+    <div className="grid gap-4 py-4">
+      <div className="grid gap-2 rounded-md border bg-muted/30 p-3">
+        <div className="text-xs font-medium text-muted-foreground">目标对象类型</div>
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="secondary">WikiNode</Badge>
+          <Badge variant="outline" className="text-muted-foreground">Source</Badge>
+          <Badge variant="outline" className="text-muted-foreground">Document</Badge>
+          <Badge variant="outline" className="text-muted-foreground">Product</Badge>
+        </div>
+      </div>
       <div className="grid gap-2">
-        <label className="text-xs font-medium text-muted-foreground" htmlFor="relation-target-node">目标 WikiNode</label>
-        <select
-          id="relation-target-node"
-          aria-label="目标 WikiNode"
-          className="h-8 rounded-lg border bg-background px-2 text-sm"
-          value={form.targetNodeId}
-          onChange={(event) => onChange({ ...form, targetNodeId: event.target.value })}
-        >
-          {nodes.map((item) => (
-            <option key={item.nodeId} value={item.nodeId}>{item.title}</option>
+        <label className="text-xs font-medium text-muted-foreground" htmlFor="relation-target-query">搜索目标 WikiNode</label>
+        <Input
+          id="relation-target-query"
+          aria-label="搜索目标 WikiNode"
+          value={form.targetQuery}
+          onChange={(event) => onChange({ ...form, targetQuery: event.target.value })}
+          placeholder="输入标题、Slug 或节点 ID"
+        />
+        <div className="max-h-44 overflow-y-auto rounded-md border bg-background p-1">
+          {filteredNodes.map((item) => (
+            <Button
+              key={item.nodeId}
+              type="button"
+              variant={form.targetNodeId === item.nodeId ? "secondary" : "ghost"}
+              className="mb-1 h-auto w-full justify-start px-2 py-2 text-left"
+              onClick={() => onChange({ ...form, targetNodeId: item.nodeId, targetQuery: item.title })}
+            >
+              <span className="grid gap-0.5">
+                <span>{item.title}</span>
+                <span className="text-xs font-normal text-muted-foreground">{labelFromMap(objectTypeLabels, item.objectType ?? "Article")} · {item.slug}</span>
+              </span>
+            </Button>
           ))}
-        </select>
+          {!filteredNodes.length ? <p className="p-2 text-xs text-muted-foreground">没有匹配的 WikiNode。</p> : null}
+        </div>
+        <p className="text-xs text-muted-foreground">当前选择：{selectedNode?.title ?? commonLabels.none}</p>
       </div>
       <div className="grid gap-2">
         <label className="text-xs font-medium text-muted-foreground" htmlFor="relation-type">关系类型</label>
@@ -412,6 +468,19 @@ function RelationForm({
         </select>
       </div>
       <div className="grid gap-2">
+        <label className="text-xs font-medium text-muted-foreground" htmlFor="relation-status">关系状态</label>
+        <select
+          id="relation-status"
+          aria-label="关系状态"
+          className="h-8 rounded-lg border bg-background px-2 text-sm"
+          value={form.status}
+          onChange={(event) => onChange({ ...form, status: event.target.value as RelationFormState["status"] })}
+        >
+          <option value="active">{relationStatusLabels.active}</option>
+          <option value="pending_review">{relationStatusLabels.pending_review}</option>
+        </select>
+      </div>
+      <div className="grid gap-2">
         <label className="text-xs font-medium text-muted-foreground" htmlFor="relation-note">关系说明</label>
         <Input
           id="relation-note"
@@ -421,12 +490,12 @@ function RelationForm({
           placeholder="补充适用范围、冲突原因或来源说明"
         />
       </div>
-      <div className="flex justify-end gap-2">
+      <SheetFooter className="px-0">
         <Button type="button" size="sm" variant="ghost" onClick={onCancel}>取消</Button>
         <Button type="button" size="sm" onClick={onSubmit} disabled={isSaving || !form.targetNodeId}>
           {isSaving ? "保存中..." : "保存关系"}
         </Button>
-      </div>
+      </SheetFooter>
     </div>
   )
 }
@@ -442,11 +511,13 @@ function RelationCount({ label, value }: { label: string; value: number }) {
 
 function KnowledgeRelationList({
   relations,
+  availableNodes,
   sourceRefs,
   onEdit,
   onDelete,
 }: {
   relations: KnowledgeRelation[] | undefined
+  availableNodes: WikiNode[]
   sourceRefs: WikiNode["sourceRefs"]
   onEdit?: (relation: KnowledgeRelation) => void
   onDelete?: (relationId: string) => void
@@ -456,45 +527,84 @@ function KnowledgeRelationList({
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      {relations.map((relation) => {
-        const target = mockWikiNodes.find((node) => node.nodeId === relation.targetNodeId)
-        const relationLabel = labelFromMap(relationTypeLabels, relation.relationType)
-        const evidence = sourceRefs.find((sourceRef) => sourceRef.id === relation.evidence?.sourceRefId || sourceRef.sourceId === relation.evidence?.sourceRefId)
-        const status = relation.status ?? (target ? "active" : "broken")
-        const source = relation.source ?? (relation.createdBy === "user" ? "manual" : "system")
-        const group = relationGroupLabel(relation.relationType)
-        const relationId = relation.id
+    <div className="flex flex-col gap-3">
+      {relationGroupOrder.map((group) => {
+        const groupRelations = relations.filter((relation) => relationGroupLabel(relation.relationType) === group)
+        if (!groupRelations.length) return null
 
         return (
-          <div key={relation.id ?? `${relation.relationType}-${relation.targetNodeId}`} className="rounded-md border bg-background p-3 text-sm">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="outline">{group}</Badge>
-                  <Badge variant={status === "broken" ? "destructive" : "secondary"}>
-                    {labelFromMap(relationStatusLabels, status)}
-                  </Badge>
-                  <Badge variant="outline">{labelFromMap(relationSourceLabels, source)}</Badge>
-                </div>
-                <div className="mt-2 font-medium">{relationLabel} -&gt; {target?.title ?? relation.targetNodeId}</div>
-              </div>
-              <div className="flex shrink-0 gap-1">
-                {onEdit ? <Button size="sm" variant="ghost" onClick={() => onEdit(relation)}>编辑关系</Button> : null}
-                {onDelete && relationId ? <Button size="sm" variant="ghost" onClick={() => onDelete(relationId)}>删除关系</Button> : null}
-              </div>
+          <section key={group} className="grid gap-2">
+            <h3 className="text-sm font-medium">{group}</h3>
+            <div className="grid gap-2">
+              {groupRelations.map((relation) => (
+                <KnowledgeRelationCard
+                  key={relation.id ?? `${relation.relationType}-${relation.targetNodeId}`}
+                  relation={relation}
+                  availableNodes={availableNodes}
+                  sourceRefs={sourceRefs}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                />
+              ))}
             </div>
-            <div className="mt-3 grid gap-2 text-xs text-muted-foreground">
-              <span>目标对象：{target ? `${target.title} / ${labelFromMap(objectTypeLabels, target.objectType ?? "Article")}` : relation.targetNodeId}</span>
-              <span>方向：{relation.direction === "incoming" ? "入向" : "出向"}</span>
-              <span>证据：{evidence?.sourceTitle ?? relation.evidence?.sourceRefId ?? commonLabels.none}</span>
-              <span>置信度：{relation.confidence ?? commonLabels.none}</span>
-              {relation.anchorText ? <span>上下文：{relation.anchorText}</span> : null}
-              {relation.note ? <span>备注：{relation.note}</span> : null}
-            </div>
-          </div>
+          </section>
         )
       })}
+    </div>
+  )
+}
+
+function KnowledgeRelationCard({
+  relation,
+  availableNodes,
+  sourceRefs,
+  onEdit,
+  onDelete,
+}: {
+  relation: KnowledgeRelation
+  availableNodes: WikiNode[]
+  sourceRefs: WikiNode["sourceRefs"]
+  onEdit?: (relation: KnowledgeRelation) => void
+  onDelete?: (relationId: string) => void
+}) {
+  const target = findRelationTarget(relation.targetNodeId, availableNodes)
+  const relationLabel = labelFromMap(relationTypeLabels, relation.relationType)
+  const evidence = sourceRefs.find((sourceRef) => sourceRef.id === relation.evidence?.sourceRefId || sourceRef.sourceId === relation.evidence?.sourceRefId)
+  const status = relation.status ?? (target ? "active" : "broken")
+  const source = relation.source ?? (relation.createdBy === "user" ? "manual" : "system")
+  const group = relationGroupLabel(relation.relationType)
+  const relationId = relation.id
+
+  return (
+    <div
+      className="rounded-md border bg-background p-3 text-sm data-[risk=true]:border-destructive/60"
+      data-risk={group === "风险关系"}
+      data-testid="knowledge-relation-card"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="outline">{group}</Badge>
+            <Badge variant={status === "broken" ? "destructive" : "secondary"}>
+              {labelFromMap(relationStatusLabels, status)}
+            </Badge>
+            <Badge variant="outline">{labelFromMap(relationSourceLabels, source)}</Badge>
+          </div>
+          <div className="mt-2 font-medium">{relationLabel} -&gt; {target?.title ?? relation.targetNodeId}</div>
+        </div>
+        <div className="flex shrink-0 gap-1">
+          {onEdit ? <Button size="sm" variant="ghost" onClick={() => onEdit(relation)}>编辑关系</Button> : null}
+          {onDelete && relationId ? <Button size="sm" variant="ghost" onClick={() => onDelete(relationId)}>删除关系</Button> : null}
+        </div>
+      </div>
+      <div className="mt-3 grid gap-2 text-xs text-muted-foreground">
+        <span>目标对象：{target ? `${target.title} / ${labelFromMap(objectTypeLabels, target.objectType ?? "Article")}` : relation.targetNodeId}</span>
+        <span>方向：{relation.direction === "incoming" ? "入向" : "出向"}</span>
+        <span>证据：{evidence?.sourceTitle ?? relation.evidence?.sourceRefId ?? commonLabels.none}</span>
+        <span>置信度：{relation.confidence ?? commonLabels.none}</span>
+        {relation.anchorText ? <span>上下文：{relation.anchorText}</span> : null}
+        {relation.note ? <span>备注：{relation.note}</span> : null}
+      </div>
     </div>
   )
 }
@@ -531,16 +641,26 @@ function WikiLinkRelationList({ links, emptyText = "暂无正文双链关系。"
   )
 }
 
+const relationGroupOrder = ["适用范围", "引用知识", "相关知识", "替代关系", "风险关系", "来源依据", "断链 / 待确认", "关联关系"]
+
 function relationGroupLabel(relationType: string) {
   if (relationType === "applies_to") return "适用范围"
   if (relationType === "references" || relationType === "reference" || relationType === "has_policy") return "引用知识"
   if (relationType === "related_to" || relationType === "explains") return "相关知识"
   if (relationType === "replaces") return "替代关系"
-  if (relationType === "conflicts_with") return "冲突关系"
+  if (relationType === "conflicts_with") return "风险关系"
   if (relationType === "derived_from" || relationType === "has_asset" || relationType === "has_manual" || relationType === "has_part_catalog") return "来源依据"
   if (relationType === "broken_wikilink") return "断链 / 待确认"
 
   return "关联关系"
+}
+
+function findRelationTarget(targetNodeId: string, availableNodes: WikiNode[]) {
+  return availableNodes.find((node) => node.nodeId === targetNodeId) ?? mockWikiNodes.find((node) => node.nodeId === targetNodeId)
+}
+
+function targetTitle(targetNodeId: string, availableNodes: WikiNode[]) {
+  return findRelationTarget(targetNodeId, availableNodes)?.title ?? ""
 }
 
 function formatMetadataValue(value: unknown) {
