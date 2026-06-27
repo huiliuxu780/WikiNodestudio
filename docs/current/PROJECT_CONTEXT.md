@@ -12,7 +12,7 @@ The full product scope is captured in `docs/current/PRODUCT_SCOPE.md`; the roadm
 
 ## Active Boundary
 
-The product baseline includes the React frontend MVP, Spring Boot API, PostgreSQL + Flyway persistence, reset/seed scripts, API smoke, GitHub Actions baseline CI, v0.2 release documentation, Playwright browser coverage, Source / Raw Material / Parsed Document read-only APIs, Draft WikiNode Suggestion review APIs, WikiNode Knowledge Object API alignment, Index Segment generation and trace evidence, Retrieval API debug evidence, the Quality Issues evidence console, and the publishing / metadata governance / admin planning baseline.
+The product baseline includes the React frontend MVP, Spring Boot API, PostgreSQL + Flyway persistence, reset/seed scripts, API smoke, GitHub Actions baseline CI, v0.2 release documentation, Playwright browser coverage, Source / Raw Material / Parsed Document read-only APIs, Draft WikiNode Suggestion review APIs, WikiNode Knowledge Object API alignment, Index Segment generation and trace evidence, Retrieval API debug evidence, the Quality Issues evidence console, the publishing / metadata governance / admin planning baseline, Knowledge Relation management through the IM059-IM064 follow-up sequence, and IM066 evidence-console completion for Source Operation, Index Job, Vector Sync, Retrieval Debug, System Health, and Admin pages.
 
 Current development must stay inside confirmed task scope. The standing MVP exclusions remain: no real Source import, file upload, parser execution, vector database implementation, embedding invocation, product-facing Chunk Management, automated quality repair, batch operation, export, permissions, version management, audit implementation, or publishing approval flow unless explicitly approved by the user.
 
@@ -28,7 +28,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-There is no active executable story or task in `docs/current/STORY_QUEUE.yaml` or `docs/current/ACTIVE_TASKS.yaml`. The Knowledge Relation PRD follow-up sequence from IM059 through IM064 is complete for current MVP scope. The next executable slice must be explicitly defined from current product requirements before implementation starts.
+There is no active executable story or task in `docs/current/STORY_QUEUE.yaml` or `docs/current/ACTIVE_TASKS.yaml`. The Knowledge Relation PRD follow-up sequence from IM059 through IM064 is complete for current MVP scope. IM066 closed the remaining locally implementable MVP evidence surfaces that were still generic route placeholders. The next executable packet must be explicitly defined from current product requirements before implementation starts.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -59,4 +59,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Current recommended next step: define the next medium-sized executable packet from current product requirements, then add it to `docs/current/STORY_QUEUE.yaml` and `docs/current/ACTIVE_TASKS.yaml` before implementation.
+Current recommended next step: define the next coherent product capability packet from current product requirements, then add it to `docs/current/STORY_QUEUE.yaml` and `docs/current/ACTIVE_TASKS.yaml` before implementation.

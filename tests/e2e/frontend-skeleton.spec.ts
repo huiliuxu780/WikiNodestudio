@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test"
 import { routeIndexSegmentApi } from "./index-segment-api-fixtures"
+import { routeRetrievalApiFixtures } from "./retrieval-api-fixtures"
 import { mockSourceEvidenceApi } from "./source-api-fixtures"
 import { routeWikiNodeApiFixtures } from "./wiki-node-api-fixtures"
 
@@ -10,6 +11,7 @@ test.describe("Frontend skeleton IA", () => {
   test.beforeEach(async ({ page }) => {
     await mockSourceEvidenceApi(page)
     await routeIndexSegmentApi(page)
+    await routeRetrievalApiFixtures(page)
     await routeWikiNodeApiFixtures(page)
   })
 
@@ -326,6 +328,71 @@ test.describe("Frontend skeleton IA", () => {
     await expect(main.getByRole("button", { name: /检查|修复|批量|导出|发布|同步|审批|重试/ })).toHaveCount(0)
     await expect(main).not.toContainText(forbiddenBoundaryCopy)
     await expect(main).not.toContainText(forbiddenProductTerms)
+  })
+
+  test("IM066 upgrades remaining operations pages into dense evidence consoles", async ({ page }) => {
+    await page.goto("/sources/sync-jobs")
+    await expect(page.getByText("Source Operation 控制台")).toBeVisible()
+    const syncJobRow = page.getByRole("row").filter({ hasText: "op-src-feishu-sync-001" })
+    await expect(syncJobRow).toContainText("来源同步")
+    await expect(syncJobRow).toContainText("已完成")
+    await expect(page.getByRole("button", { name: /同步|解析|重试|批量|导出/ })).toHaveCount(0)
+
+    await page.goto("/sources/sync-logs")
+    await expect(page.getByText("Source Operation 日志")).toBeVisible()
+    await expect(page.getByText("op-word-parse-001")).toBeVisible()
+    await expect(page.getByText("Unsupported document structure in seed evidence.")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(forbiddenBoundaryCopy)
+
+    await page.goto("/index-jobs")
+    await expect(page.getByText("Index Segment 索引任务")).toBeVisible()
+    await expect(page.getByText("SEG-001")).toBeVisible()
+    await expect(page.getByText("父级 WikiNode")).toBeVisible()
+    await expect(page.getByRole("button", { name: /重试|同步|发布|批量|导出/ })).toHaveCount(0)
+
+    await page.goto("/vector-sync")
+    await expect(page.getByText("外部向量库同步证据")).toBeVisible()
+    await expect(page.getByRole("columnheader", { name: "向量文档 ID" })).toBeVisible()
+    await expect(page.getByText(/vec-wn-/).first()).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+
+    await page.goto("/retrieval-debug")
+    await expect(page.getByText("召回调试证据链")).toBeVisible()
+    await expect(page.getByText("Query -> Index Segment -> WikiNode")).toBeVisible()
+    await expect(page.getByRole("columnheader", { name: "matchedRelations" })).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/Chat API|raw chunk/i)
+
+    await page.goto("/system/health")
+    await expect(page.getByText("系统健康证据")).toBeVisible()
+    await expect(page.getByText("WikiNode API")).toBeVisible()
+    await expect(page.getByText("Index Segment 证据")).toBeVisible()
+    await expect(page.getByText("Retrieval API 证据")).toBeVisible()
+  })
+
+  test("IM066 upgrades admin pages without implementing permission enforcement", async ({ page }) => {
+    await page.goto("/admin/users")
+    await expect(page.getByText("用户协作控制台")).toBeVisible()
+    await expect(page.getByRole("cell", { name: "Rivers", exact: true })).toBeVisible()
+    const knowledgeOpsRow = page.getByRole("row").filter({ hasText: "Knowledge Ops" })
+    await expect(knowledgeOpsRow).toContainText("Knowledge Ops")
+    await expect(knowledgeOpsRow).toContainText("已启用")
+
+    await page.goto("/admin/roles")
+    await expect(page.getByText("角色职责矩阵")).toBeVisible()
+    await expect(page.getByText("知识负责人")).toBeVisible()
+    await expect(page.getByText("发布前检查")).toBeVisible()
+
+    await page.goto("/admin/permissions")
+    await expect(page.getByText("权限维度矩阵")).toBeVisible()
+    await expect(page.getByRole("cell", { name: "查看 WikiNode" })).toBeVisible()
+    await expect(page.getByRole("cell", { name: "编辑 WikiNode" })).toBeVisible()
+
+    await page.goto("/admin/audit-logs")
+    await expect(page.getByText("审计证据日志")).toBeVisible()
+    await expect(page.getByText("WikiNode 已更新")).toBeVisible()
+    await expect(page.getByText("Index Segment 已生成")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/auth enforcement|RBAC backend|audit persistence/i)
+    await expect(page.getByRole("button", { name: /启用|禁用|删除|导出|审批|授权/ })).toHaveCount(0)
   })
 
   test("WikiNode editor inspector includes Segments tab", async ({ page }) => {

@@ -1,10 +1,12 @@
 import { expect, test } from "@playwright/test"
 import { routeRetrievalApiFixtures } from "./retrieval-api-fixtures"
+import { wikiNodeApiFixtureNodes } from "./wiki-node-api-fixtures"
 
 const forbiddenProductTerms = /Chunk Management|Chat API|Chatbot|Agent Platform|Workflow Builder|Vector DB Management/i
 
 test.describe.serial("MVP browser smoke", () => {
   test.beforeEach(async ({ page }) => {
+    await routeMutableWikiNodeApiFixture(page)
     await routeRetrievalApiFixtures(page)
   })
 
@@ -133,3 +135,93 @@ test.describe.serial("MVP browser smoke", () => {
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
   })
 })
+
+async function routeMutableWikiNodeApiFixture(page: Parameters<typeof routeRetrievalApiFixtures>[0]) {
+  const nodes = wikiNodeApiFixtureNodes.map((node, index) => ({
+    ...node,
+    title: index === 0 ? "保修政策" : node.title,
+    tags: [...node.tags],
+    sourceRefs: node.sourceRefs.map((sourceRef) => ({ ...sourceRef })),
+    relations: node.relations?.map((relation) => ({ ...relation })),
+  }))
+
+  await page.route("**/api/wiki-nodes**", async (route) => {
+    const request = route.request()
+    const url = new URL(request.url())
+    const parts = url.pathname.split("/").filter(Boolean)
+    const wikiNodesIndex = parts.indexOf("wiki-nodes")
+    const nodeId = parts[wikiNodesIndex + 1]
+    const childResource = parts[wikiNodesIndex + 2]
+
+    if (url.pathname === "/api/wiki-nodes" && request.method() === "GET") {
+      return route.fulfill({ json: nodes })
+    }
+
+    if (url.pathname === "/api/wiki-nodes" && request.method() === "POST") {
+      const input = request.postDataJSON() as {
+        title: string
+        slug: string
+        summary: string
+        contentMarkdown: string
+        tags: string[]
+        nodeType: string
+        status: string
+        indexStatus: string
+      }
+      if (nodes.some((node) => node.slug === input.slug || node.nodeId === input.slug)) {
+        return route.fulfill({ status: 409, json: { message: "Slug already exists" } })
+      }
+
+      const created = {
+        ...nodes[0],
+        nodeId: input.slug,
+        slug: input.slug,
+        title: input.title,
+        summary: input.summary,
+        contentMarkdown: input.contentMarkdown,
+        tags: input.tags,
+        nodeType: input.nodeType,
+        status: input.status,
+        indexStatus: input.indexStatus,
+        objectType: "Article",
+        subtype: "term",
+        metadata: {},
+        relations: [],
+        sourceRefs: [],
+        incomingCount: 0,
+        outgoingCount: 0,
+        brokenLinkCount: 0,
+      }
+      nodes.unshift(created)
+      return route.fulfill({ json: created })
+    }
+
+    if (!nodeId) return route.fallback()
+
+    const matchIndex = nodes.findIndex((node) => node.nodeId === nodeId || node.slug === nodeId)
+    const match = matchIndex >= 0 ? nodes[matchIndex] : null
+
+    if (childResource === "links" || childResource === "backlinks" || childResource === "index-segments") {
+      return route.fulfill({ json: [] })
+    }
+
+    if (childResource === "relations") {
+      return route.fulfill({ json: match?.relations ?? [] })
+    }
+
+    if (request.method() === "GET") {
+      return match
+        ? route.fulfill({ json: match })
+        : route.fulfill({ status: 404, json: { message: "WikiNode not found" } })
+    }
+
+    if (request.method() === "PUT") {
+      if (!match) return route.fulfill({ status: 404, json: { message: "WikiNode not found" } })
+      const nextNode = request.postDataJSON()
+      nodes[matchIndex] = nextNode
+      return route.fulfill({ json: nextNode })
+    }
+
+    return route.fallback()
+  })
+}

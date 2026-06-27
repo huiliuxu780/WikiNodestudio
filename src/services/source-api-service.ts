@@ -50,6 +50,10 @@ export function listSourceOperationsForSource(sourceId: string) {
   )
 }
 
+export function listSourceOperations() {
+  return Promise.resolve(mockSourceOperations)
+}
+
 export function getRawMaterial(rawMaterialId: string) {
   return withMockFallback(
     apiGet<RawMaterial>(`/raw-materials/${rawMaterialId}`),

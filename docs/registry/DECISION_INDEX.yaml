@@ -1,5 +1,17 @@
 version: 1
 decisions:
+  - id: D066
+    date: "2026-06-27"
+    title: "Close remaining MVP frontend placeholders as dense evidence consoles"
+    rationale: "IM066 implements a broad MVP scope completion sweep after the user rejected further tiny slices. It upgrades Source Operation, Index Jobs, Vector Sync, Retrieval Debug, System Health, and Admin pages from generic placeholder lists into compact B2B evidence consoles, recalibrates legacy coverage documents, clears the current execution queue, and preserves all hard boundaries: no backend API expansion, Java model change, database migration, package/dependency change, Source import, file upload, parser execution, embedding, real vector sync, publish approval, auth, permission enforcement, audit persistence, export, batch operation, Agent, Chatbot, Chat API, Workflow Builder, Vector DB Management, or Chunk Management."
+    related:
+      - IM066
+      - US066
+      - MVP_SCOPE_COMPLETION_SWEEP
+      - SOURCE_OPERATION_READONLY_LOGS
+      - INDEX_SEGMENT_GENERATION_TRACE_MODEL
+      - RETRIEVAL_API_DEBUG_EVIDENCE
+      - PUBLISHING_GOVERNANCE_ADMIN_BASELINE
   - id: D065
     date: "2026-06-27"
     title: "Close the Knowledge Relation PRD follow-up queue after IM059 through IM064"

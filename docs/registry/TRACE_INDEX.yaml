@@ -30,6 +30,15 @@ product_docs:
     source: /Users/mac/Desktop/任务 2 文档.md
   IMPLEMENTATION_SLICE_PRINCIPLES:
     file: docs/current/IMPLEMENTATION_SLICE_PRINCIPLES.md
+current_corrections:
+  MVP_SCOPE_COMPLETION_SWEEP:
+    decision: D066
+    frontend_page: src/pages/skeleton-pages.tsx
+    frontend_service: src/services/source-api-service.ts
+    playwright: tests/e2e/frontend-skeleton.spec.ts
+    inventory: docs/current/FULL_FEATURE_INVENTORY_AND_GAP_MATRIX.md
+    coverage_review: docs/current/FULL_REQUIREMENT_COVERAGE_REVIEW.md
+    rebaseline_review: docs/current/PROJECT_REBASELINE_REVIEW.md
 phase2_plans:
   SOURCE_RAW_MATERIAL_PARSED_DOCUMENT:
     file: docs/current/SOURCE_RAW_MATERIAL_PARSED_DOCUMENT_PHASE2_PLAN.md
@@ -518,6 +527,9 @@ tasks:
   IM065:
     decision: D065
     closure: KNOWLEDGE_RELATION_FOLLOWUP_CLOSURE
+  IM066:
+    decision: D066
+    implementation: MVP_SCOPE_COMPLETION_SWEEP
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN
