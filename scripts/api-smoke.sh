@@ -315,6 +315,10 @@ if (acceptedSuggestion.suggestionId !== "sug-002" || !["accepted", "skipped"].in
   throw new Error("POST /api/draft-wikinode-suggestions/{id}/accept: FAIL expected accepted or skipped result")
 }
 
+if (acceptedSuggestion.status === "accepted" && acceptedSuggestion.indexSegmentCount !== 3) {
+  throw new Error("POST /api/draft-wikinode-suggestions/{id}/accept: FAIL expected local Index Segment preparation")
+}
+
 if (JSON.stringify(acceptedSuggestion).includes("wikiLinkId") || JSON.stringify(acceptedSuggestion).includes("indexSegmentId") || JSON.stringify(acceptedSuggestion).includes("chunk")) {
   throw new Error("POST /api/draft-wikinode-suggestions/{id}/accept: FAIL response exposed forbidden internals")
 }
@@ -327,6 +331,19 @@ if (acceptedSuggestionDetail.status !== "accepted" || acceptedSuggestionDetail.r
 const acceptedNode = await request("GET /api/wiki-nodes/{id}", `/wiki-nodes/${acceptedSuggestion.nodeId ?? "wn-from-sug-002"}`)
 if (acceptedNode.status !== "draft" || acceptedNode.indexStatus !== "not_indexed") {
   throw new Error("GET /api/wiki-nodes/{id}: FAIL accepted suggestion should create draft non-indexed WikiNode")
+}
+
+const acceptedNodeSegments = await request("GET /api/wiki-nodes/{id}/index-segments", `/wiki-nodes/${acceptedSuggestion.nodeId ?? "wn-from-sug-002"}/index-segments`)
+if (acceptedSuggestion.status === "accepted" && (!Array.isArray(acceptedNodeSegments) || acceptedNodeSegments.length !== 3 || acceptedNodeSegments.some((segment) => segment.indexStatus !== "not_indexed"))) {
+  throw new Error("GET /api/wiki-nodes/{id}/index-segments: FAIL expected prepared non-indexed Index Segments for accepted draft")
+}
+
+if (acceptedSuggestion.status === "accepted" && acceptedNodeSegments.some((segment) => segment.vectorDocId !== null)) {
+  throw new Error("GET /api/wiki-nodes/{id}/index-segments: FAIL expected unsynced vectorDocId")
+}
+
+if (JSON.stringify(acceptedNodeSegments).includes("embedding")) {
+  throw new Error("GET /api/wiki-nodes/{id}/index-segments: FAIL response exposed forbidden internals")
 }
 
 const created = await request("POST /api/wiki-nodes", "/wiki-nodes", {

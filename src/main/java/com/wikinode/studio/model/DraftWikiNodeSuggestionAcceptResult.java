@@ -9,6 +9,7 @@ public record DraftWikiNodeSuggestionAcceptResult(
   String summary,
   String reviewNote,
   String nodeId,
-  String nodeStatus
+  String nodeStatus,
+  Integer indexSegmentCount
 ) {
 }

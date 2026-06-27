@@ -343,7 +343,7 @@ test.describe("Draft WikiNode Suggestion read-only review", () => {
     await expect(page.getByRole("button", { name: "批量转换" })).toHaveCount(0)
   })
 
-  test("accepts one suggestion as draft WikiNode without publishing or indexing", async ({ page }) => {
+  test("accepts one suggestion as draft WikiNode with local Index Segment preparation", async ({ page }) => {
     let activeSuggestion = {
       ...apiSuggestion,
       conflictStatus: "none",
@@ -364,10 +364,11 @@ test.describe("Draft WikiNode Suggestion read-only review", () => {
         json: {
           suggestionId: "sug-api-only",
           status: "accepted",
-          summary: "已采纳为草稿 WikiNode。",
+          summary: "已采纳为草稿 WikiNode，并准备 3 条 Index Segment。",
           reviewNote: payload.reviewNote,
           nodeId: "wn-from-sug-api-only",
           nodeStatus: "draft",
+          indexSegmentCount: 3,
         },
       })
     })
@@ -380,7 +381,7 @@ test.describe("Draft WikiNode Suggestion read-only review", () => {
     await page.getByLabel("采纳说明").fill("确认进入草稿 WikiNode，后续人工编辑。")
     await page.getByRole("button", { name: "采纳为草稿 WikiNode" }).click()
 
-    await expect(page.getByText("已采纳为草稿 WikiNode。")).toBeVisible()
+    await expect(page.getByText("已采纳为草稿 WikiNode，并准备 3 条 Index Segment。")).toBeVisible()
     await expect(page.getByText("当前状态为已采纳，不能继续采纳或拒绝。")).toBeVisible()
     await expect(page.getByText("确认进入草稿 WikiNode，后续人工编辑。")).toBeVisible()
     await expect(page.getByRole("link", { name: "打开草稿 WikiNode" })).toHaveAttribute("href", "/wiki-nodes/wn-from-sug-api-only")

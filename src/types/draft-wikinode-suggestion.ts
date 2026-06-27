@@ -56,6 +56,7 @@ export type DraftWikiNodeSuggestionAcceptResult = {
   reviewNote?: string | null
   nodeId?: string | null
   nodeStatus?: "draft" | "published" | "archived" | string | null
+  indexSegmentCount?: number | null
 }
 
 export type DraftWikiNodeSuggestionRetryRequest = {

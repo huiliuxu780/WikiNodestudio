@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D071
+    date: "2026-06-28"
+    title: "Prepare local Index Segments when accepting a Draft WikiNode Suggestion"
+    rationale: "IM071 extends the already-approved Draft WikiNode Suggestion accept path so an accepted suggestion creates a draft WikiNode and immediately prepares local not_indexed Index Segment evidence using the existing deterministic generator. It deliberately does not publish, execute indexing, invoke embedding, sync vector stores, create WikiLinks, add external connectors, permissions, batch/export, Agent, Chatbot, Workflow Builder, Vector DB Management, or product-facing Chunk Management."
+    related:
+      - IM071
+      - US071
+      - DRAFT_WIKINODE_INDEX_SEGMENT_PREPARATION
+      - SOURCE_IMPORT_TO_DRAFT_WIKINODE_SUGGESTION_FLOW
   - id: D070
     date: "2026-06-28"
     title: "Connect local Source import to Draft WikiNode Suggestion generation"

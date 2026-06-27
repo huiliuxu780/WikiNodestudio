@@ -6,14 +6,13 @@ notes:
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
 stories:
-  - id: US070
-    title: "Source Import to Draft WikiNode Suggestion Flow"
+  - id: US071
+    title: "Draft WikiNode Index Segment Preparation"
     status: in_progress
     priority: high
-    summary: "Connect local Source file import to Draft WikiNode Suggestion generation so an uploaded document reaches the review queue in one local flow."
+    summary: "When a Draft WikiNode Suggestion is accepted into a draft WikiNode, prepare local Index Segment evidence for that draft without publishing, indexing, embedding, or vector sync."
     acceptance:
-      - "A Source detail page can import a local txt/md/docx file and generate a Draft WikiNode Suggestion."
-      - "The import response returns Raw Material, Parsed Document, document segment, and suggestion identifiers."
-      - "The generated suggestion can be opened from the import result."
-      - "Source Operation records import, parse, and suggestion generation actions."
-      - "The flow does not create published WikiNodes, publish, index, embed, sync vector stores, connect external sources, or expose product-facing Chunk Management."
+      - "Accepting an eligible Draft WikiNode Suggestion creates one draft WikiNode and prepares local Index Segments for it."
+      - "The accept response returns the draft WikiNode id and prepared Index Segment count without exposing segment ids as the primary result."
+      - "Prepared Index Segments remain not_indexed and can be read through existing WikiNode Index Segment APIs."
+      - "The flow does not publish, index, embed, sync vector stores, create WikiLinks, connect external sources, or expose product-facing Chunk Management."
