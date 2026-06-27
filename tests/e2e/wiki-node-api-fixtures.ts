@@ -44,7 +44,11 @@ type FixtureWikiLink = {
   toNodeId?: string
   toTitle?: string
   targetTitle: string
+  targetSlug?: string
+  anchorText?: string
   relationType: "reference"
+  source?: "markdown_link"
+  status?: "active" | "broken"
   resolved: boolean
 }
 
@@ -360,7 +364,9 @@ function buildOutgoingLinks(nodeId: string, nodes: FixtureWikiNode[]): FixtureWi
   })
 
   return Array.from(node.contentMarkdown.matchAll(/\[\[([^\]]+)\]\]/g), (match, index) => {
-    const targetTitle = match[1].split("|")[0].trim()
+    const [rawTarget, rawLabel] = match[1].split("|", 2).map((part) => part.trim())
+    const targetTitle = rawTarget || rawLabel || match[1].trim()
+    const anchorText = rawLabel || rawTarget || match[1].trim()
     const target = referenceMap.get(targetTitle)
 
     return {
@@ -370,7 +376,11 @@ function buildOutgoingLinks(nodeId: string, nodes: FixtureWikiNode[]): FixtureWi
       toNodeId: target?.nodeId,
       toTitle: target?.title,
       targetTitle,
+      targetSlug: target?.slug ?? targetTitle,
+      anchorText,
       relationType: "reference",
+      source: "markdown_link",
+      status: target ? "active" : "broken",
       resolved: Boolean(target),
     }
   })

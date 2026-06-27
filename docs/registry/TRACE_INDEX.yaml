@@ -355,6 +355,14 @@ phase2_plans:
     inspector: src/components/graph/graph-inspector.tsx
     fixtures: tests/e2e/wiki-node-api-fixtures.ts
     playwright: tests/e2e/wiki-graph-canvas.spec.ts
+  BROKEN_LINK_GOVERNANCE_ACTIONS:
+    decision: D062
+    requirement_trace: KNOWLEDGE_RELATION_REQUIREMENT_TRACE
+    previous_graph: WIKIGRAPH_RELATION_FILTER_AND_LEGEND_COMPLETION
+    page: src/pages/broken-links-page.tsx
+    list_component: src/components/wiki/link-list.tsx
+    fixtures: tests/e2e/wiki-node-api-fixtures.ts
+    playwright: tests/e2e/frontend-skeleton.spec.ts
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
@@ -474,6 +482,9 @@ tasks:
   IM061:
     decision: D061
     implementation: WIKIGRAPH_RELATION_FILTER_AND_LEGEND_COMPLETION
+  IM062:
+    decision: D062
+    implementation: BROKEN_LINK_GOVERNANCE_ACTIONS
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN
