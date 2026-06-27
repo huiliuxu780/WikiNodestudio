@@ -346,6 +346,15 @@ phase2_plans:
     parser: src/utils/link-parser.ts
     inspector: src/components/wiki/wiki-node-inspector.tsx
     playwright: tests/e2e/wikinode-knowledge-object-metadata.spec.ts
+  WIKIGRAPH_RELATION_FILTER_AND_LEGEND_COMPLETION:
+    decision: D061
+    requirement_trace: KNOWLEDGE_RELATION_REQUIREMENT_TRACE
+    previous_mapping: MARKDOWN_WIKILINK_RELATION_MAPPING_HARDENING
+    graph_builder: src/utils/knowledge-graph.ts
+    canvas: src/components/graph/wiki-graph-view.tsx
+    inspector: src/components/graph/graph-inspector.tsx
+    fixtures: tests/e2e/wiki-node-api-fixtures.ts
+    playwright: tests/e2e/wiki-graph-canvas.spec.ts
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
@@ -462,6 +471,9 @@ tasks:
   IM060:
     decision: D060
     implementation: MARKDOWN_WIKILINK_RELATION_MAPPING_HARDENING
+  IM061:
+    decision: D061
+    implementation: WIKIGRAPH_RELATION_FILTER_AND_LEGEND_COMPLETION
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN

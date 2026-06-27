@@ -6,16 +6,16 @@ notes:
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
 stories:
-  - id: US060
-    title: "Markdown WikiLink relation mapping hardening"
+  - id: US061
+    title: "WikiGraph relation filter and legend completion"
     status: in_progress
-    goal: "Make Markdown-derived WikiLinks consistently visible as relationship evidence after edit/save while preserving existing WikiLink syntax."
+    goal: "Complete WikiGraph relation filtering, legend, edge visual semantics, and edge detail inspection while preserving the existing React Flow graph."
     acceptance:
-      - "Existing `[[target]]` and `[[target|anchor]]` Markdown WikiLink syntax remains compatible."
-      - "Inspector relation evidence shows Markdown anchor text, target identifier, resolved target, relation source, and relation status."
-      - "Resolved Markdown WikiLinks and unresolved WikiLinks are displayed consistently in the relation tab after a WikiNode save."
-      - "Manual structured relations are not forced back into Markdown."
-      - "Playwright covers resolved and unresolved Markdown WikiLink evidence after save."
+      - "WikiGraph toolbar supports relation type filters for all, references, related, applies, replaces, conflicts, derived/source, and broken relations."
+      - "WikiGraph toolbar supports relation status filters for all, active, broken, pending review, and rejected relations."
+      - "Conflict and broken relations have visually distinct edge treatments."
+      - "Graph legend explains normal, conflict, and broken relation edges."
+      - "Clicking an edge opens relation detail in the Inspector."
+      - "Playwright covers relation filters, legend, and edge detail."
     non_goals:
-      - "No forced write-back from manual Knowledge Relations to Markdown."
-      - "No relation governance workflow, review lifecycle, repair action, graph filter, retrieval behavior, backend API, database migration, package change, or dependency change."
+      - "No graph database, backend graph rewrite, new graph layout algorithm, new dependency, backend API, database migration, package change, retrieval behavior, approval workflow, or repair action."

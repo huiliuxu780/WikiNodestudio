@@ -6,15 +6,16 @@ notes:
   - "Do not auto-enter the next IM without explicit user confirmation."
   - "Done history stays in release docs or archive."
 tasks:
-  - id: IM060
-    title: "Markdown WikiLink Relation Mapping Hardening"
+  - id: IM061
+    title: "WikiGraph Relation Filter and Legend Completion"
     status: in_progress
-    story_ids: [US060]
+    story_ids: [US061]
     allowed_files:
-      - "src/components/wiki/wiki-node-inspector.tsx"
-      - "src/types/wiki.ts"
-      - "src/utils/link-parser.ts"
-      - "tests/e2e/wikinode-knowledge-object-metadata.spec.ts"
+      - "src/components/graph/wiki-graph-view.tsx"
+      - "src/components/graph/graph-inspector.tsx"
+      - "src/utils/knowledge-graph.ts"
+      - "tests/e2e/wiki-graph-canvas.spec.ts"
+      - "tests/e2e/wiki-node-api-fixtures.ts"
       - "docs/current/STORY_QUEUE.yaml"
       - "docs/current/ACTIVE_TASKS.yaml"
       - "docs/current/PROJECT_CONTEXT.md"
@@ -29,9 +30,10 @@ tasks:
       - "pnpm-lock.yaml"
       - ".github/workflows/**"
     gates:
-      - "Markdown compatibility gate: preserve existing [[target]] and [[target|anchor]] WikiLink syntax."
-      - "Evidence mapping gate: display anchor text, target identifier, resolved target, relation source, and relation status for Markdown-derived relations."
-      - "No write-back gate: do not force manual structured Knowledge Relations into Markdown content."
+      - "Relation filter gate: support relation type and relation status filtering on the existing React Flow WikiGraph."
+      - "Visual semantics gate: distinguish normal, conflict, and broken relation edges and expose a legend."
+      - "Edge detail gate: clicking a graph edge opens relation detail in the Inspector."
+      - "No graph rewrite gate: do not add dependencies, layout algorithms, backend graph APIs, or database changes."
       - "Verification gate: focused Playwright, pnpm lint, pnpm build, bash scripts/check-state.sh, bash scripts/check.sh, full Playwright, and diff check."
     stop_conditions:
-      - "Any backend API, Java model, database migration, approval lifecycle, confirm or reject operation, batch operation, repair action, AI suggestion, permission flow, retrieval behavior, graph filter, package, lockfile, dependency, parser execution, vector sync, Source import, or forced manual-relation Markdown write-back."
+      - "Any backend API, Java model, database migration, new dependency, package or lockfile change, graph database, graph layout algorithm, approval lifecycle, confirm or reject operation, batch operation, repair action, AI suggestion, permission flow, retrieval behavior, parser execution, vector sync, or Source import."

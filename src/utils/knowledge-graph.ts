@@ -4,6 +4,18 @@ import type { KnowledgeObjectType, KnowledgeRelationType, WikiLink, WikiNode } f
 import { buildAllLinks } from "@/utils/link-parser"
 import { labelFromMap, relationTypeLabels } from "@/utils/display-labels"
 
+export type KnowledgeGraphRelationTypeFilter =
+  | "all"
+  | "references"
+  | "related"
+  | "applies"
+  | "replaces"
+  | "conflicts"
+  | "derived_source"
+  | "broken"
+
+export type KnowledgeGraphRelationStatusFilter = "all" | "active" | "broken" | "pending_review" | "rejected"
+
 export type KnowledgeGraphEdge = {
   edgeId: string
   sourceNodeId: string
@@ -12,6 +24,7 @@ export type KnowledgeGraphEdge = {
   targetTitle: string
   relationType: KnowledgeRelationType | "broken_wikilink"
   source: "relation" | "wikilink"
+  status: Exclude<KnowledgeGraphRelationStatusFilter, "all">
   resolved: boolean
 }
 
@@ -19,6 +32,8 @@ export type KnowledgeGraphFilters = {
   search: string
   objectType: string
   indexStatus: string
+  relationType: KnowledgeGraphRelationTypeFilter
+  relationStatus: KnowledgeGraphRelationStatusFilter
   showBrokenLinks: boolean
 }
 
@@ -45,6 +60,8 @@ export type KnowledgeGraphNodeData = Record<string, unknown> & {
 export type KnowledgeGraphEdgeData = Record<string, unknown> & {
   edgeId: string
   relationType: KnowledgeGraphEdge["relationType"]
+  status: KnowledgeGraphEdge["status"]
+  source: KnowledgeGraphEdge["source"]
   resolved: boolean
   sourceTitle: string
   targetTitle: string
@@ -70,13 +87,19 @@ export const knowledgeObjectTypes: KnowledgeObjectType[] = [
   "Rule",
 ]
 
-const supportedRelationTypes = new Set([
+const supportedRelationTypes = new Set<KnowledgeRelationType>([
   "references",
+  "derived_from",
   "applies_to",
   "contains",
+  "part_of",
+  "replaces",
+  "conflicts_with",
+  "explains",
   "has_manual",
   "has_part_catalog",
   "has_policy",
+  "has_asset",
   "related_to",
 ])
 
@@ -118,6 +141,7 @@ export function buildKnowledgeGraphEdges(nodes: WikiNode[], filters: KnowledgeGr
     (node.relations ?? [])
       .filter((relation) => supportedRelationTypes.has(relation.relationType))
       .filter((relation) => visibleNodeIds.has(relation.targetNodeId))
+      .filter((relation) => matchesRelationFilters(relation.relationType, relation.status ?? "active", filters))
       .map<KnowledgeGraphEdge>((relation) => ({
         edgeId: relation.id ?? `${node.nodeId}-${relation.relationType}-${relation.targetNodeId}`,
         sourceNodeId: node.nodeId,
@@ -126,7 +150,8 @@ export function buildKnowledgeGraphEdges(nodes: WikiNode[], filters: KnowledgeGr
         targetTitle: nodeById.get(relation.targetNodeId)?.title ?? relation.targetNodeId,
         relationType: relation.relationType,
         source: "relation",
-        resolved: true,
+        status: relation.status ?? "active",
+        resolved: relation.status !== "broken",
       })),
   )
 
@@ -134,6 +159,7 @@ export function buildKnowledgeGraphEdges(nodes: WikiNode[], filters: KnowledgeGr
     .filter((link) => visibleNodeIds.has(link.fromNodeId))
     .filter((link) => (link.resolved && link.toNodeId ? visibleNodeIds.has(link.toNodeId) : filters.showBrokenLinks))
     .map((link) => wikiLinkToGraphEdge(link))
+    .filter((edge) => matchesRelationFilters(edge.relationType, edge.status, filters))
 
   return dedupeEdges([...relationEdges, ...wikiLinkEdges])
 }
@@ -181,6 +207,7 @@ function wikiLinkToGraphEdge(link: WikiLink): KnowledgeGraphEdge {
     targetTitle: link.targetTitle,
     relationType: link.resolved ? "references" : "broken_wikilink",
     source: "wikilink",
+    status: link.resolved ? "active" : "broken",
     resolved: link.resolved,
   }
 }
@@ -245,23 +272,25 @@ function brokenNodeFromEdge(edge: KnowledgeGraphEdge, index: number, selectedNod
 }
 
 function graphEdgeToFlowEdge(edge: KnowledgeGraphEdge): KnowledgeGraphFlowEdge {
+  const style = edgeStyle(edge)
+
   return {
     id: edge.edgeId,
     source: edge.sourceNodeId,
     target: edge.targetNodeId ?? brokenNodeId(edge),
     type: "smoothstep",
-    animated: !edge.resolved,
+    animated: !edge.resolved || edge.status === "pending_review",
     label: labelFromMap(relationTypeLabels, edge.relationType),
-    style: edge.resolved
-      ? { strokeWidth: 1.6 }
-      : { strokeWidth: 2, strokeDasharray: "6 5", stroke: "hsl(var(--destructive))" },
+    style,
     markerEnd: {
       type: "arrowclosed",
-      color: edge.resolved ? undefined : "hsl(var(--destructive))",
+      color: style.stroke,
     },
     data: {
       edgeId: edge.edgeId,
       relationType: edge.relationType,
+      status: edge.status,
+      source: edge.source,
       resolved: edge.resolved,
       sourceTitle: edge.sourceTitle,
       targetTitle: edge.targetTitle,
@@ -271,6 +300,41 @@ function graphEdgeToFlowEdge(edge: KnowledgeGraphEdge): KnowledgeGraphFlowEdge {
 
 function brokenNodeId(edge: KnowledgeGraphEdge) {
   return `broken-${edge.edgeId}`
+}
+
+function relationFilterGroup(relationType: KnowledgeGraphEdge["relationType"]): KnowledgeGraphRelationTypeFilter {
+  if (relationType === "broken_wikilink") return "broken"
+  if (relationType === "references" || relationType === "has_policy") return "references"
+  if (relationType === "related_to" || relationType === "explains" || relationType === "contains" || relationType === "part_of") return "related"
+  if (relationType === "applies_to") return "applies"
+  if (relationType === "replaces") return "replaces"
+  if (relationType === "conflicts_with") return "conflicts"
+  if (relationType === "derived_from" || relationType === "has_manual" || relationType === "has_part_catalog" || relationType === "has_asset") return "derived_source"
+  return "related"
+}
+
+function matchesRelationFilters(
+  relationType: KnowledgeGraphEdge["relationType"],
+  status: KnowledgeGraphEdge["status"],
+  filters: KnowledgeGraphFilters,
+) {
+  return (
+    (filters.relationType === "all" || relationFilterGroup(relationType) === filters.relationType) &&
+    (filters.relationStatus === "all" || status === filters.relationStatus)
+  )
+}
+
+function edgeStyle(edge: KnowledgeGraphEdge) {
+  if (!edge.resolved || edge.status === "broken") {
+    return { strokeWidth: 2, strokeDasharray: "6 5", stroke: "hsl(var(--destructive))" }
+  }
+  if (edge.relationType === "conflicts_with" || edge.status === "pending_review") {
+    return { strokeWidth: 2, strokeDasharray: edge.status === "pending_review" ? "5 4" : undefined, stroke: "hsl(24 95% 45%)" }
+  }
+  if (edge.status === "rejected") {
+    return { strokeWidth: 1.4, strokeDasharray: "3 4", stroke: "hsl(var(--muted-foreground))" }
+  }
+  return { strokeWidth: 1.6, stroke: "hsl(var(--foreground))" }
 }
 
 function dedupeEdges(edges: KnowledgeGraphEdge[]) {

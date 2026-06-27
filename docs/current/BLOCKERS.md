@@ -6,9 +6,9 @@ None.
 
 ## Active Scope Constraints
 
-- `IM060` may update frontend WikiLink evidence mapping, display typing, and Playwright coverage for saved Markdown WikiLinks.
-- `IM060` must preserve existing `[[target]]` and `[[target|anchor]]` Markdown syntax and keep manual Knowledge Relation editing separate from Markdown write-back.
-- `IM060` must not change backend API, Java model, database migrations, package files, dependencies, graph behavior, Broken Link repair actions, retrieval behavior, approvals, permissions, Source import, parser execution, vector sync, AI suggestions, batch operations, or forced manual-relation Markdown write-back.
+- `IM061` may update the existing React Flow WikiGraph relation filters, legend, edge visual treatment, edge click behavior, and Playwright coverage.
+- `IM061` must preserve existing graph data sources and avoid backend or graph algorithm rewrites.
+- `IM061` must not change backend API, Java model, database migrations, package files, dependencies, graph database behavior, new graph layout algorithms, Broken Link repair actions, retrieval behavior, approvals, permissions, Source import, parser execution, vector sync, AI suggestions, or batch operations.
 - Future frontend work must follow `docs/quality/frontend-ux-guidelines.md`.
 
 ## Standing Constraints

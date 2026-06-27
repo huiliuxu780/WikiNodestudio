@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test"
-import { routeWikiNodeApiFixtures } from "./wiki-node-api-fixtures"
+import { routeWikiNodeApiFixtures, wikiNodeApiFixtureNodes } from "./wiki-node-api-fixtures"
 
 const forbiddenProductTerms = /Chunk Management|Chat API|Chatbot|Agent Platform|Workflow Builder|Vector DB Management/i
 
@@ -81,5 +81,47 @@ test.describe("WikiGraph canvas visualization", () => {
     await expect(page.getByTestId("wiki-graph-broken-node")).toHaveCount(0)
 
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+  })
+
+  test("filters relations by type and status with legend and edge detail", async ({ page }) => {
+    const nodes = wikiNodeApiFixtureNodes.map((node) => node.nodeId === "wn-001"
+      ? {
+          ...node,
+          relations: [
+            ...(node.relations ?? []),
+            {
+              id: "rel-wn001-wn002-conflict",
+              targetNodeId: "wn-002",
+              relationType: "conflicts_with",
+              direction: "outgoing",
+              confidence: 0.81,
+              createdBy: "user",
+              status: "pending_review",
+            },
+          ],
+        }
+      : node)
+    await routeWikiNodeApiFixtures(page, nodes)
+    await page.goto("/wiki-graph")
+
+    await expect(page.getByTestId("wiki-graph-legend")).toContainText("冲突关系")
+    await expect(page.getByTestId("wiki-graph-legend")).toContainText("断链关系")
+
+    await page.getByTestId("wiki-graph-filter-relation-type").click()
+    await page.getByRole("option", { name: "冲突关系" }).click()
+    await expect(page.locator(".react-flow__edge").first()).toBeVisible()
+
+    await page.getByTestId("wiki-graph-filter-relation-status").click()
+    await page.getByRole("option", { name: "待确认" }).click()
+    await expect(page.locator(".react-flow__edge").first()).toBeVisible()
+
+    await page.locator(".react-flow__edge").first().click()
+    await expect(page.getByTestId("wiki-graph-inspector-panel")).toBeVisible()
+    await expect(page.getByTestId("wiki-graph-edge-detail")).toContainText("冲突")
+    await expect(page.getByTestId("wiki-graph-edge-detail")).toContainText("待确认")
+
+    await page.getByTestId("wiki-graph-filter-relation-status").click()
+    await page.getByRole("option", { name: "有效" }).click()
+    await expect(page.locator(".react-flow__edge")).toHaveCount(0)
   })
 })
