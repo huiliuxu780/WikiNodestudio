@@ -314,6 +314,20 @@ function RelationSurface({
     }
   }
 
+  async function reviewRelation(relation: KnowledgeRelation, status: "active" | "rejected", note: string) {
+    if (!relation.id || !onUpdateRelation) return
+    await onUpdateRelation(relation.id, {
+      targetNodeId: relation.targetNodeId,
+      relationType: relation.relationType,
+      status,
+      source: relation.source ?? "manual",
+      anchorText: note || relation.anchorText,
+      note: note || relation.note,
+      confidence: relation.confidence,
+      evidenceSourceRefId: relation.evidence?.sourceRefId,
+    })
+  }
+
   return (
     <div className="flex flex-col gap-4 pr-1">
       <PanelSection title="关系总览">
@@ -335,6 +349,7 @@ function RelationSurface({
           availableNodes={availableNodes}
           sourceRefs={node.sourceRefs}
           onEdit={onUpdateRelation ? openEditForm : undefined}
+          onReview={onUpdateRelation ? reviewRelation : undefined}
           onDelete={onDeleteRelation}
         />
       </PanelSection>
@@ -518,12 +533,14 @@ function KnowledgeRelationList({
   availableNodes,
   sourceRefs,
   onEdit,
+  onReview,
   onDelete,
 }: {
   relations: KnowledgeRelation[] | undefined
   availableNodes: WikiNode[]
   sourceRefs: WikiNode["sourceRefs"]
   onEdit?: (relation: KnowledgeRelation) => void
+  onReview?: (relation: KnowledgeRelation, status: "active" | "rejected", note: string) => void
   onDelete?: (relationId: string) => void
 }) {
   if (!relations?.length) {
@@ -547,6 +564,7 @@ function KnowledgeRelationList({
                   availableNodes={availableNodes}
                   sourceRefs={sourceRefs}
                   onEdit={onEdit}
+                  onReview={onReview}
                   onDelete={onDelete}
                 />
               ))}
@@ -563,14 +581,17 @@ function KnowledgeRelationCard({
   availableNodes,
   sourceRefs,
   onEdit,
+  onReview,
   onDelete,
 }: {
   relation: KnowledgeRelation
   availableNodes: WikiNode[]
   sourceRefs: WikiNode["sourceRefs"]
   onEdit?: (relation: KnowledgeRelation) => void
+  onReview?: (relation: KnowledgeRelation, status: "active" | "rejected", note: string) => void
   onDelete?: (relationId: string) => void
 }) {
+  const [reviewNote, setReviewNote] = useState(relation.note ?? relation.anchorText ?? "")
   const target = findRelationTarget(relation.targetNodeId, availableNodes)
   const relationLabel = labelFromMap(relationTypeLabels, relation.relationType)
   const evidence = sourceRefs.find((sourceRef) => sourceRef.id === relation.evidence?.sourceRefId || sourceRef.sourceId === relation.evidence?.sourceRefId)
@@ -609,6 +630,22 @@ function KnowledgeRelationCard({
         {relation.anchorText ? <span>上下文：{relation.anchorText}</span> : null}
         {relation.note ? <span>备注：{relation.note}</span> : null}
       </div>
+      {onReview && (status === "pending_review" || relation.relationType === "conflicts_with") ? (
+        <div className="mt-3 grid gap-2 rounded-md border bg-muted/20 p-2">
+          <label className="text-xs font-medium text-muted-foreground" htmlFor={`relation-review-${relationId ?? relation.targetNodeId}`}>关系评审备注</label>
+          <Input
+            id={`relation-review-${relationId ?? relation.targetNodeId}`}
+            aria-label="关系评审备注"
+            value={reviewNote}
+            onChange={(event) => setReviewNote(event.target.value)}
+            placeholder="填写确认或驳回依据"
+          />
+          <div className="flex justify-end gap-2">
+            <Button size="sm" variant="outline" onClick={() => onReview(relation, "active", reviewNote || "关系已确认。")}>确认关系</Button>
+            <Button size="sm" variant="outline" onClick={() => onReview(relation, "rejected", reviewNote || "关系已驳回。")}>驳回关系</Button>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

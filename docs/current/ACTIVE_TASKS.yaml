@@ -6,14 +6,13 @@ notes:
   - "Do not auto-enter the next IM without explicit user confirmation."
   - "Done history stays in release docs or archive."
 tasks:
-  - id: IM062
-    title: "Broken Link Governance Actions"
+  - id: IM063
+    title: "Relation Review and Governance"
     status: in_progress
-    story_ids: [US062]
+    story_ids: [US063]
     allowed_files:
-      - "src/components/wiki/link-list.tsx"
-      - "tests/e2e/frontend-skeleton.spec.ts"
-      - "tests/e2e/wiki-node-api-fixtures.ts"
+      - "src/components/wiki/wiki-node-inspector.tsx"
+      - "tests/e2e/wikinode-knowledge-object-metadata.spec.ts"
       - "docs/current/STORY_QUEUE.yaml"
       - "docs/current/ACTIVE_TASKS.yaml"
       - "docs/current/PROJECT_CONTEXT.md"
@@ -30,9 +29,10 @@ tasks:
       - "pnpm-lock.yaml"
       - ".github/workflows/**"
     gates:
-      - "Broken Link evidence gate: show source WikiNode, anchor text, target identifier, resolved target, relation type, relation source, and relation status."
-      - "Safe navigation gate: provide navigation to the source WikiNode without adding fake repair actions."
-      - "No write-action gate: do not expose unimplemented repair, ignore, batch, create-target, approval, or AI actions."
+      - "Relation review gate: pending or conflict Knowledge Relations can be confirmed or rejected through the existing relation update contract."
+      - "Review note gate: review note is stored in the existing relation note field."
+      - "Risk emphasis gate: conflict relations remain visually emphasized."
+      - "No new governance backend gate: do not add approval workflow, permissions, audit persistence, backend API, or database changes."
       - "Verification gate: focused Playwright, pnpm lint, pnpm build, bash scripts/check-state.sh, bash scripts/check.sh, full Playwright, and diff check."
     stop_conditions:
-      - "Any backend API, Java model, database migration, new dependency, package or lockfile change, batch repair, automatic repair, create-target write operation, ignore or mark-processed persistence, approval lifecycle, AI suggestion, permission flow, retrieval behavior, parser execution, vector sync, or Source import."
+      - "Any backend API, Java model, database migration, new dependency, package or lockfile change, full approval workflow, permission model, audit persistence, batch operation, repair action, AI suggestion, retrieval behavior, parser execution, vector sync, or Source import."

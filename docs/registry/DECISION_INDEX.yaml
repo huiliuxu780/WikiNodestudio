@@ -1,5 +1,15 @@
 version: 1
 decisions:
+  - id: D063
+    date: "2026-06-27"
+    title: "Add lightweight Knowledge Relation review controls without new governance backend"
+    rationale: "IM063 adds confirm and reject controls for pending or conflict Knowledge Relations in the WikiNode Inspector, reusing the existing relation update contract and relation note field. The work keeps conflict relations emphasized as risk relations and adds Playwright coverage for rejected-state display, without adding a full approval workflow, permission model, audit persistence, backend API, Java model, database migration, package, dependency, batch operation, repair action, AI suggestion, retrieval behavior, parser execution, vector sync, or Source import behavior."
+    related:
+      - IM063
+      - US063
+      - RELATION_REVIEW_AND_GOVERNANCE
+      - KNOWLEDGE_RELATION_REQUIREMENT_TRACE
+      - BROKEN_LINK_GOVERNANCE_ACTIONS
   - id: D062
     date: "2026-06-27"
     title: "Make Broken Links a safe governance evidence surface without fake write actions"
