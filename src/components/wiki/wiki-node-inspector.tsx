@@ -28,6 +28,7 @@ import {
   statusLabels,
   subtypeLabels,
 } from "@/utils/display-labels"
+import { parseWikiLinks } from "@/utils/link-parser"
 
 export function WikiNodeInspector({
   node,
@@ -259,8 +260,11 @@ function RelationSurface({
   onDeleteRelation?: (relationId: string) => Promise<void>
 }) {
   const structuredRelations = node.relations ?? []
-  const markdownRelations = outgoingLinks
-  const unresolvedRelations = brokenLinks
+  const enrichedOutgoingLinks = enrichWikiLinkEvidence(node, outgoingLinks)
+  const markdownRelations = enrichedOutgoingLinks.filter((link) => link.resolved)
+  const unresolvedRelations = brokenLinks.length
+    ? enrichWikiLinkEvidence(node, brokenLinks)
+    : enrichedOutgoingLinks.filter((link) => !link.resolved)
   const [formMode, setFormMode] = useState<"closed" | "create" | "edit">("closed")
   const [editingRelationId, setEditingRelationId] = useState("")
   const [form, setForm] = useState<RelationFormState>(() => emptyRelationForm(node, availableNodes))
@@ -315,7 +319,7 @@ function RelationSurface({
       <PanelSection title="关系总览">
         <div className="grid grid-cols-3 gap-2">
           <RelationCount label="结构化关系" value={structuredRelations.length} />
-          <RelationCount label="Markdown 双链" value={markdownRelations.length} />
+              <RelationCount label="Markdown 双链" value={enrichedOutgoingLinks.length} />
           <RelationCount label="未解析" value={unresolvedRelations.length} />
         </div>
       </PanelSection>
@@ -617,7 +621,10 @@ function WikiLinkRelationList({ links, emptyText = "暂无正文双链关系。"
   return (
     <div className="flex flex-col gap-2">
       {links.map((link) => {
-        const status = link.resolved ? "active" : "broken"
+        const status = link.status ?? (link.resolved ? "active" : "broken")
+        const anchorText = link.anchorText ?? link.targetTitle
+        const targetKey = link.targetSlug ?? link.targetTitle
+        const resolvedTarget = link.toTitle ?? (link.resolved ? link.targetTitle : "未解析")
 
         return (
           <div key={link.linkId} className="rounded-md border bg-background p-3 text-sm data-[broken=true]:border-destructive/60" data-broken={!link.resolved}>
@@ -630,8 +637,15 @@ function WikiLinkRelationList({ links, emptyText = "暂无正文双链关系。"
                   </Badge>
                   <Badge variant="outline">{relationSourceLabels.markdown_link}</Badge>
                 </div>
-                <div className="mt-2 font-medium">{labelFromMap(relationTypeLabels, link.relationType)} -&gt; {link.toTitle ?? link.targetTitle}</div>
-                <div className="mt-1 text-xs text-muted-foreground">来源 WikiNode：{link.fromTitle}</div>
+                <div className="mt-2 font-medium">{labelFromMap(relationTypeLabels, link.relationType)} -&gt; {resolvedTarget}</div>
+                <div className="mt-3 grid gap-1 text-xs text-muted-foreground">
+                  <span>锚文本：{anchorText}</span>
+                  <span>目标标识：{targetKey}</span>
+                  <span>解析目标：{resolvedTarget}</span>
+                  <span>来源 WikiNode：{link.fromTitle}</span>
+                  <span>关系来源：{relationSourceLabels.markdown_link}</span>
+                  <span>关系状态：{labelFromMap(relationStatusLabels, status)}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -639,6 +653,23 @@ function WikiLinkRelationList({ links, emptyText = "暂无正文双链关系。"
       })}
     </div>
   )
+}
+
+function enrichWikiLinkEvidence(node: WikiNode, links: WikiLink[]) {
+  const parsedLinks = parseWikiLinks(node.contentMarkdown)
+
+  return links.map((link) => {
+    const parsedIndex = Number(link.linkId.match(/(\d+)$/)?.[1])
+    const parsedLink = parsedLinks[parsedIndex] ?? parsedLinks.find((item) => item.targetTitle === link.targetTitle)
+
+    return {
+      ...link,
+      anchorText: link.anchorText ?? parsedLink?.label ?? link.targetTitle,
+      targetSlug: link.targetSlug ?? parsedLink?.targetTitle ?? link.targetTitle,
+      source: link.source ?? "markdown_link",
+      status: link.status ?? (link.resolved ? "active" : "broken"),
+    } satisfies WikiLink
+  })
 }
 
 const relationGroupOrder = ["适用范围", "引用知识", "相关知识", "替代关系", "风险关系", "来源依据", "断链 / 待确认", "关联关系"]

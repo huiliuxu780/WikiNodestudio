@@ -338,6 +338,14 @@ phase2_plans:
       - src/components/wiki/wiki-node-inspector.tsx
     tests:
       - tests/e2e/wikinode-knowledge-object-metadata.spec.ts
+  MARKDOWN_WIKILINK_RELATION_MAPPING_HARDENING:
+    decision: D060
+    requirement_trace: KNOWLEDGE_RELATION_REQUIREMENT_TRACE
+    previous_editor_experience: KNOWLEDGE_RELATION_EDITOR_EXPERIENCE_COMPLETION
+    types: src/types/wiki.ts
+    parser: src/utils/link-parser.ts
+    inspector: src/components/wiki/wiki-node-inspector.tsx
+    playwright: tests/e2e/wikinode-knowledge-object-metadata.spec.ts
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
@@ -451,6 +459,9 @@ tasks:
   IM059:
     decision: D059
     implementation: KNOWLEDGE_RELATION_EDITOR_EXPERIENCE_COMPLETION
+  IM060:
+    decision: D060
+    implementation: MARKDOWN_WIKILINK_RELATION_MAPPING_HARDENING
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN

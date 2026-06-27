@@ -6,17 +6,16 @@ notes:
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
 stories:
-  - id: US059
-    title: "Knowledge relation editor experience completion"
+  - id: US060
+    title: "Markdown WikiLink relation mapping hardening"
     status: in_progress
-    goal: "Complete the WikiNode Inspector relation editor experience while keeping Knowledge Relation management WikiNode-only and within the existing mutation baseline."
+    goal: "Make Markdown-derived WikiLinks consistently visible as relationship evidence after edit/save while preserving existing WikiLink syntax."
     acceptance:
-      - "Relation add/edit uses a compact drawer or side panel instead of an inline form."
-      - "The drawer supports target WikiNode search, relation type selection, relation status selection, and relation note entry."
-      - "Target object type is visible with WikiNode as the enabled target type."
-      - "Structured relation cards are grouped by semantic section such as applicability, reference, replacement, risk, source evidence, and broken or pending context."
-      - "Create, update, and delete actions keep Chinese feedback visible."
-      - "Playwright covers add, edit, delete, status selection, target search, and grouped relation display."
+      - "Existing `[[target]]` and `[[target|anchor]]` Markdown WikiLink syntax remains compatible."
+      - "Inspector relation evidence shows Markdown anchor text, target identifier, resolved target, relation source, and relation status."
+      - "Resolved Markdown WikiLinks and unresolved WikiLinks are displayed consistently in the relation tab after a WikiNode save."
+      - "Manual structured relations are not forced back into Markdown."
+      - "Playwright covers resolved and unresolved Markdown WikiLink evidence after save."
     non_goals:
-      - "No Source, Document, Product, or non-WikiNode target mutation."
-      - "No approval, confirm, reject, review lifecycle, batch operation, repair, AI suggestion, permissions, retrieval behavior, graph filter, backend API, database migration, package change, or dependency change."
+      - "No forced write-back from manual Knowledge Relations to Markdown."
+      - "No relation governance workflow, review lifecycle, repair action, graph filter, retrieval behavior, backend API, database migration, package change, or dependency change."

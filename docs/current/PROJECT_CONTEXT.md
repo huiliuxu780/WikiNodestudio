@@ -28,7 +28,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-The current executable slice is `IM059 Knowledge Relation Editor Experience Completion`. IM059 completes the WikiNode Inspector relation editor experience by replacing the inline form with a compact drawer, adding target WikiNode search, exposing relation status selection, showing WikiNode as the enabled target object type, grouping structured relations by semantic section, and covering add/edit/delete with Playwright. It stays inside the existing Knowledge Relation mutation baseline and does not change backend API, database migrations, Java model, packages, dependencies, graph filters, retrieval behavior, approval workflow, or non-WikiNode relation targets.
+The current executable slice is `IM060 Markdown WikiLink Relation Mapping Hardening`. IM060 makes Markdown-derived WikiLinks consistently visible as relationship evidence after WikiNode edit/save by preserving `[[target]]` and `[[target|anchor]]` syntax, showing anchor text, target identifier, resolved target, relation source, and relation status in the Inspector relation tab, and covering resolved and unresolved WikiLink evidence with Playwright. It does not force manual Knowledge Relations back into Markdown and does not change backend API, database migrations, Java model, packages, dependencies, graph filters, retrieval behavior, relation governance, or repair actions.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -59,4 +59,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Current recommended next step: complete `IM059 Knowledge Relation Editor Experience Completion`, then continue with the next medium-sized requirement packet from `docs/current/KNOWLEDGE_RELATION_REQUIREMENT_TRACE.md` after merge.
+Current recommended next step: complete `IM060 Markdown WikiLink Relation Mapping Hardening`, then continue with the next medium-sized requirement packet from `docs/current/KNOWLEDGE_RELATION_REQUIREMENT_TRACE.md` after merge.

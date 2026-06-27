@@ -169,6 +169,31 @@ test.describe("WikiNode Knowledge Object metadata surface", () => {
     await expect(inspector.getByRole("heading", { name: "正文双链" })).toBeVisible()
     await expect(inspector.getByText("收费政策").first()).toBeVisible()
   })
+
+  test("editor inspector maps saved Markdown WikiLinks into relation evidence", async ({ page }) => {
+    await routeDefaultWikiNodeApi(page)
+    await page.goto("/wiki-nodes/wn-001")
+
+    await page.getByLabel("正文内容").fill("## 关系\n\n参考 [[wn-002|收费政策别名]]，另见 [[missing-policy|缺失政策别名]]。")
+    await page.getByRole("button", { name: "保存" }).click()
+    await expect(page.getByText("保存成功")).toBeVisible()
+
+    const inspector = page.getByTestId("wikinode-inspector")
+    await inspector.getByRole("tab", { name: "关联关系" }).click()
+
+    await expect(inspector.getByRole("heading", { name: "正文双链" })).toBeVisible()
+    await expect(inspector).toContainText("锚文本：收费政策别名")
+    await expect(inspector).toContainText("目标标识：wn-002")
+    await expect(inspector).toContainText("解析目标：收费政策")
+    await expect(inspector).toContainText("关系来源：正文双链")
+    await expect(inspector).toContainText("关系状态：有效")
+
+    await expect(inspector.getByRole("heading", { name: "断链 / 待确认" })).toBeVisible()
+    await expect(inspector).toContainText("锚文本：缺失政策别名")
+    await expect(inspector).toContainText("目标标识：missing-policy")
+    await expect(inspector).toContainText("解析目标：未解析")
+    await expect(inspector).toContainText("关系状态：断链")
+  })
 })
 
 async function routeDefaultWikiNodeApi(page: import("@playwright/test").Page) {
@@ -241,7 +266,13 @@ async function routeDefaultWikiNodeApi(page: import("@playwright/test").Page) {
   ]
 
   await page.route("**/api/wiki-nodes", (route) => route.fulfill({ json: [currentNode, ...relatedNodes.slice(1)] }))
-  await page.route("**/api/wiki-nodes/wn-001", (route) => route.fulfill({ json: currentNode }))
+  await page.route("**/api/wiki-nodes/wn-001", async (route) => {
+    if (route.request().method() === "PUT") {
+      const input = route.request().postDataJSON() as typeof currentNode
+      currentNode = { ...currentNode, ...input }
+    }
+    return route.fulfill({ json: currentNode })
+  })
   await page.route("**/api/wiki-nodes/wn-001/relations", async (route) => {
     if (route.request().method() === "POST") {
       const input = route.request().postDataJSON() as {
@@ -312,19 +343,34 @@ async function routeDefaultWikiNodeApi(page: import("@playwright/test").Page) {
     }
     return route.fulfill({ status: 404, json: { message: "not found" } })
   })
-  await page.route("**/api/wiki-nodes/wn-001/links", (route) => route.fulfill({
-    json: [
-      {
-        linkId: "link-wn001-wn002",
-        fromNodeId: "wn-001",
-        fromTitle: "保修期内维修服务政策",
-        toNodeId: "wn-002",
-        toTitle: "收费政策",
-        targetTitle: "收费政策",
-        relationType: "reference",
-        resolved: true,
-      },
-    ],
-  }))
+  await page.route("**/api/wiki-nodes/wn-001/links", (route) => route.fulfill({ json: buildWikiLinkFixtures(currentNode, relatedNodes) }))
   await page.route("**/api/wiki-nodes/wn-001/backlinks", (route) => route.fulfill({ json: [] }))
+}
+
+function buildWikiLinkFixtures(node: {
+  nodeId: string
+  title: string
+  contentMarkdown: string
+}, nodes: Array<{ nodeId: string; slug: string; title: string }>) {
+  return Array.from(node.contentMarkdown.matchAll(/\[\[([^\]]+)\]\]/g), (match, index) => {
+    const [rawTarget, rawLabel] = match[1].split("|", 2).map((part) => part.trim())
+    const targetKey = rawTarget || rawLabel || match[1].trim()
+    const anchorText = rawLabel || rawTarget || match[1].trim()
+    const target = nodes.find((item) => item.nodeId === targetKey || item.slug === targetKey || item.title === targetKey)
+
+    return {
+      linkId: `link-${node.nodeId}-${index}`,
+      fromNodeId: node.nodeId,
+      fromTitle: node.title,
+      toNodeId: target?.nodeId,
+      toTitle: target?.title,
+      targetTitle: targetKey,
+      targetSlug: target?.slug ?? targetKey,
+      anchorText,
+      relationType: "reference",
+      source: "markdown_link",
+      status: target ? "active" : "broken",
+      resolved: Boolean(target),
+    }
+  })
 }

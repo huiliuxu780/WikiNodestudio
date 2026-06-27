@@ -48,7 +48,11 @@ export function buildOutgoingLinks(node: WikiNode, nodes: WikiNode[]) {
       toNodeId: target?.nodeId,
       toTitle: target?.title,
       targetTitle: link.targetTitle,
+      targetSlug: target?.slug ?? link.targetTitle,
+      anchorText: link.label,
       relationType: "reference",
+      source: "markdown_link",
+      status: target ? "active" : "broken",
       resolved: Boolean(target),
     }
   })
