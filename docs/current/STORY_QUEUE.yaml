@@ -6,13 +6,13 @@ notes:
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
 stories:
-  - id: US071
-    title: "Draft WikiNode Index Segment Preparation"
+  - id: US072
+    title: "Publishing and Index Lifecycle Local Execution"
     status: in_progress
     priority: high
-    summary: "When a Draft WikiNode Suggestion is accepted into a draft WikiNode, prepare local Index Segment evidence for that draft without publishing, indexing, embedding, or vector sync."
+    summary: "Make WikiNode publish and reindex actions execute against local backend state, preparing Index Segments while keeping embedding and external vector sync out of scope."
     acceptance:
-      - "Accepting an eligible Draft WikiNode Suggestion creates one draft WikiNode and prepares local Index Segments for it."
-      - "The accept response returns the draft WikiNode id and prepared Index Segment count without exposing segment ids as the primary result."
-      - "Prepared Index Segments remain not_indexed and can be read through existing WikiNode Index Segment APIs."
-      - "The flow does not publish, index, embed, sync vector stores, create WikiLinks, connect external sources, or expose product-facing Chunk Management."
+      - "POST /api/wiki-nodes/{nodeId}/publish updates an eligible WikiNode to published/outdated and prepares local Index Segments."
+      - "POST /api/wiki-nodes/{nodeId}/reindex regenerates local Index Segments and keeps external vector sync pending."
+      - "WikiNode editor publish and reindex buttons use the backend lifecycle APIs instead of local mock state."
+      - "The flow does not invoke embedding, write vector documents, sync external vector stores, add approval/RBAC, batch/export, Agent, Chatbot, Workflow, or product-facing Chunk Management."

@@ -6,9 +6,9 @@ notes:
   - "Do not auto-enter the next IM without explicit user confirmation."
   - "Done history stays in release docs or archive."
 tasks:
-  - id: IM071
-    story_id: US071
-    title: "Draft WikiNode Index Segment Preparation"
+  - id: IM072
+    story_id: US072
+    title: "Publishing and Index Lifecycle Local Execution"
     status: in_progress
     required_workflow: default
     allowed_files:
@@ -29,7 +29,7 @@ tasks:
       - "package.json"
       - "pnpm-lock.yaml"
     acceptance:
-      - "POST /api/draft-wikinode-suggestions/{suggestionId}/accept creates a draft WikiNode and prepares local Index Segments for the accepted draft."
-      - "The accept result returns nodeId, nodeStatus, and indexSegmentCount."
-      - "GET /api/wiki-nodes/{nodeId}/index-segments returns prepared not_indexed Index Segments for the accepted draft WikiNode."
-      - "No publish, index execution, embedding, vector sync, external connector, auth, permission, batch, export, Agent, Chatbot, Workflow, or Vector DB Management is added."
+      - "POST /api/wiki-nodes/{nodeId}/publish updates local WikiNode lifecycle state and prepares Index Segments."
+      - "POST /api/wiki-nodes/{nodeId}/reindex regenerates local Index Segments without external vector sync."
+      - "WikiNode editor publish/reindex actions call backend APIs and show clear Chinese feedback."
+      - "No embedding, external vector write/sync, connector, auth, permission, approval, batch, export, Agent, Chatbot, Workflow, or Vector DB Management is added."

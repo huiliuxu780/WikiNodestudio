@@ -20,6 +20,8 @@ import {
   getNodeLinks,
   getWikiNodeById,
   listWikiNodes,
+  publishWikiNode,
+  reindexWikiNode,
   updateKnowledgeRelation,
   updateWikiNode,
   type WikiNodeLinks,
@@ -44,7 +46,9 @@ export function WikiNodeEditPage() {
   const [saveError, setSaveError] = useState<Error | null>(null)
   const [feedback, setFeedback] = useState(location.state && typeof location.state === "object" && "feedback" in location.state && location.state.feedback === "created" ? commonLabels.createSuccess : "")
   const [validationError, setValidationError] = useState("")
-  const [mockActionState, setMockActionState] = useState("")
+  const [isPublishing, setIsPublishing] = useState(false)
+  const [isReindexing, setIsReindexing] = useState(false)
+  const [lifecycleError, setLifecycleError] = useState<Error | null>(null)
   const [generatedSegmentsNodeId, setGeneratedSegmentsNodeId] = useState("")
   const [generatedSegments, setGeneratedSegments] = useState<IndexSegment[] | null>(null)
   const [isGeneratingSegments, setIsGeneratingSegments] = useState(false)
@@ -98,7 +102,6 @@ export function WikiNodeEditPage() {
       const savedNode = await updateWikiNode(activeDraft.nodeId, activeDraft)
       setDraftNode(savedNode)
       setFeedback(commonLabels.saveSuccess)
-      setMockActionState("")
       setReloadVersion((version) => version + 1)
     } catch (error) {
       setSaveError(error instanceof Error ? error : new Error("保存失败，请稍后重试"))
@@ -167,23 +170,55 @@ export function WikiNodeEditPage() {
     })
   }
 
-  function handleMockPublish() {
-    setDraftNode({
-      ...activeDraft,
-      status: "published",
-      publishStatus: "published",
-      reviewStatus: "approved",
-      lastPublishedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
-    })
-    setMockActionState("publish")
+  async function handlePublish() {
+    setIsPublishing(true)
+    setLifecycleError(null)
+    setFeedback("")
+    try {
+      const result = await publishWikiNode(activeDraft.nodeId)
+      setDraftNode({
+        ...activeDraft,
+        status: result.status,
+        indexStatus: result.indexStatus,
+        publishStatus: "published",
+        reviewStatus: "approved",
+        lastPublishedAt: result.lastPublishedAt ?? activeDraft.lastPublishedAt,
+        lastIndexedAt: result.lastIndexedAt ?? undefined,
+      })
+      setFeedback(result.summary)
+      setGeneratedSegmentsNodeId("")
+      setGeneratedSegments(null)
+      setReloadVersion((version) => version + 1)
+      reloadIndexSegments()
+    } catch (error) {
+      setLifecycleError(error instanceof Error ? error : new Error("发布 WikiNode 失败，请稍后重试"))
+    } finally {
+      setIsPublishing(false)
+    }
   }
 
-  function handleMockReindex() {
-    setDraftNode({
-      ...activeDraft,
-      indexStatus: "indexing",
-    })
-    setMockActionState("reindex")
+  async function handleReindex() {
+    setIsReindexing(true)
+    setLifecycleError(null)
+    setFeedback("")
+    try {
+      const result = await reindexWikiNode(activeDraft.nodeId)
+      setDraftNode({
+        ...activeDraft,
+        status: result.status,
+        indexStatus: result.indexStatus,
+        lastIndexedAt: result.lastIndexedAt ?? undefined,
+      })
+      setFeedback(result.summary)
+      setGeneratedSegmentsNodeId("")
+      setGeneratedSegments(null)
+      setReloadVersion((version) => version + 1)
+      reloadIndexSegments()
+    } catch (error) {
+      setLifecycleError(error instanceof Error ? error : new Error("重新准备 Index Segment 失败，请稍后重试"))
+    } finally {
+      setIsReindexing(false)
+    }
   }
 
   return (
@@ -199,11 +234,11 @@ export function WikiNodeEditPage() {
               <Button size="sm" variant="outline" onClick={handleSave} disabled={isSaving}>
                 <SaveIcon data-icon="inline-start" />{isSaving ? actionLabels.saving : actionLabels.save}
               </Button>
-              <Button size="sm" variant="outline" onClick={handleMockPublish}>
-                <SendIcon data-icon="inline-start" />{actionLabels.publish}
+              <Button size="sm" variant="outline" onClick={handlePublish} disabled={isPublishing || activeDraft.status === "archived"}>
+                <SendIcon data-icon="inline-start" />{isPublishing ? "发布中" : actionLabels.publish}
               </Button>
-              <Button size="sm" variant="outline" onClick={handleMockReindex}>
-                <UploadCloudIcon data-icon="inline-start" />{actionLabels.reindex}
+              <Button size="sm" variant="outline" onClick={handleReindex} disabled={isReindexing}>
+                <UploadCloudIcon data-icon="inline-start" />{isReindexing ? "准备中" : actionLabels.reindex}
               </Button>
               <Button
                 size="sm"
@@ -221,10 +256,9 @@ export function WikiNodeEditPage() {
         <WikiNodeExplorer nodes={nodes} currentNodeId={node.nodeId} query={explorerQuery} onQueryChange={setExplorerQuery} />
         <div className="flex min-w-0 flex-col gap-3">
           {feedback ? <FeedbackNotice title={feedback} /> : null}
-          {mockActionState === "publish" ? <FeedbackNotice title={commonLabels.publishSuccess} description={commonLabels.localPublishOnly} /> : null}
-          {mockActionState === "reindex" ? <FeedbackNotice title={commonLabels.reindexSuccess} description={commonLabels.localReindexOnly} /> : null}
           {validationError ? <p className="px-4 text-sm text-destructive">{validationError}</p> : null}
           <ApiErrorNotice error={saveError} title={commonLabels.saveFailed} />
+          <ApiErrorNotice error={lifecycleError} title="发布与索引准备失败" />
           <ApiErrorNotice error={nodesError} onRetry={reloadNodes} />
           <ApiErrorNotice error={linksError} onRetry={reloadLinks} />
           <ApiErrorNotice error={indexSegmentsError} onRetry={reloadIndexSegments} />
