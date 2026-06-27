@@ -30,7 +30,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-The active executable packet is `US070` / `IM070`: Source Import to Draft WikiNode Suggestion Flow. It connects local txt/md/docx Source import to Raw Material, Parsed Document, persisted document segments, Source Operation evidence, and Draft WikiNode Suggestion generation. It does not add external connectors, embedding, vector sync, publishing, permissions, batch/export, Agent, Chatbot, Workflow, or product-facing Chunk Management.
+The active executable packet is `US071` / `IM071`: Draft WikiNode Index Segment Preparation. It prepares local `not_indexed` Index Segments when an eligible Draft WikiNode Suggestion is accepted into a draft WikiNode. It does not publish, execute indexing, invoke embedding, sync vector stores, connect external sources, add permissions, batch/export, Agent, Chatbot, Workflow, or product-facing Chunk Management.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -61,4 +61,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Current recommended next step: complete and verify `IM070`, then stop for review before deciding whether to deepen the Draft WikiNode review-to-draft path or move to Publishing / Index lifecycle.
+Current recommended next step: complete and verify `IM071`, then stop for review before deciding whether to deepen Publishing / Index lifecycle or retrieval evaluation execution.

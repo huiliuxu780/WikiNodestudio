@@ -634,10 +634,11 @@ class JdbcWikiNodeRepositoryTest {
 
     assertThat(result.suggestionId()).isEqualTo("sug-002");
     assertThat(result.status()).isEqualTo("accepted");
-    assertThat(result.summary()).isEqualTo("已采纳为草稿 WikiNode。");
+    assertThat(result.summary()).isEqualTo("已采纳为草稿 WikiNode，并准备 3 条 Index Segment。");
     assertThat(result.reviewNote()).isEqualTo("确认进入草稿 WikiNode，后续人工编辑。");
     assertThat(result.nodeId()).isEqualTo("wn-from-sug-002");
     assertThat(result.nodeStatus()).isEqualTo("draft");
+    assertThat(result.indexSegmentCount()).isEqualTo(3);
 
     assertThat(repository.findDraftWikiNodeSuggestion("sug-002"))
       .hasValueSatisfying(suggestion -> {
@@ -788,19 +789,22 @@ class JdbcWikiNodeRepositoryTest {
 
   private JdbcTemplate jdbcTemplateWithDraftWikiNodeSuggestions() {
     SingleConnectionDataSource dataSource = new SingleConnectionDataSource(
-      "jdbc:h2:mem:wikinode-suggestion-%s;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH".formatted(System.nanoTime()),
+      "jdbc:h2:mem:wikinode-suggestion-%s;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;NON_KEYWORDS=VALUE".formatted(System.nanoTime()),
       "sa",
       "",
       true
     );
     ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
       new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
+      new ClassPathResource("db/migration/V2__seed_wikinode_data.sql"),
       new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql"),
       new ClassPathResource("db/migration/V11__add_knowledge_relation_mutation_fields.sql"),
       new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql"),
       new ClassPathResource("db/migration/V4__create_source_operation_schema.sql"),
       new ClassPathResource("db/migration/V5__create_parser_profile_schema.sql"),
-      new ClassPathResource("db/migration/V6__create_draft_wikinode_suggestion_schema.sql")
+      new ClassPathResource("db/migration/V6__create_draft_wikinode_suggestion_schema.sql"),
+      new ClassPathResource("db/migration/V7__create_index_segment_schema.sql"),
+      new ClassPathResource("db/migration/V9__add_index_segment_trace_metadata.sql")
     );
     populator.execute(dataSource);
     return new JdbcTemplate(dataSource);

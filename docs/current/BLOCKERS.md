@@ -6,8 +6,8 @@ None.
 
 ## Active Scope Constraints
 
-- Active executable IM: `IM070 Source Import to Draft WikiNode Suggestion Flow`.
-- IM070 may change backend API/model/repository, frontend service/page, tests, API smoke, and current/registry docs within its explicit local import-to-suggestion boundary.
+- Active executable IM: `IM071 Draft WikiNode Index Segment Preparation`.
+- IM071 may change backend API/model/repository, frontend service/page, tests, API smoke, and current/registry docs within its explicit accepted-draft-to-local-index-segment-preparation boundary.
 - Future frontend work must follow `docs/quality/frontend-ux-guidelines.md`.
 - Future B2B/governance pages must use dense evidence consoles, tables, lists, or side panels instead of AI-style explainer-card stacks.
 

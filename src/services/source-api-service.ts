@@ -217,6 +217,7 @@ export function acceptDraftWikiNodeSuggestion(
       reviewNote: request.reviewNote,
       nodeId: null,
       nodeStatus: null,
+      indexSegmentCount: null,
     })
   )
 }

@@ -31,6 +31,22 @@ product_docs:
   IMPLEMENTATION_SLICE_PRINCIPLES:
     file: docs/current/IMPLEMENTATION_SLICE_PRINCIPLES.md
 current_corrections:
+  DRAFT_WIKINODE_INDEX_SEGMENT_PREPARATION:
+    decision: D071
+    story_queue: docs/current/STORY_QUEUE.yaml
+    active_task: docs/current/ACTIVE_TASKS.yaml
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    models:
+      - src/main/java/com/wikinode/studio/model/DraftWikiNodeSuggestionAcceptResult.java
+    repository:
+      - src/main/java/com/wikinode/studio/repository/AbstractWikiNodeRepository.java
+    frontend:
+      - src/services/source-api-service.ts
+      - src/types/draft-wikinode-suggestion.ts
+    tests:
+      - src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+      - tests/e2e/draft-wikinode-suggestion-readonly.spec.ts
+    smoke: scripts/api-smoke.sh
   SOURCE_IMPORT_TO_DRAFT_WIKINODE_SUGGESTION_FLOW:
     decision: D070
     story_queue: docs/current/STORY_QUEUE.yaml
@@ -628,6 +644,9 @@ tasks:
   IM070:
     decision: D070
     implementation: SOURCE_IMPORT_TO_DRAFT_WIKINODE_SUGGESTION_FLOW
+  IM071:
+    decision: D071
+    implementation: DRAFT_WIKINODE_INDEX_SEGMENT_PREPARATION
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN

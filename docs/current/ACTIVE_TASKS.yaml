@@ -6,9 +6,9 @@ notes:
   - "Do not auto-enter the next IM without explicit user confirmation."
   - "Done history stays in release docs or archive."
 tasks:
-  - id: IM070
-    story_id: US070
-    title: "Source Import to Draft WikiNode Suggestion Flow"
+  - id: IM071
+    story_id: US071
+    title: "Draft WikiNode Index Segment Preparation"
     status: in_progress
     required_workflow: default
     allowed_files:
@@ -29,8 +29,7 @@ tasks:
       - "package.json"
       - "pnpm-lock.yaml"
     acceptance:
-      - "POST /api/sources/{sourceId}/raw-materials/import can generate a Draft WikiNode Suggestion after local import and parse."
-      - "The import result returns a suggestionId when suggestion generation succeeds."
-      - "Source detail links to the generated Draft WikiNode Suggestion."
-      - "Source Operation evidence includes import, parse, and suggest_wikinode actions."
-      - "No embedding, vector sync, external connector, auth, permission, publish, batch, export, Agent, Chatbot, Workflow, or Vector DB Management is added."
+      - "POST /api/draft-wikinode-suggestions/{suggestionId}/accept creates a draft WikiNode and prepares local Index Segments for the accepted draft."
+      - "The accept result returns nodeId, nodeStatus, and indexSegmentCount."
+      - "GET /api/wiki-nodes/{nodeId}/index-segments returns prepared not_indexed Index Segments for the accepted draft WikiNode."
+      - "No publish, index execution, embedding, vector sync, external connector, auth, permission, batch, export, Agent, Chatbot, Workflow, or Vector DB Management is added."

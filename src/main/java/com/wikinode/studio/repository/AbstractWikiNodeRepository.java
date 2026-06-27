@@ -699,7 +699,8 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
         "该 WikiNode 建议已采纳。",
         suggestion.reviewNote(),
         existingNodeId,
-        existingNodeId == null ? null : "draft"
+        existingNodeId == null ? null : "draft",
+        existingNodeId == null ? null : listIndexSegmentsForNode(existingNodeId).size()
       );
     }
     if (!Set.of("draft", "needs_review").contains(suggestion.status())) {
@@ -708,6 +709,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
         "skipped",
         "当前状态不能采纳该 WikiNode 建议。",
         suggestion.reviewNote(),
+        null,
         null,
         null
       );
@@ -719,6 +721,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
         "存在冲突，不能直接采纳为 WikiNode。",
         suggestion.reviewNote(),
         null,
+        null,
         null
       );
     }
@@ -729,6 +732,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
         "已有 WikiNode 使用相同标题，不能直接采纳。",
         suggestion.reviewNote(),
         null,
+        null,
         null
       );
     }
@@ -736,6 +740,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
     String nodeId = acceptedNodeIdFor(suggestion);
     WikiNode node = acceptedDraftWikiNode(suggestion, nodeId);
     insertNode(node);
+    List<IndexSegment> preparedSegments = generateIndexSegmentsForNode(nodeId);
     DraftWikiNodeSuggestion accepted = new DraftWikiNodeSuggestion(
       suggestion.suggestionId(),
       suggestion.parsedDocumentId(),
@@ -766,10 +771,11 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
     return new DraftWikiNodeSuggestionAcceptResult(
       accepted.suggestionId(),
       accepted.status(),
-      "已采纳为草稿 WikiNode。",
+      "已采纳为草稿 WikiNode，并准备 %d 条 Index Segment。".formatted(preparedSegments.size()),
       accepted.reviewNote(),
       node.nodeId(),
-      node.status()
+      node.status(),
+      preparedSegments.size()
     );
   }
 

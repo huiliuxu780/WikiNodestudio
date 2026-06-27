@@ -562,7 +562,7 @@ class WikiNodeApiContractTest {
   }
 
   @Test
-  void acceptsOneDraftWikiNodeSuggestionAsDraftWikiNodeWithoutPublishingOrIndexing() throws Exception {
+  void acceptsOneDraftWikiNodeSuggestionAsDraftWikiNodeAndPreparesIndexSegmentsWithoutPublishingOrSyncing() throws Exception {
     String body = """
       {
         "reviewNote": "确认进入草稿 WikiNode，后续人工编辑。"
@@ -572,17 +572,21 @@ class WikiNodeApiContractTest {
     HttpResponse<String> accept = post("/api/draft-wikinode-suggestions/sug-002/accept", body);
     HttpResponse<String> detail = get("/api/draft-wikinode-suggestions/sug-002");
     HttpResponse<String> node = get("/api/wiki-nodes/wn-from-sug-002");
+    HttpResponse<String> segments = get("/api/wiki-nodes/wn-from-sug-002/index-segments");
 
     assertThat(accept.statusCode()).isEqualTo(200);
     assertThat(accept.body()).contains("\"suggestionId\":\"sug-002\"");
     assertThat(accept.body()).contains("\"status\":\"accepted\"");
-    assertThat(accept.body()).contains("\"summary\":\"已采纳为草稿 WikiNode。\"");
+    assertThat(accept.body()).contains("\"summary\":\"已采纳为草稿 WikiNode，并准备 3 条 Index Segment。\"");
     assertThat(accept.body()).contains("\"reviewNote\":\"确认进入草稿 WikiNode，后续人工编辑。\"");
     assertThat(accept.body()).contains("\"nodeId\":\"wn-from-sug-002\"");
     assertThat(accept.body()).contains("\"nodeStatus\":\"draft\"");
+    assertThat(accept.body()).contains("\"indexSegmentCount\":3");
     assertThat(accept.body()).doesNotContain("\"wikiLinkId\"");
     assertThat(accept.body()).doesNotContain("\"indexSegmentId\"");
     assertThat(accept.body()).doesNotContain("\"chunk\"");
+    assertThat(accept.body()).doesNotContain("\"embedding\"");
+    assertThat(accept.body()).doesNotContain("\"vector");
 
     assertThat(detail.statusCode()).isEqualTo(200);
     assertThat(detail.body()).contains("\"status\":\"accepted\"");
@@ -597,6 +601,13 @@ class WikiNodeApiContractTest {
     assertThat(node.body()).contains("\"sourceRefs\"");
     assertThat(node.body()).doesNotContain("\"published\":true");
     assertThat(node.body()).doesNotContain("\"indexSegmentId\"");
+
+    assertThat(segments.statusCode()).isEqualTo(200);
+    assertThat(segments.body()).contains("\"nodeId\":\"wn-from-sug-002\"");
+    assertThat(segments.body()).contains("\"indexStatus\":\"not_indexed\"");
+    assertThat(segments.body()).contains("\"vectorDocId\":null");
+    assertThat(segments.body()).contains("\"traceSource\":\"wiki_node\"");
+    assertThat(segments.body()).doesNotContain("\"embedding\"");
   }
 
   @Test
