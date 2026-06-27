@@ -5,4 +5,15 @@ notes:
   - "Only ready, in_progress, and blocked stories belong here."
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
-stories: []
+stories:
+  - id: US068
+    title: "Source-to-WikiNode local ingestion execution"
+    status: in_progress
+    priority: high
+    summary: "Connect existing Source, Raw Material, Parsed Document, Draft WikiNode Suggestion, and WikiNode review surfaces through a local Source-level ingestion run."
+    acceptance:
+      - "A Source can trigger a local ingestion run over existing Parsed Documents."
+      - "The run generates Draft WikiNode Suggestions for eligible Parsed Documents."
+      - "The run records Source Operation evidence."
+      - "The run does not create WikiNodes, publish, index, embed, upload files, parse external files, or sync external vector stores."
+      - "Existing Draft WikiNode Suggestion accept flow remains the path to create a draft WikiNode."

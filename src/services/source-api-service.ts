@@ -13,7 +13,7 @@ import type {
 } from "@/types/draft-wikinode-suggestion"
 import type { ParsedDocument, RawMaterial } from "@/types/raw-material"
 import type { SourceItem } from "@/types/source"
-import type { SourceOperation } from "@/types/source-operation"
+import type { SourceIngestionRunRequest, SourceIngestionRunResult, SourceOperation } from "@/types/source-operation"
 
 export function listSources() {
   return withMockFallback(
@@ -47,6 +47,22 @@ export function listSourceOperationsForSource(sourceId: string) {
   return withMockFallback(
     apiGet<SourceOperation[]>(`/sources/${sourceId}/operations`),
     () => mockSourceOperations.filter((operation) => operation.sourceId === sourceId)
+  )
+}
+
+export function runSourceIngestion(sourceId: string, request: SourceIngestionRunRequest) {
+  return withMockFallback(
+    apiPost<SourceIngestionRunResult>(`/sources/${sourceId}/ingestion-runs`, request),
+    (): SourceIngestionRunResult => ({
+      operationId: `mock-${sourceId}-ingestion`,
+      sourceId,
+      status: "skipped",
+      summary: "暂未生成新的 WikiNode 建议。",
+      rawMaterialCount: 0,
+      parsedDocumentCount: 0,
+      generatedSuggestionIds: [],
+      skippedParsedDocumentIds: [],
+    })
   )
 }
 

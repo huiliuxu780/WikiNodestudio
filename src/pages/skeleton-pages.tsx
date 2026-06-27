@@ -44,6 +44,7 @@ import {
   listSourceOperationsForSource,
   rejectDraftWikiNodeSuggestion,
   retryDraftWikiNodeSuggestion,
+  runSourceIngestion,
 } from "@/services/source-api-service"
 import type { IndexSegment } from "@/types/index-segment"
 import type { ParserProfile } from "@/types/parser-profile"
@@ -184,6 +185,26 @@ export function SourceDetailPage() {
     isLoading: isOperationsLoading,
     reload: reloadOperations,
   } = useAsyncData(() => activeSourceId ? listSourceOperationsForSource(activeSourceId) : Promise.resolve([]), [], [activeSourceId])
+  const [ingestionStatus, setIngestionStatus] = useState<"idle" | "running" | "succeeded" | "skipped" | "failed">("idle")
+  const [ingestionSummary, setIngestionSummary] = useState<string | null>(null)
+
+  async function handleRunIngestion() {
+    if (!activeSourceId || ingestionStatus === "running") return
+
+    setIngestionStatus("running")
+    setIngestionSummary("正在从已有 Parsed Document 生成待审核 WikiNode 建议...")
+    try {
+      const result = await runSourceIngestion(activeSourceId, {
+        requestedBy: "ui",
+      })
+      setIngestionStatus(result.status)
+      setIngestionSummary(result.summary)
+      await Promise.all([reloadOperations(), reloadRawMaterials(), reloadSource()])
+    } catch {
+      setIngestionStatus("failed")
+      setIngestionSummary("生成 WikiNode 建议失败，请检查 API 或稍后重试。")
+    }
+  }
 
   return (
     <PageScaffold title="知识来源详情" description={source ? `${source.title}。查看来源配置、快照和生成的 WikiNode。` : "查看 Source 到 Raw Material 的证据链。"}>
@@ -221,6 +242,22 @@ export function SourceDetailPage() {
           </CardContent>
         </Card>
       </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">WikiNode 建议生成</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3 text-sm md:flex-row md:items-center md:justify-between">
+          <div className="space-y-1">
+            <p className="text-muted-foreground">扫描当前 Source 下已有 Parsed Document，生成待审核 Draft WikiNode Suggestion。</p>
+            {ingestionSummary ? (
+              <p className={ingestionStatus === "failed" ? "text-destructive" : "text-foreground"}>{ingestionSummary}</p>
+            ) : null}
+          </div>
+          <Button type="button" onClick={handleRunIngestion} disabled={!activeSourceId || ingestionStatus === "running"} className="w-fit">
+            {ingestionStatus === "running" ? "生成中..." : "生成 WikiNode 建议"}
+          </Button>
+        </CardContent>
+      </Card>
       <Card>
         <CardHeader>
           <CardTitle className="text-base">关联 Raw Material</CardTitle>

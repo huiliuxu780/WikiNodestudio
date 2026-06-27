@@ -31,6 +31,27 @@ product_docs:
   IMPLEMENTATION_SLICE_PRINCIPLES:
     file: docs/current/IMPLEMENTATION_SLICE_PRINCIPLES.md
 current_corrections:
+  SOURCE_TO_WIKINODE_INGESTION_EXECUTION:
+    decision: D068
+    story_queue: docs/current/STORY_QUEUE.yaml
+    active_task: docs/current/ACTIVE_TASKS.yaml
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    models:
+      - src/main/java/com/wikinode/studio/model/SourceIngestionRunRequest.java
+      - src/main/java/com/wikinode/studio/model/SourceIngestionRunResult.java
+    repository:
+      - src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
+      - src/main/java/com/wikinode/studio/repository/AbstractWikiNodeRepository.java
+    frontend:
+      - src/services/source-api-service.ts
+      - src/pages/skeleton-pages.tsx
+      - src/types/source-operation.ts
+      - src/utils/display-labels.ts
+    tests:
+      - src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+      - tests/e2e/source-operation-readonly-logs.spec.ts
+    smoke: scripts/api-smoke.sh
+    previous_audit: REQUIREMENT_COMPLETION_AUDIT
   REQUIREMENT_COMPLETION_AUDIT:
     decision: D067
     file: docs/current/REQUIREMENT_COMPLETION_AUDIT.md
@@ -417,6 +438,10 @@ baselines:
 quality_guidelines:
   frontend_ux: docs/quality/frontend-ux-guidelines.md
 stories:
+  US068:
+    file: docs/current/STORY_QUEUE.yaml
+    decision: D068
+    requirement_audit: REQUIREMENT_COMPLETION_AUDIT
   US001:
     file: docs/current/STORY_QUEUE.yaml
     release: docs/release/mvp-baseline-v0.1.md
@@ -431,6 +456,10 @@ stories:
     file: docs/current/STORY_QUEUE.yaml
     guideline: docs/quality/frontend-ux-guidelines.md
 tasks:
+  IM068:
+    file: docs/current/ACTIVE_TASKS.yaml
+    decision: D068
+    implementation: SOURCE_TO_WIKINODE_INGESTION_EXECUTION
   IM001:
     file: docs/current/ACTIVE_TASKS.yaml
     gate: docs/quality/GATE_REGISTRY.md

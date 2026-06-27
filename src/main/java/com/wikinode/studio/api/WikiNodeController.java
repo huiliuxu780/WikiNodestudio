@@ -22,6 +22,8 @@ import com.wikinode.studio.model.RetrievalLog;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
+import com.wikinode.studio.model.SourceIngestionRunRequest;
+import com.wikinode.studio.model.SourceIngestionRunResult;
 import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.WikiGraphOverview;
 import com.wikinode.studio.model.WikiLink;
@@ -206,6 +208,15 @@ public class WikiNodeController {
   public List<SourceOperation> listSourceOperations(@PathVariable String sourceId) {
     ensureSourceExists(sourceId);
     return repository.listSourceOperationsForSource(sourceId);
+  }
+
+  @PostMapping("/sources/{sourceId}/ingestion-runs")
+  public SourceIngestionRunResult runSourceIngestion(
+    @PathVariable String sourceId,
+    @RequestBody(required = false) SourceIngestionRunRequest request
+  ) {
+    ensureSourceExists(sourceId);
+    return repository.runSourceIngestion(sourceId, request);
   }
 
   @GetMapping("/raw-materials")
