@@ -27,3 +27,14 @@ export type SourceIngestionRunResult = {
   generatedSuggestionIds: string[]
   skippedParsedDocumentIds: string[]
 }
+
+export type SourceImportResult = {
+  operationId: string
+  sourceId: string
+  rawMaterialId: string
+  parsedDocumentId: string
+  status: "succeeded" | "skipped" | "failed"
+  summary: string
+  segmentCount: number
+  segmentIds: string[]
+}

@@ -33,10 +33,12 @@ import {
   getDraftWikiNodeSuggestion,
   getSource,
   generateDraftWikiNodeSuggestion,
+  importSourceFile,
   listDraftWikiNodeSuggestions,
   listDraftWikiNodeSuggestionsForParsedDocument,
   listDraftWikiNodeSuggestionsForRawMaterial,
   listParsedDocumentsForRawMaterial,
+  listParsedDocumentSegments,
   listRawMaterials,
   listRawMaterialsForSource,
   listSourceOperations,
@@ -49,7 +51,7 @@ import {
 import type { IndexSegment } from "@/types/index-segment"
 import type { ParserProfile } from "@/types/parser-profile"
 import type { DraftWikiNodeSuggestion } from "@/types/draft-wikinode-suggestion"
-import type { ParsedDocument, RawMaterial } from "@/types/raw-material"
+import type { ParsedDocument, ParsedDocumentSegment, RawMaterial } from "@/types/raw-material"
 import type { RetrievalEvaluationCase, RetrievalLog } from "@/types/retrieval"
 import type { SourceItem } from "@/types/source"
 import type { SourceOperation } from "@/types/source-operation"
@@ -187,6 +189,9 @@ export function SourceDetailPage() {
   } = useAsyncData(() => activeSourceId ? listSourceOperationsForSource(activeSourceId) : Promise.resolve([]), [], [activeSourceId])
   const [ingestionStatus, setIngestionStatus] = useState<"idle" | "running" | "succeeded" | "skipped" | "failed">("idle")
   const [ingestionSummary, setIngestionSummary] = useState<string | null>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [importStatus, setImportStatus] = useState<"idle" | "running" | "succeeded" | "skipped" | "failed">("idle")
+  const [importSummary, setImportSummary] = useState<string | null>(null)
 
   async function handleRunIngestion() {
     if (!activeSourceId || ingestionStatus === "running") return
@@ -203,6 +208,23 @@ export function SourceDetailPage() {
     } catch {
       setIngestionStatus("failed")
       setIngestionSummary("生成 WikiNode 建议失败，请检查 API 或稍后重试。")
+    }
+  }
+
+  async function handleImportFile() {
+    if (!activeSourceId || !selectedFile || importStatus === "running") return
+
+    setImportStatus("running")
+    setImportSummary("正在导入文件并生成 Parsed Document...")
+    try {
+      const result = await importSourceFile(activeSourceId, selectedFile)
+      setImportStatus(result.status)
+      setImportSummary(`${result.summary} 文档片段 ${result.segmentCount} 条。`)
+      setSelectedFile(null)
+      await Promise.all([reloadOperations(), reloadRawMaterials(), reloadSource()])
+    } catch {
+      setImportStatus("failed")
+      setImportSummary("文件导入失败，请检查文件格式或后端服务。")
     }
   }
 
@@ -242,6 +264,28 @@ export function SourceDetailPage() {
           </CardContent>
         </Card>
       </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">文件接入</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3 text-sm lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div className="space-y-1">
+            <Label htmlFor="source-import-file">选择 txt / md / docx</Label>
+            <Input
+              id="source-import-file"
+              type="file"
+              accept=".txt,.md,.markdown,.docx,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
+            />
+            {importSummary ? (
+              <p className={importStatus === "failed" ? "text-destructive" : "text-muted-foreground"}>{importSummary}</p>
+            ) : null}
+          </div>
+          <Button type="button" onClick={handleImportFile} disabled={!activeSourceId || !selectedFile || importStatus === "running"} className="w-fit">
+            {importStatus === "running" ? "导入中..." : "导入并解析"}
+          </Button>
+        </CardContent>
+      </Card>
       <Card>
         <CardHeader>
           <CardTitle className="text-base">WikiNode 建议生成</CardTitle>
@@ -456,6 +500,12 @@ export function ParsedResultPreviewPage() {
     isLoading: isSuggestionsLoading,
     reload: reloadSuggestions,
   } = useAsyncData(() => parsedDocument?.parsedDocumentId ? listDraftWikiNodeSuggestionsForParsedDocument(parsedDocument.parsedDocumentId) : Promise.resolve([]), [], [parsedDocument?.parsedDocumentId])
+  const {
+    data: parsedDocumentSegments,
+    error: parsedDocumentSegmentsError,
+    isLoading: isParsedDocumentSegmentsLoading,
+    reload: reloadParsedDocumentSegments,
+  } = useAsyncData(() => parsedDocument?.parsedDocumentId ? listParsedDocumentSegments(parsedDocument.parsedDocumentId) : Promise.resolve([]), [], [parsedDocument?.parsedDocumentId])
   const [generationSummary, setGenerationSummary] = useState<string | null>(null)
   const [generationStatus, setGenerationStatus] = useState<"idle" | "running" | "succeeded" | "skipped" | "failed">("idle")
   const canGenerateSuggestion = Boolean(parsedDocument) && suggestions.length === 0
@@ -485,6 +535,7 @@ export function ParsedResultPreviewPage() {
       <ApiErrorNotice error={parsedDocumentsError} onRetry={reloadParsedDocuments} />
       <ApiErrorNotice error={sourceError} onRetry={reloadSource} />
       <ApiErrorNotice error={suggestionsError} onRetry={reloadSuggestions} />
+      <ApiErrorNotice error={parsedDocumentSegmentsError} onRetry={reloadParsedDocumentSegments} />
       <div className="grid gap-4 lg:grid-cols-3">
         <Card>
           <CardHeader>
@@ -517,6 +568,9 @@ export function ParsedResultPreviewPage() {
       </div>
       {isParsedDocumentsLoading ? <LoadingBlock text="正在加载 Parsed Document..." /> : null}
       {parsedDocument ? <ParsedDocumentPreview parsedDocument={parsedDocument} /> : null}
+      {parsedDocument ? (
+        <ParsedDocumentSegmentPanel segments={parsedDocumentSegments} isLoading={isParsedDocumentSegmentsLoading} />
+      ) : null}
       {parsedDocument ? (
         <Card>
           <CardHeader>
@@ -1936,6 +1990,38 @@ function ParsedDocumentPreview({ parsedDocument }: { parsedDocument: ParsedDocum
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+function ParsedDocumentSegmentPanel({ segments, isLoading }: { segments: ParsedDocumentSegment[]; isLoading: boolean }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">文档片段</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3 text-sm">
+        {isLoading ? (
+          <LoadingBlock text="正在加载文档片段..." />
+        ) : segments.length === 0 ? (
+          <div className="rounded-md border border-dashed p-3 text-muted-foreground">暂无文档片段。</div>
+        ) : (
+          <div className="grid gap-2 lg:grid-cols-2">
+            {segments.map((segment) => (
+              <div key={segment.segmentId} className="rounded-md border p-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="outline">{segment.segmentId}</Badge>
+                  <Badge variant="secondary">{segment.segmentType === "section" ? "章节" : "正文"}</Badge>
+                  <span className="text-xs text-muted-foreground">约 {segment.tokenCount} tokens</span>
+                </div>
+                <div className="mt-2 font-medium">{segment.title}</div>
+                <p className="mt-1 text-muted-foreground">{segment.contentPreview}</p>
+                <div className="mt-2 text-xs text-muted-foreground">{segment.sourceLocator}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }
 

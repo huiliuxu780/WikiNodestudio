@@ -1,6 +1,7 @@
 package com.wikinode.studio.repository;
 
 import com.wikinode.studio.model.IndexSegment;
+import com.wikinode.studio.model.ParsedDocumentSegment;
 import com.wikinode.studio.model.SourceItem;
 import com.wikinode.studio.model.DraftWikiNodeSuggestion;
 import com.wikinode.studio.model.ParsedDocument;
@@ -24,8 +25,9 @@ public class InMemoryWikiNodeRepository extends AbstractWikiNodeRepository {
 
   private final Map<String, WikiNode> nodes = new LinkedHashMap<>();
   private final List<SourceItem> sources = WikiNodeSeedData.sources();
-  private final List<RawMaterial> rawMaterials = WikiNodeSeedData.rawMaterials();
-  private final List<ParsedDocument> parsedDocuments = WikiNodeSeedData.parsedDocuments();
+  private final List<RawMaterial> rawMaterials = new ArrayList<>(WikiNodeSeedData.rawMaterials());
+  private final List<ParsedDocument> parsedDocuments = new ArrayList<>(WikiNodeSeedData.parsedDocuments());
+  private final List<ParsedDocumentSegment> parsedDocumentSegments = new ArrayList<>();
   private final List<SourceOperation> sourceOperations = new ArrayList<>(WikiNodeSeedData.sourceOperations());
   private final List<ParserProfile> parserProfiles = WikiNodeSeedData.parserProfiles();
   private final List<IndexSegment> indexSegments = new ArrayList<>(WikiNodeSeedData.indexSegments());
@@ -76,6 +78,11 @@ public class InMemoryWikiNodeRepository extends AbstractWikiNodeRepository {
   @Override
   protected List<ParsedDocument> loadParsedDocuments() {
     return parsedDocuments;
+  }
+
+  @Override
+  protected List<ParsedDocumentSegment> loadParsedDocumentSegments() {
+    return parsedDocumentSegments;
   }
 
   @Override
@@ -134,6 +141,24 @@ public class InMemoryWikiNodeRepository extends AbstractWikiNodeRepository {
   protected void insertSourceOperation(SourceOperation operation) {
     sourceOperations.removeIf(existing -> existing.operationId().equals(operation.operationId()));
     sourceOperations.add(operation);
+  }
+
+  @Override
+  protected void insertRawMaterial(RawMaterial rawMaterial) {
+    rawMaterials.removeIf(existing -> existing.rawMaterialId().equals(rawMaterial.rawMaterialId()));
+    rawMaterials.add(rawMaterial);
+  }
+
+  @Override
+  protected void insertParsedDocument(ParsedDocument parsedDocument) {
+    parsedDocuments.removeIf(existing -> existing.parsedDocumentId().equals(parsedDocument.parsedDocumentId()));
+    parsedDocuments.add(parsedDocument);
+  }
+
+  @Override
+  protected void replaceParsedDocumentSegments(String parsedDocumentId, List<ParsedDocumentSegment> segments) {
+    parsedDocumentSegments.removeIf(existing -> existing.parsedDocumentId().equals(parsedDocumentId));
+    parsedDocumentSegments.addAll(segments);
   }
 
   @Override

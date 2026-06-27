@@ -150,6 +150,7 @@ export const parseStatusLabels: Record<string, string> = {
 export const sourceOperationTypeLabels: Record<string, string> = {
   source_sync: "来源同步",
   file_upload: "文件上传",
+  import_source_file: "文件接入",
   raw_material_capture: "快照采集",
   parse_raw_material: "解析 Raw Material",
   retry_parse: "重新解析",
@@ -207,6 +208,7 @@ export const contentFormatLabels: Record<string, string> = {
 }
 
 export const locatorTypeLabels: Record<string, string> = {
+  document: "文档",
   paragraph: "段落",
   page: "页码",
   row: "行",
@@ -239,6 +241,7 @@ export const healthLabels: Record<string, string> = {
 
 export const storageProviderLabels: Record<string, string> = {
   workspace: "工作区快照",
+  local_workspace: "本地工作区",
   "object-storage": "对象存储",
   object_storage: "对象存储",
   external_reference: "外部引用",

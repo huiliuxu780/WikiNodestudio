@@ -31,6 +31,32 @@ product_docs:
   IMPLEMENTATION_SLICE_PRINCIPLES:
     file: docs/current/IMPLEMENTATION_SLICE_PRINCIPLES.md
 current_corrections:
+  SOURCE_IMPORT_DOCUMENT_SEGMENT_PERSISTENCE:
+    decision: D069
+    story_queue: docs/current/STORY_QUEUE.yaml
+    active_task: docs/current/ACTIVE_TASKS.yaml
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    models:
+      - src/main/java/com/wikinode/studio/model/SourceImportResult.java
+      - src/main/java/com/wikinode/studio/model/ParsedDocumentSegment.java
+    repository:
+      - src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
+      - src/main/java/com/wikinode/studio/repository/AbstractWikiNodeRepository.java
+      - src/main/java/com/wikinode/studio/repository/JdbcWikiNodeRepository.java
+      - src/main/java/com/wikinode/studio/repository/InMemoryWikiNodeRepository.java
+    migration: src/main/resources/db/migration/V12__create_parsed_document_segment_schema.sql
+    frontend:
+      - src/services/api-client.ts
+      - src/services/source-api-service.ts
+      - src/pages/skeleton-pages.tsx
+      - src/types/raw-material.ts
+      - src/types/source-operation.ts
+      - src/utils/display-labels.ts
+    tests:
+      - src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+      - tests/e2e/source-raw-material-acceptance.spec.ts
+      - tests/e2e/source-api-fixtures.ts
+    smoke: scripts/api-smoke.sh
   SOURCE_TO_WIKINODE_INGESTION_EXECUTION:
     decision: D068
     story_queue: docs/current/STORY_QUEUE.yaml
@@ -438,6 +464,10 @@ baselines:
 quality_guidelines:
   frontend_ux: docs/quality/frontend-ux-guidelines.md
 stories:
+  US069:
+    file: docs/current/STORY_QUEUE.yaml
+    decision: D069
+    previous_bridge: SOURCE_TO_WIKINODE_INGESTION_EXECUTION
   US068:
     file: docs/current/STORY_QUEUE.yaml
     decision: D068
@@ -456,10 +486,6 @@ stories:
     file: docs/current/STORY_QUEUE.yaml
     guideline: docs/quality/frontend-ux-guidelines.md
 tasks:
-  IM068:
-    file: docs/current/ACTIVE_TASKS.yaml
-    decision: D068
-    implementation: SOURCE_TO_WIKINODE_INGESTION_EXECUTION
   IM001:
     file: docs/current/ACTIVE_TASKS.yaml
     gate: docs/quality/GATE_REGISTRY.md
@@ -570,6 +596,12 @@ tasks:
   IM067:
     decision: D067
     audit: REQUIREMENT_COMPLETION_AUDIT
+  IM068:
+    decision: D068
+    implementation: SOURCE_TO_WIKINODE_INGESTION_EXECUTION
+  IM069:
+    decision: D069
+    implementation: SOURCE_IMPORT_DOCUMENT_SEGMENT_PERSISTENCE
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN

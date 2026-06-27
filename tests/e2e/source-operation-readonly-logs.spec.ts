@@ -114,7 +114,7 @@ test.describe("Source Operation read-only logs", () => {
 
     await expect(page.getByRole("button", { name: "同步" })).toHaveCount(0)
     await expect(page.getByRole("button", { name: "上传" })).toHaveCount(0)
-    await expect(page.getByRole("button", { name: "解析" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: /^解析$/ })).toHaveCount(0)
     await expect(page.getByRole("button", { name: "重试" })).toHaveCount(0)
   })
 

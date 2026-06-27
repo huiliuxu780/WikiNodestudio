@@ -1,4 +1,4 @@
-import { apiGet, apiPost, withMockFallback } from "@/services/api-client"
+import { apiGet, apiPost, apiPostForm, withMockFallback } from "@/services/api-client"
 import { mockRawMaterials } from "@/data/mock-raw-materials"
 import { mockSources } from "@/data/mock-sources"
 import { listWikiNodes } from "@/services/wiki-node-api-service"
@@ -11,9 +11,9 @@ import type {
   DraftWikiNodeSuggestionRetryResult,
   DraftWikiNodeSuggestionReviewResult,
 } from "@/types/draft-wikinode-suggestion"
-import type { ParsedDocument, RawMaterial } from "@/types/raw-material"
+import type { ParsedDocument, ParsedDocumentSegment, RawMaterial } from "@/types/raw-material"
 import type { SourceItem } from "@/types/source"
-import type { SourceIngestionRunRequest, SourceIngestionRunResult, SourceOperation } from "@/types/source-operation"
+import type { SourceImportResult, SourceIngestionRunRequest, SourceIngestionRunResult, SourceOperation } from "@/types/source-operation"
 
 export function listSources() {
   return withMockFallback(
@@ -66,6 +66,25 @@ export function runSourceIngestion(sourceId: string, request: SourceIngestionRun
   )
 }
 
+export function importSourceFile(sourceId: string, file: File, requestedBy = "ui") {
+  const formData = new FormData()
+  formData.append("file", file)
+  formData.append("requestedBy", requestedBy)
+  return withMockFallback(
+    apiPostForm<SourceImportResult>(`/sources/${sourceId}/raw-materials/import`, formData),
+    (): SourceImportResult => ({
+      operationId: `local-${sourceId}-import`,
+      sourceId,
+      rawMaterialId: `local-${sourceId}-raw-material`,
+      parsedDocumentId: `local-${sourceId}-parsed-document`,
+      status: "skipped",
+      summary: "本地预览环境暂未连接文件导入接口。",
+      segmentCount: 0,
+      segmentIds: [],
+    })
+  )
+}
+
 export function listSourceOperations() {
   return Promise.resolve(mockSourceOperations)
 }
@@ -102,6 +121,13 @@ export function getParsedDocument(parsedDocumentId: string) {
   return withMockFallback(
     apiGet<ParsedDocument>(`/parsed-documents/${parsedDocumentId}`),
     () => mockParsedDocuments.find((parsedDocument) => parsedDocument.parsedDocumentId === parsedDocumentId) ?? mockParsedDocuments[0]
+  )
+}
+
+export function listParsedDocumentSegments(parsedDocumentId: string) {
+  return withMockFallback(
+    apiGet<ParsedDocumentSegment[]>(`/parsed-documents/${parsedDocumentId}/segments`),
+    () => mockParsedDocumentSegments.filter((segment) => segment.parsedDocumentId === parsedDocumentId)
   )
 }
 
@@ -339,6 +365,39 @@ const mockSourceOperations: SourceOperation[] = [
     finishedAt: "2026-06-12T18:22:00+08:00",
     summary: "Parser profile rejected this Raw Material in the read-only seed baseline.",
     errorSummary: "Unsupported document structure in seed evidence.",
+  },
+]
+
+const mockParsedDocumentSegments: ParsedDocumentSegment[] = [
+  {
+    segmentId: "pds-pd-001-001",
+    parsedDocumentId: "pd-001",
+    rawMaterialId: "rm-001",
+    sourceId: "src-feishu-cc",
+    position: 0,
+    segmentType: "section",
+    title: "保修政策",
+    content: "# 保修政策\n\n保修期内维修不收取人工费，收费例外需要关联人为损坏判定规则。",
+    contentPreview: "# 保修政策 保修期内维修不收取人工费，收费例外需要关联人为损坏判定规则。",
+    tokenCount: 35,
+    sourceLocator: "section:1",
+    createdAt: "2026-06-20",
+    updatedAt: "2026-06-20",
+  },
+  {
+    segmentId: "pds-pd-002-001",
+    parsedDocumentId: "pd-002",
+    rawMaterialId: "rm-002",
+    sourceId: "src-pdf-dishwasher",
+    position: 0,
+    segmentType: "section",
+    title: "洗碗机培训",
+    content: "# 洗碗机培训\n\n排查时先确认电源、水路和错误码。",
+    contentPreview: "# 洗碗机培训 排查时先确认电源、水路和错误码。",
+    tokenCount: 24,
+    sourceLocator: "section:1",
+    createdAt: "2026-06-18",
+    updatedAt: "2026-06-18",
   },
 ]
 

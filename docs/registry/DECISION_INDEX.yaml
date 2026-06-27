@@ -1,5 +1,15 @@
 version: 1
 decisions:
+  - id: D069
+    date: "2026-06-28"
+    title: "Add local Source import and document segment persistence without vector or publish execution"
+    rationale: "After IM068 was renamed and bounded as an already-Parsed-Document to Draft WikiNode Suggestion bridge, IM069 implements the missing local data-entry foundation. It allows txt/md/docx uploads from Source detail, creates Raw Material and Parsed Document records, persists document segments, records Source Operation evidence, and exposes segments in Parsed Result preview. It deliberately does not add external connectors, embedding, vector sync, publish/index execution, WikiNode auto-creation, permissions, batch/export, package/dependency changes, Agent, Chatbot, Workflow Builder, Vector DB Management, or a product-facing Chunk Management surface."
+    related:
+      - IM069
+      - US069
+      - SOURCE_IMPORT_DOCUMENT_SEGMENT_PERSISTENCE
+      - SOURCE_TO_WIKINODE_INGESTION_EXECUTION
+      - REQUIREMENT_COMPLETION_AUDIT
   - id: D068
     date: "2026-06-27"
     title: "Add local Source-to-WikiNode ingestion run without external import or parser execution"

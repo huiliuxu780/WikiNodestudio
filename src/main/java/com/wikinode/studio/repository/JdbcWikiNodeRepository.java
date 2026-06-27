@@ -8,6 +8,7 @@ import com.wikinode.studio.model.IndexSegmentMetadataSummaryItem;
 import com.wikinode.studio.model.KnowledgeRelation;
 import com.wikinode.studio.model.KnowledgeRelationEvidence;
 import com.wikinode.studio.model.ParsedDocument;
+import com.wikinode.studio.model.ParsedDocumentSegment;
 import com.wikinode.studio.model.ParsedDocumentSourceRef;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
@@ -236,6 +237,33 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
           resultSet.getString("updated_at")
         );
       }
+    );
+  }
+
+  @Override
+  protected List<ParsedDocumentSegment> loadParsedDocumentSegments() {
+    return jdbcTemplate.query(
+      """
+      select segment_id, parsed_document_id, raw_material_id, source_id, position, segment_type,
+             title, content, content_preview, token_count, source_locator, created_at, updated_at
+      from parsed_document_segments
+      order by parsed_document_id, position
+      """,
+      (resultSet, rowNumber) -> new ParsedDocumentSegment(
+        resultSet.getString("segment_id"),
+        resultSet.getString("parsed_document_id"),
+        resultSet.getString("raw_material_id"),
+        resultSet.getString("source_id"),
+        resultSet.getInt("position"),
+        resultSet.getString("segment_type"),
+        resultSet.getString("title"),
+        resultSet.getString("content"),
+        resultSet.getString("content_preview"),
+        resultSet.getInt("token_count"),
+        resultSet.getString("source_locator"),
+        resultSet.getString("created_at"),
+        resultSet.getString("updated_at")
+      )
     );
   }
 
@@ -485,6 +513,132 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
         operation.finishedAt(),
         operation.summary(),
         operation.errorSummary()
+      );
+    }
+  }
+
+  @Override
+  protected void insertRawMaterial(RawMaterial rawMaterial) {
+    int updated = jdbcTemplate.update(
+      """
+      update raw_materials
+      set source_id = ?, title = ?, raw_material_type = ?, source_version = ?, captured_at = ?,
+          content_hash = ?, storage_provider = ?, storage_ref = ?, parse_status = ?, updated_at = ?
+      where raw_material_id = ?
+      """,
+      rawMaterial.sourceId(),
+      rawMaterial.title(),
+      rawMaterial.rawMaterialType(),
+      rawMaterial.sourceVersion(),
+      rawMaterial.capturedAt(),
+      rawMaterial.contentHash(),
+      rawMaterial.storageProvider(),
+      rawMaterial.storageRef(),
+      rawMaterial.parseStatus(),
+      rawMaterial.updatedAt(),
+      rawMaterial.rawMaterialId()
+    );
+    if (updated == 0) {
+      jdbcTemplate.update(
+        """
+        insert into raw_materials (
+          raw_material_id, source_id, title, raw_material_type, source_version, captured_at,
+          content_hash, storage_provider, storage_ref, parse_status, created_at, updated_at
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        rawMaterial.rawMaterialId(),
+        rawMaterial.sourceId(),
+        rawMaterial.title(),
+        rawMaterial.rawMaterialType(),
+        rawMaterial.sourceVersion(),
+        rawMaterial.capturedAt(),
+        rawMaterial.contentHash(),
+        rawMaterial.storageProvider(),
+        rawMaterial.storageRef(),
+        rawMaterial.parseStatus(),
+        rawMaterial.createdAt(),
+        rawMaterial.updatedAt()
+      );
+    }
+  }
+
+  @Override
+  @Transactional
+  protected void insertParsedDocument(ParsedDocument parsedDocument) {
+    int updated = jdbcTemplate.update(
+      """
+      update parsed_documents
+      set raw_material_id = ?, source_id = ?, title = ?, content_format = ?, normalized_content = ?,
+          metadata_language = ?, metadata_business_domain = ?, parser_profile = ?, parse_status = ?,
+          parse_error_summary = ?, updated_at = ?
+      where parsed_document_id = ?
+      """,
+      parsedDocument.rawMaterialId(),
+      parsedDocument.sourceId(),
+      parsedDocument.title(),
+      parsedDocument.contentFormat(),
+      parsedDocument.normalizedContent(),
+      parsedDocument.metadata().get("language"),
+      parsedDocument.metadata().get("businessDomain"),
+      parsedDocument.parserProfile(),
+      parsedDocument.parseStatus(),
+      parsedDocument.parseErrorSummary(),
+      parsedDocument.updatedAt(),
+      parsedDocument.parsedDocumentId()
+    );
+    if (updated == 0) {
+      jdbcTemplate.update(
+        """
+        insert into parsed_documents (
+          parsed_document_id, raw_material_id, source_id, title, content_format, normalized_content,
+          metadata_language, metadata_business_domain, parser_profile, parse_status, parse_error_summary,
+          created_at, updated_at
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        parsedDocument.parsedDocumentId(),
+        parsedDocument.rawMaterialId(),
+        parsedDocument.sourceId(),
+        parsedDocument.title(),
+        parsedDocument.contentFormat(),
+        parsedDocument.normalizedContent(),
+        parsedDocument.metadata().get("language"),
+        parsedDocument.metadata().get("businessDomain"),
+        parsedDocument.parserProfile(),
+        parsedDocument.parseStatus(),
+        parsedDocument.parseErrorSummary(),
+        parsedDocument.createdAt(),
+        parsedDocument.updatedAt()
+      );
+    }
+    jdbcTemplate.update("delete from parsed_document_source_refs where parsed_document_id = ?", parsedDocument.parsedDocumentId());
+    insertParsedDocumentSourceRefs(parsedDocument);
+  }
+
+  @Override
+  @Transactional
+  protected void replaceParsedDocumentSegments(String parsedDocumentId, List<ParsedDocumentSegment> segments) {
+    jdbcTemplate.update("delete from parsed_document_segments where parsed_document_id = ?", parsedDocumentId);
+    for (ParsedDocumentSegment segment : segments) {
+      jdbcTemplate.update(
+        """
+        insert into parsed_document_segments (
+          segment_id, parsed_document_id, raw_material_id, source_id, position, segment_type,
+          title, content, content_preview, token_count, source_locator, created_at, updated_at
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        segment.segmentId(),
+        segment.parsedDocumentId(),
+        segment.rawMaterialId(),
+        segment.sourceId(),
+        segment.position(),
+        segment.segmentType(),
+        segment.title(),
+        segment.content(),
+        segment.contentPreview(),
+        segment.tokenCount(),
+        segment.sourceLocator(),
+        segment.createdAt(),
+        segment.updatedAt()
       );
     }
   }
@@ -757,6 +911,27 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       ),
       parsedDocumentId
     );
+  }
+
+  private void insertParsedDocumentSourceRefs(ParsedDocument parsedDocument) {
+    for (int index = 0; index < parsedDocument.sourceRefs().size(); index++) {
+      ParsedDocumentSourceRef sourceRef = parsedDocument.sourceRefs().get(index);
+      jdbcTemplate.update(
+        """
+        insert into parsed_document_source_refs (
+          parsed_document_id, position, source_id, raw_material_id, locator_type, locator, excerpt, confidence
+        ) values (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        parsedDocument.parsedDocumentId(),
+        index,
+        sourceRef.sourceId(),
+        sourceRef.rawMaterialId(),
+        sourceRef.locatorType(),
+        sourceRef.locator(),
+        sourceRef.excerpt(),
+        sourceRef.confidence() == null ? 0.0 : sourceRef.confidence()
+      );
+    }
   }
 
   private Map<String, String> metadata(ResultSet resultSet) throws SQLException {

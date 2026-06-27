@@ -5,6 +5,7 @@ import com.wikinode.studio.model.IndexSegment;
 import com.wikinode.studio.model.KnowledgeRelation;
 import com.wikinode.studio.model.KnowledgeRelationRequest;
 import com.wikinode.studio.model.ParsedDocument;
+import com.wikinode.studio.model.ParsedDocumentSegment;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.DraftWikiNodeSuggestion;
@@ -24,14 +25,17 @@ import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
 import com.wikinode.studio.model.SourceIngestionRunRequest;
 import com.wikinode.studio.model.SourceIngestionRunResult;
+import com.wikinode.studio.model.SourceImportResult;
 import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.WikiGraphOverview;
 import com.wikinode.studio.model.WikiLink;
 import com.wikinode.studio.model.WikiNode;
 import com.wikinode.studio.model.WikiNodeUpsertRequest;
 import com.wikinode.studio.repository.WikiNodeRepository;
+import java.io.IOException;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,9 +45,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api")
@@ -219,6 +226,19 @@ public class WikiNodeController {
     return repository.runSourceIngestion(sourceId, request);
   }
 
+  @PostMapping(value = "/sources/{sourceId}/raw-materials/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public SourceImportResult importSourceFile(
+    @PathVariable String sourceId,
+    @RequestPart("file") MultipartFile file,
+    @RequestParam(required = false) String requestedBy
+  ) throws IOException {
+    ensureSourceExists(sourceId);
+    if (file == null || file.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File is required");
+    }
+    return repository.importSourceFile(sourceId, file.getOriginalFilename(), file.getBytes(), requestedBy);
+  }
+
   @GetMapping("/raw-materials")
   public List<RawMaterial> listRawMaterials() {
     return repository.listRawMaterials();
@@ -246,6 +266,12 @@ public class WikiNodeController {
   public ParsedDocument getParsedDocument(@PathVariable String parsedDocumentId) {
     return repository.findParsedDocument(parsedDocumentId)
       .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parsed Document not found"));
+  }
+
+  @GetMapping("/parsed-documents/{parsedDocumentId}/segments")
+  public List<ParsedDocumentSegment> listParsedDocumentSegments(@PathVariable String parsedDocumentId) {
+    ensureParsedDocumentExists(parsedDocumentId);
+    return repository.listParsedDocumentSegments(parsedDocumentId);
   }
 
   @GetMapping("/source-operations/{operationId}")

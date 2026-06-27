@@ -41,3 +41,19 @@ export type ParsedDocument = {
   createdAt: string
   updatedAt: string
 }
+
+export type ParsedDocumentSegment = {
+  segmentId: string
+  parsedDocumentId: string
+  rawMaterialId: string
+  sourceId: string
+  position: number
+  segmentType: string
+  title: string
+  content: string
+  contentPreview: string
+  tokenCount: number
+  sourceLocator: string
+  createdAt: string
+  updatedAt: string
+}

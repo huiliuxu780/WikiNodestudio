@@ -9,6 +9,7 @@ import com.wikinode.studio.model.KnowledgeRelation;
 import com.wikinode.studio.model.KnowledgeRelationEvidence;
 import com.wikinode.studio.model.KnowledgeRelationRequest;
 import com.wikinode.studio.model.ParsedDocument;
+import com.wikinode.studio.model.ParsedDocumentSegment;
 import com.wikinode.studio.model.ParsedDocumentSourceRef;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
@@ -32,12 +33,18 @@ import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
 import com.wikinode.studio.model.SourceIngestionRunRequest;
 import com.wikinode.studio.model.SourceIngestionRunResult;
+import com.wikinode.studio.model.SourceImportResult;
 import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.SourceRef;
 import com.wikinode.studio.model.WikiGraphOverview;
 import com.wikinode.studio.model.WikiLink;
 import com.wikinode.studio.model.WikiNode;
 import com.wikinode.studio.model.WikiNodeUpsertRequest;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -53,6 +60,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
 
@@ -71,6 +80,8 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   protected abstract List<RawMaterial> loadRawMaterials();
 
   protected abstract List<ParsedDocument> loadParsedDocuments();
+
+  protected abstract List<ParsedDocumentSegment> loadParsedDocumentSegments();
 
   protected abstract List<SourceOperation> loadSourceOperations();
 
@@ -91,6 +102,12 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   protected abstract void insertRetrievalEvaluationCase(RetrievalEvaluationCase evaluationCase);
 
   protected abstract void insertSourceOperation(SourceOperation operation);
+
+  protected abstract void insertRawMaterial(RawMaterial rawMaterial);
+
+  protected abstract void insertParsedDocument(ParsedDocument parsedDocument);
+
+  protected abstract void replaceParsedDocumentSegments(String parsedDocumentId, List<ParsedDocumentSegment> segments);
 
   protected abstract void insertDraftWikiNodeSuggestion(DraftWikiNodeSuggestion suggestion);
 
@@ -357,6 +374,104 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   }
 
   @Override
+  public SourceImportResult importSourceFile(String sourceId, String fileName, byte[] content, String requestedBy) {
+    SourceItem source = findSource(sourceId).orElseThrow(() -> new IllegalArgumentException("Source not found"));
+    String cleanFileName = cleanFileName(fileName);
+    String normalizedContent = parseLocalDocument(cleanFileName, content);
+    String now = now();
+    String day = today();
+    String fingerprint = shortHash(sourceId + cleanFileName + sha256(content) + now);
+    String rawMaterialId = "rm-import-%s".formatted(fingerprint);
+    String parsedDocumentId = "pd-import-%s".formatted(fingerprint);
+    String operationId = "op-import-%s".formatted(fingerprint);
+    String parseOperationId = "op-parse-%s".formatted(fingerprint);
+    String contentFormat = contentFormatFor(cleanFileName);
+    String parserProfile = parserProfileFor(cleanFileName);
+    String title = titleFor(cleanFileName);
+
+    RawMaterial rawMaterial = new RawMaterial(
+      rawMaterialId,
+      sourceId,
+      title,
+      "file",
+      day,
+      now,
+      "sha256:%s".formatted(sha256(content)),
+      "local_workspace",
+      "local-import://%s/%s".formatted(sourceId, cleanFileName),
+      "parsed",
+      1,
+      day,
+      day
+    );
+    ParsedDocument parsedDocument = new ParsedDocument(
+      parsedDocumentId,
+      rawMaterialId,
+      sourceId,
+      "%s 解析结果".formatted(title),
+      contentFormat,
+      normalizedContent,
+      Map.of("language", "zh-CN", "businessDomain", businessDomainFor(source)),
+      List.of(new ParsedDocumentSourceRef(
+        sourceId,
+        rawMaterialId,
+        parsedDocumentId,
+        "document",
+        cleanFileName,
+        preview(normalizedContent),
+        0.92
+      )),
+      parserProfile,
+      "parsed",
+      null,
+      day,
+      day
+    );
+    List<ParsedDocumentSegment> segments = buildParsedDocumentSegments(parsedDocument, title);
+
+    insertRawMaterial(rawMaterial);
+    insertParsedDocument(parsedDocument);
+    replaceParsedDocumentSegments(parsedDocumentId, segments);
+    insertSourceOperation(new SourceOperation(
+      operationId,
+      "import_source_file",
+      sourceId,
+      rawMaterialId,
+      parsedDocumentId,
+      "succeeded",
+      cleanRequestedBy(requestedBy),
+      now,
+      now,
+      "已导入本地文件并生成 Raw Material。",
+      null
+    ));
+    insertSourceOperation(new SourceOperation(
+      parseOperationId,
+      "parse_raw_material",
+      sourceId,
+      rawMaterialId,
+      parsedDocumentId,
+      "succeeded",
+      cleanRequestedBy(requestedBy),
+      now,
+      now,
+      "已解析为 Parsed Document，并生成 %d 条文档片段。".formatted(segments.size()),
+      null
+    ));
+
+    return new SourceImportResult(
+      operationId,
+      sourceId,
+      rawMaterialId,
+      parsedDocumentId,
+      "succeeded",
+      "已导入文件、生成 Parsed Document 和文档片段。",
+      segments.size(),
+      segments.stream().map(ParsedDocumentSegment::segmentId).toList()
+    );
+  }
+
+  @Override
   public Optional<RawMaterial> findRawMaterial(String rawMaterialId) {
     return loadRawMaterials().stream().filter(rawMaterial -> rawMaterial.rawMaterialId().equals(rawMaterialId)).findFirst();
   }
@@ -369,6 +484,14 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   @Override
   public Optional<ParsedDocument> findParsedDocument(String parsedDocumentId) {
     return loadParsedDocuments().stream().filter(parsedDocument -> parsedDocument.parsedDocumentId().equals(parsedDocumentId)).findFirst();
+  }
+
+  @Override
+  public List<ParsedDocumentSegment> listParsedDocumentSegments(String parsedDocumentId) {
+    return loadParsedDocumentSegments().stream()
+      .filter(segment -> segment.parsedDocumentId().equals(parsedDocumentId))
+      .sorted(Comparator.comparingInt(ParsedDocumentSegment::position))
+      .toList();
   }
 
   @Override
@@ -1093,8 +1216,194 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
     return requestedBy == null || requestedBy.isBlank() ? "system" : requestedBy.trim();
   }
 
+  private String cleanRequestedBy(String requestedBy) {
+    return requestedBy == null || requestedBy.isBlank() ? "system" : requestedBy.trim();
+  }
+
   private String now() {
     return OffsetDateTime.now(ZoneOffset.ofHours(8)).toString();
+  }
+
+  private String cleanFileName(String fileName) {
+    String clean = Optional.ofNullable(fileName).orElse("source-document.md").trim();
+    clean = clean.replace("\\", "/");
+    int slash = clean.lastIndexOf('/');
+    if (slash >= 0) {
+      clean = clean.substring(slash + 1);
+    }
+    return clean.isBlank() ? "source-document.md" : clean;
+  }
+
+  private String parseLocalDocument(String fileName, byte[] content) {
+    if (content == null || content.length == 0) {
+      throw new IllegalArgumentException("文件内容不能为空。");
+    }
+    String extension = extensionOf(fileName);
+    if ("docx".equals(extension)) {
+      return parseDocx(content);
+    }
+    if (Set.of("md", "markdown", "txt").contains(extension)) {
+      return new String(content, StandardCharsets.UTF_8).trim();
+    }
+    throw new IllegalArgumentException("仅支持 txt、md、docx 文件。");
+  }
+
+  private String parseDocx(byte[] content) {
+    try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(content))) {
+      ZipEntry entry;
+      while ((entry = zip.getNextEntry()) != null) {
+        if ("word/document.xml".equals(entry.getName())) {
+          String xml = new String(zip.readAllBytes(), StandardCharsets.UTF_8);
+          return xml
+            .replaceAll("</w:p>", "\n\n")
+            .replaceAll("<[^>]+>", "")
+            .replace("&amp;", "&")
+            .replace("&lt;", "<")
+            .replace("&gt;", ">")
+            .replaceAll("\\n{3,}", "\n\n")
+            .trim();
+        }
+      }
+    } catch (IOException error) {
+      throw new IllegalArgumentException("DOCX 解析失败。", error);
+    }
+    throw new IllegalArgumentException("DOCX 缺少正文内容。");
+  }
+
+  private List<ParsedDocumentSegment> buildParsedDocumentSegments(ParsedDocument parsedDocument, String documentTitle) {
+    List<String> sections = splitIntoSections(parsedDocument.normalizedContent());
+    List<ParsedDocumentSegment> segments = new ArrayList<>();
+    for (int index = 0; index < sections.size(); index++) {
+      String content = sections.get(index).trim();
+      if (content.isBlank()) {
+        continue;
+      }
+      String title = segmentTitle(content, documentTitle, index);
+      segments.add(new ParsedDocumentSegment(
+        "pds-%s-%03d".formatted(parsedDocument.parsedDocumentId(), index + 1),
+        parsedDocument.parsedDocumentId(),
+        parsedDocument.rawMaterialId(),
+        parsedDocument.sourceId(),
+        index,
+        segmentType(content),
+        title,
+        content,
+        preview(content),
+        tokenCount(content),
+        "section:%d".formatted(index + 1),
+        parsedDocument.createdAt(),
+        parsedDocument.updatedAt()
+      ));
+    }
+    if (segments.isEmpty()) {
+      String content = parsedDocument.normalizedContent().trim();
+      segments.add(new ParsedDocumentSegment(
+        "pds-%s-001".formatted(parsedDocument.parsedDocumentId()),
+        parsedDocument.parsedDocumentId(),
+        parsedDocument.rawMaterialId(),
+        parsedDocument.sourceId(),
+        0,
+        "body",
+        documentTitle,
+        content,
+        preview(content),
+        tokenCount(content),
+        "section:1",
+        parsedDocument.createdAt(),
+        parsedDocument.updatedAt()
+      ));
+    }
+    return segments;
+  }
+
+  private List<String> splitIntoSections(String content) {
+    String normalized = Optional.ofNullable(content).orElse("").trim();
+    if (normalized.isBlank()) {
+      return List.of();
+    }
+    List<String> blocks = new ArrayList<>();
+    StringBuilder current = new StringBuilder();
+    for (String line : normalized.split("\\R")) {
+      if (line.startsWith("#") && !current.isEmpty()) {
+        blocks.add(current.toString().trim());
+        current.setLength(0);
+      }
+      current.append(line).append('\n');
+      if (current.length() > 900 && line.isBlank()) {
+        blocks.add(current.toString().trim());
+        current.setLength(0);
+      }
+    }
+    if (!current.isEmpty()) {
+      blocks.add(current.toString().trim());
+    }
+    return blocks;
+  }
+
+  private String segmentTitle(String content, String documentTitle, int index) {
+    Matcher heading = Pattern.compile("(?m)^#{1,6}\\s+(.+)$").matcher(content);
+    if (heading.find()) {
+      return heading.group(1).trim();
+    }
+    return index == 0 ? documentTitle : "%s / 文档片段 %d".formatted(documentTitle, index + 1);
+  }
+
+  private String segmentType(String content) {
+    return content.startsWith("#") ? "section" : "body";
+  }
+
+  private String titleFor(String fileName) {
+    String title = fileName.replaceFirst("\\.[^.]+$", "").replaceAll("[_-]+", " ").trim();
+    return title.isBlank() ? "本地导入文档" : title;
+  }
+
+  private String contentFormatFor(String fileName) {
+    return switch (extensionOf(fileName)) {
+      case "txt" -> "plain_text";
+      case "docx" -> "markdown";
+      default -> "markdown";
+    };
+  }
+
+  private String parserProfileFor(String fileName) {
+    return switch (extensionOf(fileName)) {
+      case "txt" -> "local_text_file_v1";
+      case "docx" -> "local_docx_file_v1";
+      default -> "local_markdown_file_v1";
+    };
+  }
+
+  private String businessDomainFor(SourceItem source) {
+    String type = Optional.ofNullable(source.sourceType()).orElse("");
+    return switch (type) {
+      case "pdf", "word" -> "product_support";
+      case "excel" -> "service_fee";
+      default -> "after_sales";
+    };
+  }
+
+  private String extensionOf(String fileName) {
+    String clean = Optional.ofNullable(fileName).orElse("").toLowerCase(Locale.ROOT);
+    int dot = clean.lastIndexOf('.');
+    return dot < 0 ? "" : clean.substring(dot + 1);
+  }
+
+  private String sha256(byte[] content) {
+    try {
+      MessageDigest digest = MessageDigest.getInstance("SHA-256");
+      byte[] hashed = digest.digest(content == null ? new byte[0] : content);
+      StringBuilder builder = new StringBuilder();
+      for (byte item : hashed) {
+        builder.append("%02x".formatted(item));
+      }
+      return builder.toString();
+    } catch (NoSuchAlgorithmException error) {
+      throw new IllegalStateException("SHA-256 is unavailable", error);
+    }
+  }
+
+  private String shortHash(String value) {
+    return sha256(value.getBytes(StandardCharsets.UTF_8)).substring(0, 12);
   }
 
   private String operationIdFor(ParsedDocument parsedDocument) {

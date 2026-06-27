@@ -38,6 +38,21 @@ test.describe("Source / Raw Material / Parsed Document acceptance", () => {
     await expect(page.getByRole("button", { name: forbiddenActions })).toHaveCount(0)
   })
 
+  test("Source detail imports a local file into parsed document evidence", async ({ page }) => {
+    await page.goto("/sources/src-feishu-cc")
+
+    await expect(page.getByText("文件接入", { exact: true })).toBeVisible()
+    await page.getByLabel("选择 txt / md / docx").setInputFiles({
+      name: "service-policy.md",
+      mimeType: "text/markdown",
+      buffer: Buffer.from("# 服务政策\n\n导入后形成 Parsed Document 和文档片段。"),
+    })
+    await page.getByRole("button", { name: "导入并解析" }).click()
+
+    await expect(page.getByText("已导入文件、生成 Parsed Document 和文档片段。 文档片段 2 条。")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
+  })
+
   test("Raw Material pages show snapshot and parsed preview evidence", async ({ page }) => {
     await page.goto("/raw-materials")
 
@@ -66,6 +81,9 @@ test.describe("Source / Raw Material / Parsed Document acceptance", () => {
     await expect(page.getByText("Parsed Document 阶段", { exact: true })).toBeVisible()
     await expect(page.getByText("标准化内容结构", { exact: true })).toBeVisible()
     await expect(page.getByText("可回溯证据", { exact: true })).toBeVisible()
+    await expect(page.getByText("文档片段", { exact: true })).toBeVisible()
+    await expect(page.getByText("pds-pd-001-001", { exact: true })).toBeVisible()
+    await expect(page.getByText("约 35 tokens", { exact: true })).toBeVisible()
     await expect(page.getByText("后续转换为 WikiNode 前仍需人工治理。", { exact: true })).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
     await expect(page.getByRole("button", { name: forbiddenActions })).toHaveCount(0)
