@@ -22,6 +22,8 @@ import com.wikinode.studio.model.RetrievalEvaluationCaseRequest;
 import com.wikinode.studio.model.RetrievalLog;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
+import com.wikinode.studio.model.SourceIngestionRunRequest;
+import com.wikinode.studio.model.SourceIngestionRunResult;
 import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.WikiGraphOverview;
 import com.wikinode.studio.model.WikiLink;
@@ -69,6 +71,8 @@ public interface WikiNodeRepository {
   List<SourceItem> listSources();
 
   Optional<SourceItem> findSource(String sourceId);
+
+  SourceIngestionRunResult runSourceIngestion(String sourceId, SourceIngestionRunRequest request);
 
   List<RawMaterial> listRawMaterials();
 

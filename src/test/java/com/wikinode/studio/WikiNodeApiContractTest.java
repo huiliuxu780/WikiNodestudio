@@ -327,6 +327,45 @@ class WikiNodeApiContractTest {
   }
 
   @Test
+  void runsLocalSourceIngestionToGenerateDraftWikiNodeSuggestionsWithoutCreatingWikiNodes() throws Exception {
+    String body = """
+      {
+        "conversionProfile": "excel_fee_table_v1",
+        "requestedBy": "api-contract"
+      }
+      """;
+
+    HttpResponse<String> run = post("/api/sources/src-excel-fee/ingestion-runs", body);
+    HttpResponse<String> suggestions = get("/api/draft-wikinode-suggestions");
+    HttpResponse<String> sourceOperations = get("/api/sources/src-excel-fee/operations");
+    HttpResponse<String> missingNode = get("/api/wiki-nodes/wn-from-sug-pd-003");
+
+    assertThat(run.statusCode()).isEqualTo(200);
+    assertThat(run.body()).contains("\"sourceId\":\"src-excel-fee\"");
+    assertThat(run.body()).contains("\"status\":\"succeeded\"");
+    assertThat(run.body()).contains("\"parsedDocumentCount\":1");
+    assertThat(run.body()).contains("\"generatedSuggestionIds\":[\"sug-pd-003\"]");
+    assertThat(run.body()).contains("\"skippedParsedDocumentIds\":[]");
+    assertThat(run.body()).contains("\"summary\":\"已从 Source 生成 1 条待审核 WikiNode 建议。\"");
+    assertThat(run.body()).doesNotContain("\"nodeId\"");
+    assertThat(run.body()).doesNotContain("\"indexSegmentId\"");
+    assertThat(run.body()).doesNotContain("\"chunk\"");
+
+    assertThat(suggestions.statusCode()).isEqualTo(200);
+    assertThat(suggestions.body()).contains("\"suggestionId\":\"sug-pd-003\"");
+    assertThat(suggestions.body()).contains("\"sourceId\":\"src-excel-fee\"");
+    assertThat(suggestions.body()).contains("\"status\":\"draft\"");
+
+    assertThat(sourceOperations.statusCode()).isEqualTo(200);
+    assertThat(sourceOperations.body()).contains("\"operationType\":\"source_ingestion_run\"");
+    assertThat(sourceOperations.body()).contains("\"operationType\":\"suggest_wikinode\"");
+    assertThat(sourceOperations.body()).doesNotContain("\"embedding\"");
+    assertThat(sourceOperations.body()).doesNotContain("\"chunk\"");
+
+    assertThat(missingNode.statusCode()).isEqualTo(404);
+  }
+
+  @Test
   void skipsDraftWikiNodeSuggestionGenerationForExistingSuggestion() throws Exception {
     String body = """
       {

@@ -30,6 +30,8 @@ import com.wikinode.studio.model.RetrievalMatchedSegment;
 import com.wikinode.studio.model.RetrievalQuery;
 import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
+import com.wikinode.studio.model.SourceIngestionRunRequest;
+import com.wikinode.studio.model.SourceIngestionRunResult;
 import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.SourceRef;
 import com.wikinode.studio.model.WikiGraphOverview;
@@ -297,6 +299,61 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   @Override
   public List<RawMaterial> listRawMaterialsForSource(String sourceId) {
     return loadRawMaterials().stream().filter(rawMaterial -> rawMaterial.sourceId().equals(sourceId)).toList();
+  }
+
+  @Override
+  public SourceIngestionRunResult runSourceIngestion(String sourceId, SourceIngestionRunRequest request) {
+    String operationId = sourceIngestionOperationIdFor(sourceId);
+    List<RawMaterial> rawMaterials = listRawMaterialsForSource(sourceId);
+    List<ParsedDocument> parsedDocuments = loadParsedDocuments().stream()
+      .filter(parsedDocument -> sourceId.equals(parsedDocument.sourceId()))
+      .toList();
+
+    List<String> generatedSuggestionIds = new ArrayList<>();
+    List<String> skippedParsedDocumentIds = new ArrayList<>();
+    for (ParsedDocument parsedDocument : parsedDocuments) {
+      DraftWikiNodeSuggestionGenerationResult result = generateDraftWikiNodeSuggestion(
+        parsedDocument.parsedDocumentId(),
+        new DraftWikiNodeSuggestionGenerationRequest(
+          request == null ? null : request.conversionProfile(),
+          "source-ingestion-%s-%s".formatted(sourceId, parsedDocument.parsedDocumentId())
+        )
+      );
+      if ("succeeded".equals(result.status()) && result.suggestionId() != null) {
+        generatedSuggestionIds.add(result.suggestionId());
+      } else {
+        skippedParsedDocumentIds.add(parsedDocument.parsedDocumentId());
+      }
+    }
+
+    String status = generatedSuggestionIds.isEmpty() ? "skipped" : "succeeded";
+    String summary = generatedSuggestionIds.isEmpty()
+      ? "当前 Source 没有生成新的待审核 WikiNode 建议。"
+      : "已从 Source 生成 %d 条待审核 WikiNode 建议。".formatted(generatedSuggestionIds.size());
+    insertSourceOperation(new SourceOperation(
+      operationId,
+      "source_ingestion_run",
+      sourceId,
+      null,
+      null,
+      status,
+      requestedBy(request),
+      now(),
+      now(),
+      summary,
+      null
+    ));
+
+    return new SourceIngestionRunResult(
+      operationId,
+      sourceId,
+      status,
+      summary,
+      rawMaterials.size(),
+      parsedDocuments.size(),
+      generatedSuggestionIds,
+      skippedParsedDocumentIds
+    );
   }
 
   @Override
@@ -1011,7 +1068,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
     String summary,
     String errorSummary
   ) {
-    String now = OffsetDateTime.now(ZoneOffset.ofHours(8)).toString();
+    String now = now();
     return new SourceOperation(
       operationId,
       "suggest_wikinode",
@@ -1025,6 +1082,19 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       summary,
       errorSummary
     );
+  }
+
+  private String sourceIngestionOperationIdFor(String sourceId) {
+    return "op-%s-ingestion-%s".formatted(sourceId, System.currentTimeMillis());
+  }
+
+  private String requestedBy(SourceIngestionRunRequest request) {
+    String requestedBy = request == null ? null : request.requestedBy();
+    return requestedBy == null || requestedBy.isBlank() ? "system" : requestedBy.trim();
+  }
+
+  private String now() {
+    return OffsetDateTime.now(ZoneOffset.ofHours(8)).toString();
   }
 
   private String operationIdFor(ParsedDocument parsedDocument) {

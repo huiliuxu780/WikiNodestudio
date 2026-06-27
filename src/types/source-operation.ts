@@ -11,3 +11,19 @@ export type SourceOperation = {
   summary: string
   errorSummary?: string | null
 }
+
+export type SourceIngestionRunRequest = {
+  conversionProfile?: string
+  requestedBy?: string
+}
+
+export type SourceIngestionRunResult = {
+  operationId: string
+  sourceId: string
+  status: "succeeded" | "skipped" | "failed"
+  summary: string
+  rawMaterialCount: number
+  parsedDocumentCount: number
+  generatedSuggestionIds: string[]
+  skippedParsedDocumentIds: string[]
+}

@@ -5,4 +5,30 @@ notes:
   - "Each IM is a product capability slice and must stop after local verification and commit."
   - "Do not auto-enter the next IM without explicit user confirmation."
   - "Done history stays in release docs or archive."
-tasks: []
+tasks:
+  - id: IM068
+    story_id: US068
+    title: "Source-to-WikiNode ingestion execution"
+    status: in_progress
+    required_workflow: default
+    allowed_files:
+      - "src/main/java/com/wikinode/studio/api/**"
+      - "src/main/java/com/wikinode/studio/model/**"
+      - "src/main/java/com/wikinode/studio/repository/**"
+      - "src/services/**"
+      - "src/types/**"
+      - "src/pages/**"
+      - "src/utils/display-labels.ts"
+      - "tests/e2e/**"
+      - "src/test/java/**"
+      - "scripts/api-smoke.sh"
+      - "docs/current/**"
+      - "docs/registry/**"
+    forbidden_files:
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "src/main/resources/db/migration/**"
+    acceptance:
+      - "POST /api/sources/{sourceId}/ingestion-runs runs local suggestion generation for existing Parsed Documents."
+      - "Source detail page exposes the local generation action and refreshes operation evidence."
+      - "No real Source import, file upload, parser execution, embedding, vector sync, publish approval, auth, permission, batch, export, Agent, Chatbot, Workflow, Vector DB Management, or Chunk Management is added."

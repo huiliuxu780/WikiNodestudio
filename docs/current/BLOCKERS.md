@@ -6,8 +6,8 @@ None.
 
 ## Active Scope Constraints
 
-- No active executable IM is currently defined.
-- The next implementation slice must be explicitly added to `docs/current/STORY_QUEUE.yaml` and `docs/current/ACTIVE_TASKS.yaml` before work begins.
+- Active executable IM: `IM068 Source-to-WikiNode ingestion execution`.
+- IM068 may change backend API/model/repository, frontend service/page, tests, API smoke, and current/registry docs within its explicit local-ingestion boundary.
 - Future frontend work must follow `docs/quality/frontend-ux-guidelines.md`.
 - Future B2B/governance pages must use dense evidence consoles, tables, lists, or side panels instead of AI-style explainer-card stacks.
 

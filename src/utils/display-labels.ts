@@ -154,6 +154,7 @@ export const sourceOperationTypeLabels: Record<string, string> = {
   parse_raw_material: "解析 Raw Material",
   retry_parse: "重新解析",
   suggest_wikinode: "建议 WikiNode",
+  source_ingestion_run: "生成 WikiNode 建议",
 }
 
 export const sourceOperationStatusLabels: Record<string, string> = {

@@ -56,21 +56,56 @@ const sourceOperations = [
   },
 ]
 
+let currentSourceOperations = sourceOperations
+
 test.describe("Source Operation read-only logs", () => {
   test.beforeEach(async ({ page }) => {
-    await page.route("**/api/sources/src-api-only/operations", (route) => route.fulfill({ json: sourceOperations }))
+    currentSourceOperations = [...sourceOperations]
+    await page.route("**/api/sources/src-api-only/operations", (route) => route.fulfill({ json: currentSourceOperations }))
+    await page.route("**/api/sources/src-api-only/ingestion-runs", async (route) => {
+      currentSourceOperations = [
+        {
+          operationId: "op-api-ingestion-001",
+          operationType: "source_ingestion_run",
+          sourceId: "src-api-only",
+          rawMaterialId: null,
+          parsedDocumentId: null,
+          status: "succeeded",
+          requestedBy: "ui",
+          startedAt: "2026-06-25T10:08:00+08:00",
+          finishedAt: "2026-06-25T10:08:30+08:00",
+          summary: "已从 Source 生成 1 条待审核 WikiNode 建议。",
+          errorSummary: null,
+        },
+        ...currentSourceOperations,
+      ]
+      await route.fulfill({
+        json: {
+          operationId: "op-api-ingestion-001",
+          sourceId: "src-api-only",
+          status: "succeeded",
+          summary: "已从 Source 生成 1 条待审核 WikiNode 建议。",
+          rawMaterialCount: 1,
+          parsedDocumentCount: 1,
+          generatedSuggestionIds: ["sug-api-only"],
+          skippedParsedDocumentIds: [],
+        },
+      })
+    })
     await page.route("**/api/raw-materials/rm-api-only/operations", (route) => route.fulfill({ json: sourceOperations.filter((operation) => operation.rawMaterialId === "rm-api-only") }))
     await page.route("**/api/source-operations/op-api-sync-001", (route) => route.fulfill({ json: sourceOperations[0] }))
     await page.route("**/api/sources/src-api-only/raw-materials", (route) => route.fulfill({ json: [apiRawMaterial] }))
     await page.route("**/api/sources/src-api-only", (route) => route.fulfill({ json: apiSource }))
     await page.route("**/api/raw-materials/rm-api-only/parsed-documents", (route) => route.fulfill({ json: [] }))
+    await page.route("**/api/raw-materials/rm-api-only/draft-wikinode-suggestions", (route) => route.fulfill({ json: [] }))
     await page.route("**/api/raw-materials/rm-api-only", (route) => route.fulfill({ json: apiRawMaterial }))
     await page.route("**/api/wiki-nodes", (route) => route.fulfill({ json: [] }))
   })
 
-  test("renders Source Operation logs without exposing execution actions", async ({ page }) => {
+  test("renders Source Operation logs with local suggestion generation", async ({ page }) => {
     await page.goto("/sources/src-api-only")
 
+    await expect(page.getByRole("button", { name: "生成 WikiNode 建议" })).toBeVisible()
     await expect(page.getByRole("heading", { name: "操作日志" })).toBeVisible()
     await expect(page.getByText("按时间查看来源处理动作、处理状态、关联对象和错误摘要。")).toBeVisible()
     await expect(page.getByText("来源同步")).toBeVisible()
@@ -81,6 +116,16 @@ test.describe("Source Operation read-only logs", () => {
     await expect(page.getByRole("button", { name: "上传" })).toHaveCount(0)
     await expect(page.getByRole("button", { name: "解析" })).toHaveCount(0)
     await expect(page.getByRole("button", { name: "重试" })).toHaveCount(0)
+  })
+
+  test("runs local Source ingestion and refreshes operation evidence", async ({ page }) => {
+    await page.goto("/sources/src-api-only")
+
+    await page.getByRole("button", { name: "生成 WikiNode 建议" }).click()
+
+    await expect(page.getByText("已从 Source 生成 1 条待审核 WikiNode 建议。").first()).toBeVisible()
+    await expect(page.getByText("生成 WikiNode 建议").first()).toBeVisible()
+    await expect(page.getByText("执行人 ui")).toBeVisible()
   })
 
   test("renders Raw Material Operation logs as read-only parser evidence", async ({ page }) => {

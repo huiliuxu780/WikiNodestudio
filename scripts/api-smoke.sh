@@ -188,6 +188,22 @@ if (!Array.isArray(rawMaterialSuggestions) || !rawMaterialSuggestions.some((sugg
   throw new Error("GET /api/raw-materials/{id}/draft-wikinode-suggestions: FAIL expected scoped suggestions")
 }
 
+const sourceIngestionRun = await request("POST /api/sources/{id}/ingestion-runs", "/sources/src-excel-fee/ingestion-runs", {
+  method: "POST",
+  body: JSON.stringify({
+    conversionProfile: "excel_fee_table_v1",
+    requestedBy: "api-smoke",
+  }),
+})
+
+if (sourceIngestionRun.sourceId !== "src-excel-fee" || !["succeeded", "skipped"].includes(sourceIngestionRun.status) || sourceIngestionRun.parsedDocumentCount < 1) {
+  throw new Error("POST /api/sources/{id}/ingestion-runs: FAIL expected local Source ingestion result")
+}
+
+if (JSON.stringify(sourceIngestionRun).includes("nodeId") || JSON.stringify(sourceIngestionRun).includes("indexSegmentId") || JSON.stringify(sourceIngestionRun).includes("chunk")) {
+  throw new Error("POST /api/sources/{id}/ingestion-runs: FAIL response exposed forbidden internals")
+}
+
 const generatedSuggestion = await request("POST /api/parsed-documents/{id}/suggest-wikinode", "/parsed-documents/pd-003/suggest-wikinode", {
   method: "POST",
   body: JSON.stringify({
