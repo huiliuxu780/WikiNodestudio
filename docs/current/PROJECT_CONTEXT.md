@@ -16,6 +16,8 @@ The product baseline includes the React frontend MVP, Spring Boot API, PostgreSQ
 
 Current development must stay inside confirmed task scope. The standing MVP exclusions remain: no real Source import, file upload, parser execution, vector database implementation, embedding invocation, product-facing Chunk Management, automated quality repair, batch operation, export, permissions, version management, audit implementation, or publishing approval flow unless explicitly approved by the user.
 
+The current full-requirement completion assessment is captured in `docs/current/REQUIREMENT_COMPLETION_AUDIT.md`. Its conclusion is that the local MVP baseline and current Knowledge Relation MVP scope are complete, but the full product requirements are not complete.
+
 ## Current Queue
 
 Current executable Phase 2 work is tracked in:
@@ -28,7 +30,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-There is no active executable story or task in `docs/current/STORY_QUEUE.yaml` or `docs/current/ACTIVE_TASKS.yaml`. The Knowledge Relation PRD follow-up sequence from IM059 through IM064 is complete for current MVP scope. IM066 closed the remaining locally implementable MVP evidence surfaces that were still generic route placeholders. The next executable packet must be explicitly defined from current product requirements before implementation starts.
+There is no active executable story or task in `docs/current/STORY_QUEUE.yaml` or `docs/current/ACTIVE_TASKS.yaml`. The Knowledge Relation PRD follow-up sequence from IM059 through IM064 is complete for current MVP scope. IM066 closed the remaining locally implementable MVP evidence surfaces that were still generic route placeholders. IM067 records that full product requirements remain incomplete and should be continued through larger product capability packets rather than tiny page patches. The next executable packet must be explicitly defined from current product requirements before implementation starts.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -59,4 +61,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Current recommended next step: define the next coherent product capability packet from current product requirements, then add it to `docs/current/STORY_QUEUE.yaml` and `docs/current/ACTIVE_TASKS.yaml` before implementation.
+Current recommended next step: choose the next larger product capability packet from `docs/current/REQUIREMENT_COMPLETION_AUDIT.md`, explicitly approve any hard-stop boundaries it requires, then add it to `docs/current/STORY_QUEUE.yaml` and `docs/current/ACTIVE_TASKS.yaml` before implementation.

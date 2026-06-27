@@ -31,6 +31,14 @@ product_docs:
   IMPLEMENTATION_SLICE_PRINCIPLES:
     file: docs/current/IMPLEMENTATION_SLICE_PRINCIPLES.md
 current_corrections:
+  REQUIREMENT_COMPLETION_AUDIT:
+    decision: D067
+    file: docs/current/REQUIREMENT_COMPLETION_AUDIT.md
+    project_context: docs/current/PROJECT_CONTEXT.md
+    product_scope: docs/current/PRODUCT_SCOPE.md
+    feature_map: docs/current/FEATURE_MAP.md
+    relation_trace: docs/current/KNOWLEDGE_RELATION_REQUIREMENT_TRACE.md
+    previous_completion_sweep: MVP_SCOPE_COMPLETION_SWEEP
   MVP_SCOPE_COMPLETION_SWEEP:
     decision: D066
     frontend_page: src/pages/skeleton-pages.tsx
@@ -530,6 +538,9 @@ tasks:
   IM066:
     decision: D066
     implementation: MVP_SCOPE_COMPLETION_SWEEP
+  IM067:
+    decision: D067
+    audit: REQUIREMENT_COMPLETION_AUDIT
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN
