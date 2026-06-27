@@ -33,7 +33,7 @@ cleanup() {
       --port="${DB_PORT}" \
       --username="${DB_USER}" \
       --dbname="${DB_NAME}" \
-      --command="delete from wiki_nodes where node_id like 'api-smoke-%';" >/dev/null
+      --command="delete from source_operations where raw_material_id like 'rm-import-%' or parsed_document_id like 'pd-import-%'; delete from raw_materials where raw_material_id like 'rm-import-%'; delete from wiki_nodes where node_id like 'api-smoke-%';" >/dev/null
     echo "api-smoke: cleaned temporary api-smoke nodes"
   fi
 }
@@ -51,6 +51,30 @@ async function request(label, path, options = {}) {
       "content-type": "application/json",
     },
     ...options,
+  })
+  const text = await response.text()
+  let body = null
+  try {
+    body = text ? JSON.parse(text) : null
+  } catch {
+    body = text
+  }
+
+  if (!response.ok) {
+    throw new Error(`${label}: FAIL ${response.status} ${text}`)
+  }
+
+  console.log(`${label}: PASS ${response.status}`)
+  return body
+}
+
+async function requestForm(label, path, formData) {
+  const response = await fetch(`${baseUrl}${path}`, {
+    method: "POST",
+    headers: {
+      "accept": "application/json",
+    },
+    body: formData,
   })
   const text = await response.text()
   let body = null
@@ -125,6 +149,32 @@ if (!parsedDocumentDetail.normalizedContent || !Array.isArray(parsedDocumentDeta
 
 if (Object.prototype.hasOwnProperty.call(parsedDocumentDetail, "chunk")) {
   throw new Error("GET /api/parsed-documents/{id}: FAIL response exposed chunk")
+}
+
+const importForm = new FormData()
+importForm.append("requestedBy", "api-smoke")
+importForm.append("file", new Blob(["# API Smoke Import\n\n导入后形成 Parsed Document 和文档片段。"], { type: "text/markdown" }), "api-smoke-import.md")
+const sourceImport = await requestForm("POST /api/sources/{id}/raw-materials/import", "/sources/src-pdf-dishwasher/raw-materials/import", importForm)
+if (sourceImport.sourceId !== "src-pdf-dishwasher" || sourceImport.status !== "succeeded" || sourceImport.segmentCount < 1 || !sourceImport.rawMaterialId || !sourceImport.parsedDocumentId) {
+  throw new Error("POST /api/sources/{id}/raw-materials/import: FAIL expected import result")
+}
+
+if (JSON.stringify(sourceImport).includes("nodeId") || JSON.stringify(sourceImport).includes("embedding") || JSON.stringify(sourceImport).includes("vector")) {
+  throw new Error("POST /api/sources/{id}/raw-materials/import: FAIL response exposed forbidden internals")
+}
+
+const importedRawMaterial = await request("GET /api/raw-materials/{importedId}", `/raw-materials/${sourceImport.rawMaterialId}`)
+if (importedRawMaterial.parseStatus !== "parsed" || importedRawMaterial.parsedDocumentCount !== 1) {
+  throw new Error("GET /api/raw-materials/{importedId}: FAIL expected parsed imported Raw Material")
+}
+
+const importedSegments = await request("GET /api/parsed-documents/{id}/segments", `/parsed-documents/${sourceImport.parsedDocumentId}/segments`)
+if (!Array.isArray(importedSegments) || importedSegments.length < 1 || importedSegments[0].parsedDocumentId !== sourceImport.parsedDocumentId) {
+  throw new Error("GET /api/parsed-documents/{id}/segments: FAIL expected persisted document segments")
+}
+
+if (JSON.stringify(importedSegments).includes("embedding") || JSON.stringify(importedSegments).includes("vector")) {
+  throw new Error("GET /api/parsed-documents/{id}/segments: FAIL response exposed forbidden internals")
 }
 
 const sourceOperationDetail = await request("GET /api/source-operations/{id}", "/source-operations/op-src-feishu-sync-001")

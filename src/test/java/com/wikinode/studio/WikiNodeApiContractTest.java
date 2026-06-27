@@ -169,6 +169,64 @@ class WikiNodeApiContractTest {
   }
 
   @Test
+  void importsLocalSourceFileIntoRawMaterialParsedDocumentAndDocumentSegments() throws Exception {
+    String boundary = "----wikinode-test-boundary";
+    String markdown = """
+      # 安装服务资料
+
+      安装前需要确认上下水、电源和橱柜尺寸。
+
+      ## 收费提示
+
+      特殊材料或二次上门收费请参考收费政策。
+      """;
+
+    HttpResponse<String> imported = postMultipart(
+      "/api/sources/src-pdf-dishwasher/raw-materials/import",
+      boundary,
+      "dishwasher-install.md",
+      markdown
+    );
+
+    assertThat(imported.statusCode()).isEqualTo(200);
+    assertThat(imported.body()).contains("\"sourceId\":\"src-pdf-dishwasher\"");
+    assertThat(imported.body()).contains("\"rawMaterialId\":\"");
+    assertThat(imported.body()).contains("\"parsedDocumentId\":\"");
+    assertThat(imported.body()).contains("\"segmentCount\":");
+    assertThat(imported.body()).contains("\"status\":\"succeeded\"");
+    assertThat(imported.body()).doesNotContain("\"embedding\"");
+    assertThat(imported.body()).doesNotContain("\"vector");
+    assertThat(imported.body()).doesNotContain("\"nodeId\"");
+
+    String rawMaterialId = extract(imported.body(), "rawMaterialId");
+    String parsedDocumentId = extract(imported.body(), "parsedDocumentId");
+
+    HttpResponse<String> rawMaterial = get("/api/raw-materials/%s".formatted(rawMaterialId));
+    HttpResponse<String> parsedDocuments = get("/api/raw-materials/%s/parsed-documents".formatted(rawMaterialId));
+    HttpResponse<String> parsedDocument = get("/api/parsed-documents/%s".formatted(parsedDocumentId));
+    HttpResponse<String> segments = get("/api/parsed-documents/%s/segments".formatted(parsedDocumentId));
+    HttpResponse<String> operations = get("/api/raw-materials/%s/operations".formatted(rawMaterialId));
+
+    assertThat(rawMaterial.statusCode()).isEqualTo(200);
+    assertThat(rawMaterial.body()).contains("\"parseStatus\":\"parsed\"");
+    assertThat(rawMaterial.body()).contains("\"parsedDocumentCount\":1");
+    assertThat(parsedDocuments.statusCode()).isEqualTo(200);
+    assertThat(parsedDocuments.body()).contains(parsedDocumentId);
+    assertThat(parsedDocument.statusCode()).isEqualTo(200);
+    assertThat(parsedDocument.body()).contains("安装前需要确认上下水");
+    assertThat(parsedDocument.body()).contains("\"contentFormat\":\"markdown\"");
+    assertThat(segments.statusCode()).isEqualTo(200);
+    assertThat(segments.body()).contains("\"segmentId\"");
+    assertThat(segments.body()).contains("\"parsedDocumentId\":\"%s\"".formatted(parsedDocumentId));
+    assertThat(segments.body()).contains("收费提示");
+    assertThat(segments.body()).doesNotContain("\"embedding\"");
+    assertThat(segments.body()).doesNotContain("\"vector");
+    assertThat(operations.statusCode()).isEqualTo(200);
+    assertThat(operations.body()).contains("\"operationType\":\"import_source_file\"");
+    assertThat(operations.body()).contains("\"operationType\":\"parse_raw_material\"");
+  }
+
+  @Test
   void exposesSourceOperationLogsAsReadOnlyEvidence() throws Exception {
     HttpResponse<String> sourceOperations = get("/api/sources/src-feishu-cc/operations");
     HttpResponse<String> rawMaterialOperations = get("/api/raw-materials/rm-001/operations");
@@ -890,6 +948,32 @@ class WikiNodeApiContractTest {
         .build(),
       HttpResponse.BodyHandlers.ofString()
     );
+  }
+
+  private HttpResponse<String> postMultipart(String path, String boundary, String fileName, String content) throws Exception {
+    String body = """
+      --%s
+      Content-Disposition: form-data; name="requestedBy"
+
+      contract-test
+      --%s
+      Content-Disposition: form-data; name="file"; filename="%s"
+      Content-Type: text/markdown
+
+      %s
+      --%s--
+      """.formatted(boundary, boundary, fileName, content, boundary).replace("\n", "\r\n");
+    return httpClient.send(
+      HttpRequest.newBuilder(uri(path))
+        .header("Content-Type", "multipart/form-data; boundary=%s".formatted(boundary))
+        .POST(HttpRequest.BodyPublishers.ofString(body))
+        .build(),
+      HttpResponse.BodyHandlers.ofString()
+    );
+  }
+
+  private String extract(String json, String field) {
+    return json.replaceAll(".*\\\"%s\\\":\\\"([^\\\"]+)\\\".*".formatted(field), "$1");
   }
 
   private HttpResponse<String> put(String path, String body) throws Exception {

@@ -67,6 +67,23 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   return body as T
 }
 
+export async function apiPostForm<T>(path: string, formData: FormData): Promise<T> {
+  const response = await fetch(buildUrl(path), {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+    },
+    body: formData,
+  })
+
+  const body = await readResponseBody(response)
+  if (!response.ok) {
+    throw new ApiError(response.status, body)
+  }
+
+  return body as T
+}
+
 export function apiGet<T>(path: string) {
   return apiRequest<T>(path)
 }

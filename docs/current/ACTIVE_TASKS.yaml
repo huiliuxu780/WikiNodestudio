@@ -1,20 +1,21 @@
 version: 2
-updated_at: "2026-06-27"
+updated_at: "2026-06-28"
 source_of_truth: "current_active_tasks"
 notes:
   - "Each IM is a product capability slice and must stop after local verification and commit."
   - "Do not auto-enter the next IM without explicit user confirmation."
   - "Done history stays in release docs or archive."
 tasks:
-  - id: IM068
-    story_id: US068
-    title: "Source-to-WikiNode ingestion execution"
+  - id: IM069
+    story_id: US069
+    title: "Source Import and Document Segment Persistence"
     status: in_progress
     required_workflow: default
     allowed_files:
       - "src/main/java/com/wikinode/studio/api/**"
       - "src/main/java/com/wikinode/studio/model/**"
       - "src/main/java/com/wikinode/studio/repository/**"
+      - "src/main/resources/db/migration/**"
       - "src/services/**"
       - "src/types/**"
       - "src/pages/**"
@@ -27,8 +28,10 @@ tasks:
     forbidden_files:
       - "package.json"
       - "pnpm-lock.yaml"
-      - "src/main/resources/db/migration/**"
     acceptance:
-      - "POST /api/sources/{sourceId}/ingestion-runs runs local suggestion generation for existing Parsed Documents."
-      - "Source detail page exposes the local generation action and refreshes operation evidence."
-      - "No real Source import, file upload, parser execution, embedding, vector sync, publish approval, auth, permission, batch, export, Agent, Chatbot, Workflow, Vector DB Management, or Chunk Management is added."
+      - "POST /api/sources/{sourceId}/raw-materials/import accepts local txt/md/docx files."
+      - "The import creates Raw Material, Parsed Document, and persisted document segment records."
+      - "GET /api/parsed-documents/{parsedDocumentId}/segments returns the generated document segments."
+      - "Source detail exposes a compact file import action and refreshes evidence after import."
+      - "Parsed Result preview shows document segments without creating a Chunk Management product surface."
+      - "No embedding, vector sync, external connector, auth, permission, publish, batch, export, Agent, Chatbot, Workflow, or Vector DB Management is added."

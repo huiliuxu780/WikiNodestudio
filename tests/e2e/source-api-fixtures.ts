@@ -146,6 +146,24 @@ const parsedDocuments = [
   },
 ]
 
+const parsedDocumentSegments = [
+  {
+    segmentId: "pds-pd-001-001",
+    parsedDocumentId: "pd-001",
+    rawMaterialId: "rm-001",
+    sourceId: "src-feishu-cc",
+    position: 0,
+    segmentType: "section",
+    title: "保修政策",
+    content: "# 保修政策\n\n保修期内维修不收取人工费，收费例外需要关联人为损坏判定规则。",
+    contentPreview: "# 保修政策 保修期内维修不收取人工费，收费例外需要关联人为损坏判定规则。",
+    tokenCount: 35,
+    sourceLocator: "section:1",
+    createdAt: "2026-06-20",
+    updatedAt: "2026-06-20",
+  },
+]
+
 const sourceOperations = [
   {
     operationId: "op-src-feishu-sync-001",
@@ -230,6 +248,23 @@ export async function mockSourceEvidenceApi(page: Page) {
       return route.fulfill({ json: sources })
     }
 
+    const sourceImportMatch = path.match(/^\/api\/sources\/([^/]+)\/raw-materials\/import$/)
+    if (sourceImportMatch && route.request().method() === "POST") {
+      const [, sourceId] = sourceImportMatch
+      return route.fulfill({
+        json: {
+          operationId: "op-import-playwright",
+          sourceId,
+          rawMaterialId: "rm-import-playwright",
+          parsedDocumentId: "pd-import-playwright",
+          status: "succeeded",
+          summary: "已导入文件、生成 Parsed Document 和文档片段。",
+          segmentCount: 2,
+          segmentIds: ["pds-pd-import-playwright-001", "pds-pd-import-playwright-002"],
+        },
+      })
+    }
+
     const sourceOperationMatch = path.match(/^\/api\/sources\/([^/]+)\/operations$/)
     if (sourceOperationMatch) {
       const [, sourceId] = sourceOperationMatch
@@ -259,6 +294,11 @@ export async function mockSourceEvidenceApi(page: Page) {
       return route.fulfill({ json: sourceOperations.filter((operation) => operation.rawMaterialId === rawMaterialId) })
     }
 
+    const rawSuggestionMatch = path.match(/^\/api\/raw-materials\/([^/]+)\/draft-wikinode-suggestions$/)
+    if (rawSuggestionMatch) {
+      return route.fulfill({ json: [] })
+    }
+
     const rawParsedDocumentMatch = path.match(/^\/api\/raw-materials\/([^/]+)\/parsed-documents$/)
     if (rawParsedDocumentMatch) {
       const [, rawMaterialId] = rawParsedDocumentMatch
@@ -277,6 +317,17 @@ export async function mockSourceEvidenceApi(page: Page) {
       const [, parsedDocumentId] = parsedDocumentMatch
       const parsedDocument = parsedDocuments.find((item) => item.parsedDocumentId === parsedDocumentId)
       return parsedDocument ? route.fulfill({ json: parsedDocument }) : route.fulfill({ status: 404, json: { message: "Parsed Document not found" } })
+    }
+
+    const parsedDocumentSegmentMatch = path.match(/^\/api\/parsed-documents\/([^/]+)\/segments$/)
+    if (parsedDocumentSegmentMatch) {
+      const [, parsedDocumentId] = parsedDocumentSegmentMatch
+      return route.fulfill({ json: parsedDocumentSegments.filter((segment) => segment.parsedDocumentId === parsedDocumentId) })
+    }
+
+    const parsedSuggestionMatch = path.match(/^\/api\/parsed-documents\/([^/]+)\/draft-wikinode-suggestions$/)
+    if (parsedSuggestionMatch) {
+      return route.fulfill({ json: [] })
     }
 
     const sourceOperationDetailMatch = path.match(/^\/api\/source-operations\/([^/]+)$/)

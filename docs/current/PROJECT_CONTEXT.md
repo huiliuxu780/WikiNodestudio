@@ -30,7 +30,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-The active executable packet is `US068` / `IM068`: Source-to-WikiNode local ingestion execution. The Knowledge Relation PRD follow-up sequence from IM059 through IM064 is complete for current MVP scope. IM066 closed the remaining locally implementable MVP evidence surfaces that were still generic route placeholders. IM067 records that full product requirements remain incomplete and should be continued through larger product capability packets rather than tiny page patches.
+The active executable packet is `US069` / `IM069`: Source Import and Document Segment Persistence. It adds the local file-entry foundation from txt/md/docx upload to Raw Material, Parsed Document, persisted document segments, Source Operation evidence, and Parsed Result preview. It does not add external connectors, embedding, vector sync, publishing, permissions, batch/export, Agent, Chatbot, Workflow, or product-facing Chunk Management.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -61,4 +61,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Current recommended next step: complete and verify `IM068`, then stop for review before choosing the next larger product capability packet from `docs/current/REQUIREMENT_COMPLETION_AUDIT.md`.
+Current recommended next step: complete and verify `IM069`, then stop for review before deciding whether to connect imported Parsed Documents into the existing Draft WikiNode Suggestion run or move to Publishing / Index lifecycle.

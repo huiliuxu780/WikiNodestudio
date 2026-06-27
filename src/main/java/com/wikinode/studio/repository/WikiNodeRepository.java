@@ -5,6 +5,7 @@ import com.wikinode.studio.model.IndexSegment;
 import com.wikinode.studio.model.KnowledgeRelation;
 import com.wikinode.studio.model.KnowledgeRelationRequest;
 import com.wikinode.studio.model.ParsedDocument;
+import com.wikinode.studio.model.ParsedDocumentSegment;
 import com.wikinode.studio.model.ParserProfile;
 import com.wikinode.studio.model.RawMaterial;
 import com.wikinode.studio.model.DraftWikiNodeSuggestion;
@@ -24,6 +25,7 @@ import com.wikinode.studio.model.RetrievalResult;
 import com.wikinode.studio.model.SourceItem;
 import com.wikinode.studio.model.SourceIngestionRunRequest;
 import com.wikinode.studio.model.SourceIngestionRunResult;
+import com.wikinode.studio.model.SourceImportResult;
 import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.WikiGraphOverview;
 import com.wikinode.studio.model.WikiLink;
@@ -74,6 +76,8 @@ public interface WikiNodeRepository {
 
   SourceIngestionRunResult runSourceIngestion(String sourceId, SourceIngestionRunRequest request);
 
+  SourceImportResult importSourceFile(String sourceId, String fileName, byte[] content, String requestedBy);
+
   List<RawMaterial> listRawMaterials();
 
   List<RawMaterial> listRawMaterialsForSource(String sourceId);
@@ -83,6 +87,8 @@ public interface WikiNodeRepository {
   List<ParsedDocument> listParsedDocumentsForRawMaterial(String rawMaterialId);
 
   Optional<ParsedDocument> findParsedDocument(String parsedDocumentId);
+
+  List<ParsedDocumentSegment> listParsedDocumentSegments(String parsedDocumentId);
 
   List<SourceOperation> listSourceOperationsForSource(String sourceId);
 
