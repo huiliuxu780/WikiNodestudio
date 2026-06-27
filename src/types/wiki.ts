@@ -158,6 +158,16 @@ export type WikiNodeCreateInput = {
   indexStatus?: WikiIndexStatus
 }
 
+export type WikiNodeLifecycleResult = {
+  nodeId: string
+  status: WikiNodeStatus
+  indexStatus: WikiIndexStatus
+  summary: string
+  indexSegmentCount?: number | null
+  lastPublishedAt?: string | null
+  lastIndexedAt?: string | null
+}
+
 export type WikiLink = {
   linkId: string
   fromNodeId: string

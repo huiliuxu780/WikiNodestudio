@@ -39,6 +39,7 @@ import com.wikinode.studio.model.SourceRef;
 import com.wikinode.studio.model.WikiGraphOverview;
 import com.wikinode.studio.model.WikiLink;
 import com.wikinode.studio.model.WikiNode;
+import com.wikinode.studio.model.WikiNodeLifecycleResult;
 import com.wikinode.studio.model.WikiNodeUpsertRequest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -136,6 +137,48 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
     ensureSlugAvailable(node.slug(), node.nodeId(), nodeId);
     replaceNode(nodeId, node);
     return findNode(nodeId).orElse(node);
+  }
+
+  @Override
+  public WikiNodeLifecycleResult publishWikiNode(String nodeId) {
+    WikiNode existing = loadNode(nodeId).orElseThrow(() -> new IllegalArgumentException("WikiNode not found"));
+    if ("archived".equals(existing.status())) {
+      throw new IllegalArgumentException("已归档 WikiNode 不能发布。");
+    }
+
+    String today = LocalDate.now().toString();
+    WikiNode published = nodeWithLifecycle(existing, "published", "outdated", today, existing.lastIndexedAt());
+    replaceNode(nodeId, published);
+    List<IndexSegment> segments = generateIndexSegmentsForNode(nodeId);
+
+    return new WikiNodeLifecycleResult(
+      nodeId,
+      "published",
+      "outdated",
+      "已发布 WikiNode，并准备 %d 条 Index Segment；外部向量库同步待后续执行。".formatted(segments.size()),
+      segments.size(),
+      today,
+      published.lastIndexedAt()
+    );
+  }
+
+  @Override
+  public WikiNodeLifecycleResult reindexWikiNode(String nodeId) {
+    WikiNode existing = loadNode(nodeId).orElseThrow(() -> new IllegalArgumentException("WikiNode not found"));
+    String nextIndexStatus = "published".equals(existing.status()) ? "outdated" : "not_indexed";
+    WikiNode prepared = nodeWithLifecycle(existing, existing.status(), nextIndexStatus, null, null);
+    replaceNode(nodeId, prepared);
+    List<IndexSegment> segments = generateIndexSegmentsForNode(nodeId);
+
+    return new WikiNodeLifecycleResult(
+      nodeId,
+      prepared.status(),
+      nextIndexStatus,
+      "已重新准备 %d 条本地 Index Segment；外部向量库同步待后续执行。".formatted(segments.size()),
+      segments.size(),
+      null,
+      prepared.lastIndexedAt()
+    );
   }
 
   @Override
@@ -1719,6 +1762,44 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       node.createdAt(),
       node.updatedAt(),
       node.lastIndexedAt()
+    );
+  }
+
+  private WikiNode nodeWithLifecycle(
+    WikiNode node,
+    String status,
+    String indexStatus,
+    String lastPublishedAt,
+    String lastIndexedAt
+  ) {
+    Map<String, Object> metadata = new LinkedHashMap<>(node.metadata() == null ? Map.of() : node.metadata());
+    metadata.put("lifecycleStatus", status);
+    if (lastPublishedAt != null) {
+      metadata.put("lastPublishedAt", lastPublishedAt);
+    }
+
+    return new WikiNode(
+      node.nodeId(),
+      node.slug(),
+      node.title(),
+      node.nodeType(),
+      node.objectType(),
+      node.subtype(),
+      metadata,
+      node.relations(),
+      node.processingProfile(),
+      node.summary(),
+      node.contentMarkdown(),
+      node.tags(),
+      status,
+      node.sourceRefs(),
+      indexStatus,
+      node.incomingCount(),
+      node.outgoingCount(),
+      node.brokenLinkCount(),
+      node.createdAt(),
+      LocalDate.now().toString(),
+      lastIndexedAt
     );
   }
 

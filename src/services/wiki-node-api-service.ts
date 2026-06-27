@@ -1,6 +1,6 @@
 import * as mockService from "@/services/wiki-node-mock-service"
 import { apiDelete, apiGet, apiPatch, apiPost, apiPut, withMockFallback } from "@/services/api-client"
-import type { BrokenLink, GraphEdge, GraphNode, KnowledgeRelation, KnowledgeRelationInput, WikiLink, WikiNode, WikiNodeCreateInput } from "@/types/wiki"
+import type { BrokenLink, GraphEdge, GraphNode, KnowledgeRelation, KnowledgeRelationInput, WikiLink, WikiNode, WikiNodeCreateInput, WikiNodeLifecycleResult } from "@/types/wiki"
 
 export type WikiNodeLinks = {
   outgoingLinks: WikiLink[]
@@ -38,6 +38,36 @@ export async function updateWikiNode(nodeId: string, node: WikiNode) {
   return withMockFallback(
     apiPut<WikiNode>(`/wiki-nodes/${nodeId}`, node),
     () => mockService.updateWikiNode(nodeId, node),
+  )
+}
+
+export function publishWikiNode(nodeId: string) {
+  return withMockFallback(
+    apiPost<WikiNodeLifecycleResult>(`/wiki-nodes/${nodeId}/publish`, {}),
+    () => ({
+      nodeId,
+      status: "published",
+      indexStatus: "outdated",
+      summary: "已发布 WikiNode，并准备本地 Index Segment；外部向量库同步待后续执行。",
+      indexSegmentCount: null,
+      lastPublishedAt: new Date().toISOString().slice(0, 10),
+      lastIndexedAt: null,
+    }) satisfies WikiNodeLifecycleResult,
+  )
+}
+
+export function reindexWikiNode(nodeId: string) {
+  return withMockFallback(
+    apiPost<WikiNodeLifecycleResult>(`/wiki-nodes/${nodeId}/reindex`, {}),
+    () => ({
+      nodeId,
+      status: "published",
+      indexStatus: "outdated",
+      summary: "已重新准备本地 Index Segment；外部向量库同步待后续执行。",
+      indexSegmentCount: null,
+      lastPublishedAt: null,
+      lastIndexedAt: null,
+    }) satisfies WikiNodeLifecycleResult,
   )
 }
 

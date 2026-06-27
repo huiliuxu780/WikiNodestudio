@@ -31,6 +31,24 @@ product_docs:
   IMPLEMENTATION_SLICE_PRINCIPLES:
     file: docs/current/IMPLEMENTATION_SLICE_PRINCIPLES.md
 current_corrections:
+  PUBLISHING_INDEX_LIFECYCLE_LOCAL_EXECUTION:
+    decision: D072
+    story_queue: docs/current/STORY_QUEUE.yaml
+    active_task: docs/current/ACTIVE_TASKS.yaml
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    models:
+      - src/main/java/com/wikinode/studio/model/WikiNodeLifecycleResult.java
+    repository:
+      - src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
+      - src/main/java/com/wikinode/studio/repository/AbstractWikiNodeRepository.java
+    frontend:
+      - src/services/wiki-node-api-service.ts
+      - src/pages/wiki-node-edit-page.tsx
+      - src/types/wiki.ts
+    tests:
+      - src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+      - tests/e2e/mvp-smoke.spec.ts
+    smoke: scripts/api-smoke.sh
   DRAFT_WIKINODE_INDEX_SEGMENT_PREPARATION:
     decision: D071
     story_queue: docs/current/STORY_QUEUE.yaml
@@ -647,6 +665,9 @@ tasks:
   IM071:
     decision: D071
     implementation: DRAFT_WIKINODE_INDEX_SEGMENT_PREPARATION
+  IM072:
+    decision: D072
+    implementation: PUBLISHING_INDEX_LIFECYCLE_LOCAL_EXECUTION
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN

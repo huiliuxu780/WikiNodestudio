@@ -331,6 +331,53 @@ class WikiNodeApiContractTest {
   }
 
   @Test
+  void publishesWikiNodeAndPreparesIndexSegmentsWithoutVectorSync() throws Exception {
+    HttpResponse<String> accept = post("/api/draft-wikinode-suggestions/sug-002/accept", """
+      {
+        "reviewNote": "确认进入草稿 WikiNode，后续人工编辑。"
+      }
+      """);
+    HttpResponse<String> publish = post("/api/wiki-nodes/wn-from-sug-002/publish", "{}");
+    HttpResponse<String> node = get("/api/wiki-nodes/wn-from-sug-002");
+    HttpResponse<String> segments = get("/api/wiki-nodes/wn-from-sug-002/index-segments");
+    HttpResponse<String> reindex = post("/api/wiki-nodes/wn-from-sug-002/reindex", "{}");
+
+    assertThat(accept.statusCode()).isEqualTo(200);
+    assertThat(publish.statusCode()).isEqualTo(200);
+    assertThat(publish.body()).contains("\"nodeId\":\"wn-from-sug-002\"");
+    assertThat(publish.body()).contains("\"status\":\"published\"");
+    assertThat(publish.body()).contains("\"indexStatus\":\"outdated\"");
+    assertThat(publish.body()).contains("\"indexSegmentCount\":3");
+    assertThat(publish.body()).contains("外部向量库同步待后续执行");
+    assertThat(publish.body()).doesNotContain("\"indexSegmentId\"");
+    assertThat(publish.body()).doesNotContain("\"vectorDocId\"");
+    assertThat(publish.body()).doesNotContain("\"embedding\"");
+    assertThat(publish.body()).doesNotContain("\"chunk\"");
+
+    assertThat(node.statusCode()).isEqualTo(200);
+    assertThat(node.body()).contains("\"status\":\"published\"");
+    assertThat(node.body()).contains("\"indexStatus\":\"outdated\"");
+    assertThat(node.body()).contains("\"lifecycleStatus\":\"published\"");
+    assertThat(node.body()).doesNotContain("\"published\":true");
+
+    assertThat(segments.statusCode()).isEqualTo(200);
+    assertThat(segments.body()).contains("\"nodeId\":\"wn-from-sug-002\"");
+    assertThat(segments.body()).contains("\"indexStatus\":\"not_indexed\"");
+    assertThat(segments.body()).contains("\"vectorDocId\":null");
+    assertThat(segments.body()).contains("\"status\":\"published\"");
+    assertThat(segments.body()).doesNotContain("\"embedding\"");
+    assertThat(segments.body()).doesNotContain("\"chunk\"");
+
+    assertThat(reindex.statusCode()).isEqualTo(200);
+    assertThat(reindex.body()).contains("\"nodeId\":\"wn-from-sug-002\"");
+    assertThat(reindex.body()).contains("\"indexStatus\":\"outdated\"");
+    assertThat(reindex.body()).contains("\"indexSegmentCount\":3");
+    assertThat(reindex.body()).contains("外部向量库同步待后续执行");
+    assertThat(reindex.body()).doesNotContain("\"vectorDocId\"");
+    assertThat(reindex.body()).doesNotContain("\"embedding\"");
+  }
+
+  @Test
   void exposesDraftWikiNodeSuggestionsAsReadOnlyReviewEvidence() throws Exception {
     HttpResponse<String> suggestions = get("/api/draft-wikinode-suggestions");
     HttpResponse<String> detail = get("/api/draft-wikinode-suggestions/sug-001");

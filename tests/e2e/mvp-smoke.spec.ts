@@ -89,11 +89,11 @@ test.describe.serial("MVP browser smoke", () => {
     await expect(page.getByLabel("摘要")).toHaveValue("编辑保存后的中文摘要。")
 
     await page.getByRole("button", { name: "发布" }).click()
-    await expect(page.getByText("发布状态已在本地更新")).toBeVisible()
-    await expect(page.getByText("当前任务不调用真实发布服务")).toBeVisible()
+    await expect(page.getByText(/已发布 WikiNode，并准备 \d+ 条 Index Segment/)).toBeVisible()
+    await expect(page.getByText("外部向量库同步待后续执行")).toBeVisible()
     await page.getByRole("button", { name: "重新索引" }).click()
-    await expect(page.getByText("重新索引状态已在本地更新")).toBeVisible()
-    await expect(page.getByText("当前任务不调用真实索引服务")).toBeVisible()
+    await expect(page.getByText(/已重新准备 \d+ 条本地 Index Segment/)).toBeVisible()
+    await expect(page.getByText("外部向量库同步待后续执行")).toBeVisible()
   })
 
   test("Retrieval Test returns WikiNode results and localized no-result state", async ({ page }) => {
@@ -200,6 +200,55 @@ async function routeMutableWikiNodeApiFixture(page: Parameters<typeof routeRetri
 
     const matchIndex = nodes.findIndex((node) => node.nodeId === nodeId || node.slug === nodeId)
     const match = matchIndex >= 0 ? nodes[matchIndex] : null
+
+    if (childResource === "publish" && request.method() === "POST") {
+      if (!match) return route.fulfill({ status: 404, json: { message: "WikiNode not found" } })
+      const published = {
+        ...match,
+        status: "published",
+        publishStatus: "published",
+        reviewStatus: "approved",
+        indexStatus: "outdated",
+        metadata: {
+          ...match.metadata,
+          lifecycleStatus: "published",
+          lastPublishedAt: "2026-06-28",
+        },
+      }
+      nodes[matchIndex] = published
+      return route.fulfill({
+        json: {
+          nodeId: published.nodeId,
+          status: "published",
+          indexStatus: "outdated",
+          summary: "已发布 WikiNode，并准备 3 条 Index Segment；外部向量库同步待后续执行。",
+          indexSegmentCount: 3,
+          lastPublishedAt: "2026-06-28",
+          lastIndexedAt: null,
+        },
+      })
+    }
+
+    if (childResource === "reindex" && request.method() === "POST") {
+      if (!match) return route.fulfill({ status: 404, json: { message: "WikiNode not found" } })
+      const prepared = {
+        ...match,
+        indexStatus: match.status === "published" ? "outdated" : "not_indexed",
+        lastIndexedAt: undefined,
+      }
+      nodes[matchIndex] = prepared
+      return route.fulfill({
+        json: {
+          nodeId: prepared.nodeId,
+          status: prepared.status,
+          indexStatus: prepared.indexStatus,
+          summary: "已重新准备 3 条本地 Index Segment；外部向量库同步待后续执行。",
+          indexSegmentCount: 3,
+          lastPublishedAt: null,
+          lastIndexedAt: null,
+        },
+      })
+    }
 
     if (childResource === "links" || childResource === "backlinks" || childResource === "index-segments") {
       return route.fulfill({ json: [] })

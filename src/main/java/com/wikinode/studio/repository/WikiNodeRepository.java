@@ -30,6 +30,7 @@ import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.WikiGraphOverview;
 import com.wikinode.studio.model.WikiLink;
 import com.wikinode.studio.model.WikiNode;
+import com.wikinode.studio.model.WikiNodeLifecycleResult;
 import com.wikinode.studio.model.WikiNodeUpsertRequest;
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +44,10 @@ public interface WikiNodeRepository {
   WikiNode createNode(WikiNodeUpsertRequest request);
 
   WikiNode updateNode(String nodeId, WikiNodeUpsertRequest request);
+
+  WikiNodeLifecycleResult publishWikiNode(String nodeId);
+
+  WikiNodeLifecycleResult reindexWikiNode(String nodeId);
 
   List<KnowledgeRelation> listKnowledgeRelations(String nodeId);
 

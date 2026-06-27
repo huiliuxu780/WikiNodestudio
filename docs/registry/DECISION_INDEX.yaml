@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D072
+    date: "2026-06-28"
+    title: "Execute local WikiNode publish and reindex lifecycle without vector sync"
+    rationale: "After IM069-IM071 closed the local Source-to-Draft-to-Index-Segment chain, IM072 replaces editor-only publish/reindex mock state with backend lifecycle APIs. It lets one WikiNode publish locally, marks the node as published/outdated, regenerates local Index Segments, and keeps embedding, vector document writes, external vector sync, approval/RBAC, batch/export, Agent, Chatbot, Workflow Builder, Vector DB Management, and product-facing Chunk Management out of scope."
+    related:
+      - IM072
+      - US072
+      - PUBLISHING_INDEX_LIFECYCLE_LOCAL_EXECUTION
+      - DRAFT_WIKINODE_INDEX_SEGMENT_PREPARATION
   - id: D071
     date: "2026-06-28"
     title: "Prepare local Index Segments when accepting a Draft WikiNode Suggestion"

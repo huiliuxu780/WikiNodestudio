@@ -346,6 +346,46 @@ if (JSON.stringify(acceptedNodeSegments).includes("embedding")) {
   throw new Error("GET /api/wiki-nodes/{id}/index-segments: FAIL response exposed forbidden internals")
 }
 
+const publishedLifecycle = await request("POST /api/wiki-nodes/{id}/publish", `/wiki-nodes/${acceptedSuggestion.nodeId ?? "wn-from-sug-002"}/publish`, {
+  method: "POST",
+  body: JSON.stringify({}),
+})
+
+if (
+  acceptedSuggestion.status === "accepted" &&
+  (
+    publishedLifecycle.nodeId !== acceptedSuggestion.nodeId ||
+    publishedLifecycle.status !== "published" ||
+    publishedLifecycle.indexStatus !== "outdated" ||
+    publishedLifecycle.indexSegmentCount !== 3
+  )
+) {
+  throw new Error("POST /api/wiki-nodes/{id}/publish: FAIL expected local publish and Index Segment preparation")
+}
+
+if (JSON.stringify(publishedLifecycle).includes("indexSegmentId") || JSON.stringify(publishedLifecycle).includes("vectorDocId") || JSON.stringify(publishedLifecycle).includes("chunk")) {
+  throw new Error("POST /api/wiki-nodes/{id}/publish: FAIL response exposed forbidden internals")
+}
+
+const publishedNode = await request("GET /api/wiki-nodes/{id} after publish", `/wiki-nodes/${acceptedSuggestion.nodeId ?? "wn-from-sug-002"}`)
+if (acceptedSuggestion.status === "accepted" && (publishedNode.status !== "published" || publishedNode.indexStatus !== "outdated")) {
+  throw new Error("GET /api/wiki-nodes/{id} after publish: FAIL expected published outdated WikiNode")
+}
+
+const publishedNodeSegments = await request("GET /api/wiki-nodes/{id}/index-segments after publish", `/wiki-nodes/${acceptedSuggestion.nodeId ?? "wn-from-sug-002"}/index-segments`)
+if (acceptedSuggestion.status === "accepted" && (!Array.isArray(publishedNodeSegments) || publishedNodeSegments.length !== 3 || publishedNodeSegments.some((segment) => segment.vectorDocId !== null))) {
+  throw new Error("GET /api/wiki-nodes/{id}/index-segments after publish: FAIL expected unsynced local Index Segments")
+}
+
+const reindexLifecycle = await request("POST /api/wiki-nodes/{id}/reindex", `/wiki-nodes/${acceptedSuggestion.nodeId ?? "wn-from-sug-002"}/reindex`, {
+  method: "POST",
+  body: JSON.stringify({}),
+})
+
+if (acceptedSuggestion.status === "accepted" && (reindexLifecycle.indexStatus !== "outdated" || reindexLifecycle.indexSegmentCount !== 3)) {
+  throw new Error("POST /api/wiki-nodes/{id}/reindex: FAIL expected local Index Segment preparation")
+}
+
 const created = await request("POST /api/wiki-nodes", "/wiki-nodes", {
   method: "POST",
   body: JSON.stringify({

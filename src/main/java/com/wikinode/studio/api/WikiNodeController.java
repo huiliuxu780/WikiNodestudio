@@ -30,6 +30,7 @@ import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.WikiGraphOverview;
 import com.wikinode.studio.model.WikiLink;
 import com.wikinode.studio.model.WikiNode;
+import com.wikinode.studio.model.WikiNodeLifecycleResult;
 import com.wikinode.studio.model.WikiNodeUpsertRequest;
 import com.wikinode.studio.repository.WikiNodeRepository;
 import java.io.IOException;
@@ -99,6 +100,26 @@ public class WikiNodeController {
       return repository.updateNode(id, request);
     } catch (IllegalArgumentException error) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, error.getMessage());
+    }
+  }
+
+  @PostMapping("/wiki-nodes/{id}/publish")
+  public WikiNodeLifecycleResult publishWikiNode(@PathVariable String id) {
+    ensureNodeExists(id);
+    try {
+      return repository.publishWikiNode(id);
+    } catch (IllegalArgumentException error) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, error.getMessage());
+    }
+  }
+
+  @PostMapping("/wiki-nodes/{id}/reindex")
+  public WikiNodeLifecycleResult reindexWikiNode(@PathVariable String id) {
+    ensureNodeExists(id);
+    try {
+      return repository.reindexWikiNode(id);
+    } catch (IllegalArgumentException error) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, error.getMessage());
     }
   }
 
