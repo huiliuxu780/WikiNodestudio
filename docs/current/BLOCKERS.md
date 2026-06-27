@@ -6,9 +6,9 @@ None.
 
 ## Active Scope Constraints
 
-- `IM063` may update WikiNode Inspector relation review controls and Playwright coverage.
-- `IM063` must use the existing Knowledge Relation update contract and existing relation note field.
-- `IM063` must not change backend API, Java model, database migrations, package files, dependencies, full approval workflow, permission model, audit persistence, graph behavior, retrieval behavior, Source import, parser execution, vector sync, AI suggestions, batch operations, or repair actions.
+- `IM064` may update Retrieval Test debug evidence, retrieval result frontend types, the frontend mock retrieval service, and Playwright coverage.
+- `IM064` must preserve WikiNode-first Retrieval API results and show Knowledge Relations only as debug evidence context.
+- `IM064` must not change backend API, Java model, database migrations, package files, dependencies, Chat API behavior, answer generation, raw chunk-first output, external vector database implementation, embedding, parser execution, vector sync, Source import, permission model, approval workflow, batch operations, export, or repair actions.
 - Future frontend work must follow `docs/quality/frontend-ux-guidelines.md`.
 
 ## Standing Constraints

@@ -1,4 +1,4 @@
-import type { WikiLink, WikiNode } from "@/types/wiki"
+import type { KnowledgeRelationType, WikiLink, WikiNode } from "@/types/wiki"
 
 export type RetrievalQuery = {
   query: string
@@ -29,6 +29,17 @@ export type RetrievalResult = {
       label: string
       value: string
     }>
+  }[]
+  matchedRelations?: {
+    relationId?: string
+    relationType: KnowledgeRelationType
+    sourceNodeId?: string
+    targetNodeId?: string
+    targetTitle: string
+    status?: "active" | "broken" | "pending_review" | "rejected"
+    source?: "markdown_link" | "manual" | "import" | "system" | "api"
+    score?: number
+    evidenceSummary?: string
   }[]
 }
 

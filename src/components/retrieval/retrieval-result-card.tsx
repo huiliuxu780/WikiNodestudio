@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { IndexStatusBadge } from "@/components/wiki/index-status-badge"
+import { MatchedRelationList } from "@/components/retrieval/matched-relation-list"
 import { MatchedSegmentList } from "@/components/retrieval/matched-segment-list"
 import { NodeTypeBadge } from "@/components/wiki/node-type-badge"
 import { StatusBadge } from "@/components/wiki/status-badge"
@@ -17,6 +18,7 @@ export function RetrievalResultCard({ result }: { result: RetrievalResult }) {
   const outgoingLinks = result.outgoingLinks ?? []
   const incomingLinks = result.incomingLinks ?? []
   const matchedSegments = result.matchedSegments ?? []
+  const matchedRelations = result.matchedRelations ?? []
 
   return (
     <Card>
@@ -50,6 +52,7 @@ export function RetrievalResultCard({ result }: { result: RetrievalResult }) {
           value={`出链：${outgoingLinks.map((link) => link.targetTitle).join("、") || commonLabels.none}；入链：${incomingLinks.map((link) => link.fromTitle).join("、") || commonLabels.none}`}
         />
         {matchedSegments.length ? <MatchedSegmentList segments={matchedSegments} /> : null}
+        {matchedRelations.length ? <MatchedRelationList relations={matchedRelations} /> : null}
         <div className="rounded-md border bg-muted/30 p-3">
           <div className="mb-1 text-xs font-medium text-muted-foreground">正文摘录</div>
           <p className="line-clamp-3 text-muted-foreground">{result.node.contentMarkdown}</p>

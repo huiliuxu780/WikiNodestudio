@@ -32,6 +32,11 @@ test.describe("Retrieval Test debug experience", () => {
 
     await expect(page.getByText("命中的 Index Segment").first()).toBeVisible()
     await expect(page.getByText("SEG-").first()).toBeVisible()
+    await expect(page.getByText("命中的 Knowledge Relation").first()).toBeVisible()
+    await expect(page.getByText("适用于").first()).toBeVisible()
+    await expect(page.getByText("替代").first()).toBeVisible()
+    await expect(page.getByText("冲突").first()).toBeVisible()
+    await expect(page.getByText("来源关系用于解释 WikiNode 的证据出处。").first()).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
   })
 
