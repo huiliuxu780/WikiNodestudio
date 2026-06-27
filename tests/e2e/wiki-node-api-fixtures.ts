@@ -12,6 +12,8 @@ type FixtureWikiNode = {
     id: string
     targetNodeId: string
     relationType: string
+    status?: string
+    source?: string
     direction: string
     confidence: number
     createdBy: string

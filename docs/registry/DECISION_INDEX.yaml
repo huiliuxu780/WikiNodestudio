@@ -1,5 +1,15 @@
 version: 1
 decisions:
+  - id: D061
+    date: "2026-06-27"
+    title: "Complete WikiGraph relation filtering and edge semantics on the existing canvas"
+    rationale: "IM061 adds relation type and relation status filters, normal/conflict/broken edge visual treatment, an in-canvas legend, and edge-click relation detail to the existing React Flow WikiGraph. The work stays frontend-only on the current graph builder and fixtures, without backend API changes, Java model changes, database migrations, graph database work, new layout algorithms, dependencies, retrieval behavior, relation governance, repair actions, packages, or lockfile changes."
+    related:
+      - IM061
+      - US061
+      - WIKIGRAPH_RELATION_FILTER_AND_LEGEND_COMPLETION
+      - KNOWLEDGE_RELATION_REQUIREMENT_TRACE
+      - MARKDOWN_WIKILINK_RELATION_MAPPING_HARDENING
   - id: D060
     date: "2026-06-27"
     title: "Harden Markdown WikiLink evidence mapping without changing the backend contract"

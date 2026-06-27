@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { WikiLink, WikiNode } from "@/types/wiki"
 import type { KnowledgeGraphEdge } from "@/utils/knowledge-graph"
-import { commonLabels, indexStatusLabels, labelFromMap, metadataLabels, objectTypeLabels, relationTypeLabels, statusLabels, subtypeLabels } from "@/utils/display-labels"
+import { commonLabels, indexStatusLabels, labelFromMap, metadataLabels, objectTypeLabels, relationSourceLabels, relationStatusLabels, relationTypeLabels, statusLabels, subtypeLabels } from "@/utils/display-labels"
 
 export function GraphInspector({
   node,
@@ -15,6 +15,7 @@ export function GraphInspector({
   incomingWikiLinks,
   outgoingWikiLinks,
   brokenLinks,
+  selectedEdge,
 }: {
   node?: WikiNode
   incomingRelations: KnowledgeGraphEdge[]
@@ -22,6 +23,7 @@ export function GraphInspector({
   incomingWikiLinks: WikiLink[]
   outgoingWikiLinks: WikiLink[]
   brokenLinks: WikiLink[]
+  selectedEdge?: KnowledgeGraphEdge
 }) {
   if (!node) {
     return (
@@ -61,6 +63,20 @@ export function GraphInspector({
         <PanelSection title="关键元数据">
           <InfoGrid rows={metadataRows(node)} />
         </PanelSection>
+        {selectedEdge ? (
+          <PanelSection title="关系详情">
+            <div data-testid="wiki-graph-edge-detail" className="rounded-md border bg-background p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={selectedEdge.resolved ? "outline" : "destructive"}>{labelFromMap(relationTypeLabels, selectedEdge.relationType)}</Badge>
+                <Badge variant={selectedEdge.status === "broken" ? "destructive" : "secondary"}>{labelFromMap(relationStatusLabels, selectedEdge.status)}</Badge>
+                <Badge variant="outline">{labelFromMap(relationSourceLabels, selectedEdge.source)}</Badge>
+              </div>
+              <div className="mt-2 text-xs text-muted-foreground">
+                {selectedEdge.sourceTitle} {"->"} {selectedEdge.targetTitle}
+              </div>
+            </div>
+          </PanelSection>
+        ) : null}
         <PanelSection title="出向关系">
           <RelationList edges={outgoingRelations} emptyText="暂无出向语义关系。" />
         </PanelSection>
