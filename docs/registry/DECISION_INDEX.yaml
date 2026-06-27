@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D067
+    date: "2026-06-27"
+    title: "Record full requirement completion audit after MVP evidence-console closure"
+    rationale: "After IM066 closed the remaining locally implementable MVP evidence surfaces, the user challenged whether the full requirement document was actually complete. IM067 records the current completion truth: the local MVP baseline and Knowledge Relation MVP scope are complete, but the full product requirements remain incomplete. It classifies major product areas as Done, MVP Done, Partial, or Deferred / Hard Stop, recommends larger future product capability packets, and avoids pretending that evidence consoles equal production execution. The task changes only current and registry documentation and does not modify frontend code, backend API, Java model, database migrations, package files, dependencies, tests, runtime behavior, Source import, parser execution, embedding, vector sync, permissions, approval, audit, export, batch operations, Agent, Chatbot, Workflow Builder, Vector DB Management, or Chunk Management."
+    related:
+      - IM067
+      - REQUIREMENT_COMPLETION_AUDIT
+      - MVP_SCOPE_COMPLETION_SWEEP
+      - KNOWLEDGE_RELATION_REQUIREMENT_TRACE
   - id: D066
     date: "2026-06-27"
     title: "Close remaining MVP frontend placeholders as dense evidence consoles"
