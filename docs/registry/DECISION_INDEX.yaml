@@ -1,5 +1,15 @@
 version: 1
 decisions:
+  - id: D064
+    date: "2026-06-27"
+    title: "Add relation-aware Retrieval debug evidence while preserving WikiNode-first results"
+    rationale: "IM064 adds optional matchedRelations debug evidence to Retrieval Test result cards and frontend mock retrieval results so Knowledge Relations can explain APPLIES_TO, REPLACES, CONFLICTS_WITH, and DERIVED_FROM retrieval context. The primary result remains a WikiNode, and the work does not add Chat API, answer generation, raw chunk-first output, external vector database implementation, backend API changes, Java model changes, database migrations, packages, dependencies, parser execution, vector sync, Source import, permissions, approval workflow, batch operations, export, or repair actions."
+    related:
+      - IM064
+      - US064
+      - RELATION_AWARE_RETRIEVAL_EVIDENCE
+      - KNOWLEDGE_RELATION_REQUIREMENT_TRACE
+      - RETRIEVAL_API_DEBUG_EVIDENCE
   - id: D063
     date: "2026-06-27"
     title: "Add lightweight Knowledge Relation review controls without new governance backend"

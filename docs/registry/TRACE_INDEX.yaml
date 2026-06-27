@@ -369,6 +369,16 @@ phase2_plans:
     previous_broken_link_governance: BROKEN_LINK_GOVERNANCE_ACTIONS
     inspector: src/components/wiki/wiki-node-inspector.tsx
     playwright: tests/e2e/wikinode-knowledge-object-metadata.spec.ts
+  RELATION_AWARE_RETRIEVAL_EVIDENCE:
+    decision: D064
+    requirement_trace: KNOWLEDGE_RELATION_REQUIREMENT_TRACE
+    previous_relation_review: RELATION_REVIEW_AND_GOVERNANCE
+    type_contract: src/types/retrieval.ts
+    result_card: src/components/retrieval/retrieval-result-card.tsx
+    relation_evidence_component: src/components/retrieval/matched-relation-list.tsx
+    mock_service: src/services/retrieval-mock-service.ts
+    fixtures: tests/e2e/retrieval-api-fixtures.ts
+    playwright: tests/e2e/retrieval-test-debug.spec.ts
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
@@ -494,6 +504,9 @@ tasks:
   IM063:
     decision: D063
     implementation: RELATION_REVIEW_AND_GOVERNANCE
+  IM064:
+    decision: D064
+    implementation: RELATION_AWARE_RETRIEVAL_EVIDENCE
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN

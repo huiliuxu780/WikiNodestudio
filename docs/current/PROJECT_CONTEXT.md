@@ -28,7 +28,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-The current executable slice is `IM063 Relation Review and Governance`. IM063 adds lightweight confirm and reject controls for pending or conflict Knowledge Relations in the WikiNode Inspector by reusing the existing relation update contract and relation note field. It does not add a full approval workflow, permission model, audit persistence, backend API, database migration, Java model, package, dependency, batch operation, repair action, AI suggestion, retrieval behavior, parser execution, vector sync, or Source import behavior.
+The current executable slice is `IM064 Relation-Aware Retrieval Evidence`. IM064 adds `matchedRelations` debug evidence to Retrieval Test so Knowledge Relations can explain why a WikiNode result was returned. The primary Retrieval API result remains WikiNode-first. It does not add Chat API, answer generation, raw chunk-first output, external vector database implementation, backend API changes, database migrations, Java model changes, package changes, dependency changes, parser execution, vector sync, Source import, permissions, approval workflow, batch operations, or export behavior.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -59,4 +59,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Current recommended next step: complete `IM063 Relation Review and Governance`, then continue with the next medium-sized requirement packet from `docs/current/KNOWLEDGE_RELATION_REQUIREMENT_TRACE.md` after merge.
+Current recommended next step: complete `IM064 Relation-Aware Retrieval Evidence`, then close the Knowledge Relation PRD follow-up sequence or define the next medium-sized packet from current product requirements after merge.
