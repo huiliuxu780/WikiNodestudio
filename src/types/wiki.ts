@@ -165,6 +165,8 @@ export type WikiLink = {
   toNodeId?: string
   toTitle?: string
   targetTitle: string
+  targetSlug?: string
+  anchorText?: string
   relationType:
     | "references"
     | "reference"
@@ -177,6 +179,8 @@ export type WikiLink = {
     | "similar_to"
     | "parent_of"
     | "used_by"
+  source?: "markdown_link"
+  status?: "active" | "broken"
   resolved: boolean
 }
 

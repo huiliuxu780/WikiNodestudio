@@ -6,9 +6,9 @@ None.
 
 ## Active Scope Constraints
 
-- `IM059` may update the WikiNode Inspector relation editor experience and its Playwright coverage.
-- `IM059` must keep Knowledge Relation editing within WikiNode targets and the existing frontend/backend contract.
-- `IM059` must not change backend API, Java model, database migrations, package files, dependencies, graph behavior, Broken Link actions, retrieval behavior, approvals, permissions, Source import, parser execution, vector sync, AI suggestions, batch operations, or non-WikiNode relation target mutation.
+- `IM060` may update frontend WikiLink evidence mapping, display typing, and Playwright coverage for saved Markdown WikiLinks.
+- `IM060` must preserve existing `[[target]]` and `[[target|anchor]]` Markdown syntax and keep manual Knowledge Relation editing separate from Markdown write-back.
+- `IM060` must not change backend API, Java model, database migrations, package files, dependencies, graph behavior, Broken Link repair actions, retrieval behavior, approvals, permissions, Source import, parser execution, vector sync, AI suggestions, batch operations, or forced manual-relation Markdown write-back.
 - Future frontend work must follow `docs/quality/frontend-ux-guidelines.md`.
 
 ## Standing Constraints

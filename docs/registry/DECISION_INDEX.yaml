@@ -1,5 +1,15 @@
 version: 1
 decisions:
+  - id: D060
+    date: "2026-06-27"
+    title: "Harden Markdown WikiLink evidence mapping without changing the backend contract"
+    rationale: "IM060 preserves existing [[target]] and [[target|anchor]] Markdown WikiLink syntax while making saved Markdown-derived relations clearer in the WikiNode Inspector. The frontend enriches WikiLink evidence with anchor text, target identifier, resolved target, relation source, and relation status, and Playwright covers resolved and unresolved WikiLinks after save. The task does not force manual Knowledge Relations back into Markdown and does not change backend API, Java model, database migrations, graph filters, retrieval behavior, relation governance, repair actions, packages, or dependencies."
+    related:
+      - IM060
+      - US060
+      - MARKDOWN_WIKILINK_RELATION_MAPPING_HARDENING
+      - KNOWLEDGE_RELATION_REQUIREMENT_TRACE
+      - KNOWLEDGE_RELATION_EDITOR_EXPERIENCE_COMPLETION
   - id: D059
     date: "2026-06-27"
     title: "Complete Knowledge Relation editor experience inside the existing WikiNode contract"
