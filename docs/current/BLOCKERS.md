@@ -6,8 +6,9 @@ None.
 
 ## Active Scope Constraints
 
-- `IM058` may update current and registry documentation to reconcile the external Knowledge Relation Management PRD with the implemented IM056 and IM057 baselines.
-- `IM058` must not change source code, tests, backend API, Java model, database migrations, frontend behavior, package files, dependencies, relation operations, graph behavior, Broken Link actions, retrieval behavior, approvals, permissions, Source import, parser execution, vector sync, or AI suggestions.
+- `IM059` may update the WikiNode Inspector relation editor experience and its Playwright coverage.
+- `IM059` must keep Knowledge Relation editing within WikiNode targets and the existing frontend/backend contract.
+- `IM059` must not change backend API, Java model, database migrations, package files, dependencies, graph behavior, Broken Link actions, retrieval behavior, approvals, permissions, Source import, parser execution, vector sync, AI suggestions, batch operations, or non-WikiNode relation target mutation.
 - Future frontend work must follow `docs/quality/frontend-ux-guidelines.md`.
 
 ## Standing Constraints

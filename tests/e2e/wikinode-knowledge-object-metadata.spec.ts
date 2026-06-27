@@ -111,25 +111,63 @@ test.describe("WikiNode Knowledge Object metadata surface", () => {
     const inspector = page.getByTestId("wikinode-inspector")
     await inspector.getByRole("tab", { name: "关联关系" }).click()
     await inspector.getByRole("button", { name: "添加关系" }).click()
-    await inspector.getByLabel("目标 WikiNode").selectOption("wn-002")
-    await inspector.getByLabel("关系类型").selectOption("applies_to")
-    await inspector.getByLabel("关系说明").fill("适用于收费政策。")
-    await inspector.getByRole("button", { name: "保存关系" }).click()
+    const relationPanel = page.getByRole("dialog", { name: "添加知识关系" })
+    await expect(relationPanel).toBeVisible()
+    await expect(relationPanel).toContainText("目标对象类型")
+    await expect(relationPanel).toContainText("WikiNode")
+    await relationPanel.getByLabel("搜索目标 WikiNode").fill("收费")
+    await relationPanel.getByRole("button", { name: "收费政策" }).click()
+    await relationPanel.getByLabel("关系类型").selectOption("applies_to")
+    await relationPanel.getByLabel("关系状态").selectOption("pending_review")
+    await relationPanel.getByLabel("关系说明").fill("适用于收费政策。")
+    await relationPanel.getByRole("button", { name: "保存关系" }).click()
 
     await expect(inspector).toContainText("适用于")
+    await expect(inspector).toContainText("待确认")
     await expect(inspector).toContainText("适用于收费政策。")
 
-    await inspector.getByRole("button", { name: "编辑关系" }).first().click()
-    await inspector.getByLabel("关系类型").selectOption("conflicts_with")
-    await inspector.getByLabel("关系说明").fill("冲突关系需要复核。")
-    await inspector.getByRole("button", { name: "保存关系" }).click()
+    const createdRelation = inspector
+      .getByTestId("knowledge-relation-card")
+      .filter({ hasText: "适用于收费政策。" })
+    await createdRelation.getByRole("button", { name: "编辑关系" }).click()
+    const editPanel = page.getByRole("dialog", { name: "编辑知识关系" })
+    await expect(editPanel).toBeVisible()
+    await editPanel.getByLabel("关系类型").selectOption("conflicts_with")
+    await editPanel.getByLabel("关系状态").selectOption("active")
+    await editPanel.getByLabel("关系说明").fill("冲突关系需要复核。")
+    await editPanel.getByRole("button", { name: "保存关系" }).click()
 
+    await expect(page.getByText("关系已更新")).toBeVisible()
     await expect(inspector).toContainText("冲突")
     await expect(inspector).toContainText("冲突关系需要复核。")
+    await expect(inspector).toContainText("风险关系")
 
-    await inspector.getByRole("button", { name: "删除关系" }).first().click()
+    const updatedRelation = inspector
+      .getByTestId("knowledge-relation-card")
+      .filter({ hasText: "冲突关系需要复核。" })
+    await updatedRelation.getByRole("button", { name: "删除关系" }).click()
 
     await expect(inspector).not.toContainText("冲突关系需要复核。")
+    await expect(page.getByText("关系已删除")).toBeVisible()
+  })
+
+  test("editor inspector groups structured Knowledge Relations by semantic section", async ({ page }) => {
+    await routeDefaultWikiNodeApi(page)
+    await page.goto("/wiki-nodes/wn-001")
+
+    const inspector = page.getByTestId("wikinode-inspector")
+    await inspector.getByRole("tab", { name: "关联关系" }).click()
+
+    await inspector.getByRole("button", { name: "添加关系" }).click()
+    const relationPanel = page.getByRole("dialog", { name: "添加知识关系" })
+    await relationPanel.getByRole("button", { name: "收费政策" }).click()
+    await relationPanel.getByLabel("关系类型").selectOption("applies_to")
+    await relationPanel.getByRole("button", { name: "保存关系" }).click()
+
+    await expect(inspector.getByRole("heading", { name: "适用范围" })).toBeVisible()
+    await expect(inspector.getByRole("heading", { name: "引用知识" })).toBeVisible()
+    await expect(inspector.getByRole("heading", { name: "正文双链" })).toBeVisible()
+    await expect(inspector.getByText("收费政策").first()).toBeVisible()
   })
 })
 
