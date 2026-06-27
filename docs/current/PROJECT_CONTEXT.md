@@ -28,7 +28,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-The current executable slice is `IM057 Knowledge Relation Management Mutation Baseline`. IM057 implements the first write-capable Knowledge Relation baseline: single-relation create, update, delete, and list operations under a WikiNode, backed by repository/API/database/frontend service changes and WikiNode Inspector UI. It keeps Markdown WikiLink and Broken Link evidence separate from structured Knowledge Relation mutation and does not add batch operations, approvals, AI suggestions, Source import, parser execution, vector sync, permissions, packages, or dependencies.
+The current executable slice is `IM058 Knowledge Relation Requirement Reconciliation`. IM058 reconciles the external Knowledge Relation Management PRD with the current IM056 and IM057 baselines, documents which PRD requirements are done, partial, or not started, and defines medium-sized future packets for the remaining relation editor, Markdown mapping, WikiGraph, Broken Links governance, relation review, and retrieval-evidence work. It does not change source code, backend API, database migrations, frontend behavior, tests, packages, or dependencies.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -59,4 +59,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Current recommended next step: complete `IM057 Knowledge Relation Management Mutation Baseline`. IM057 should verify the single Knowledge Relation CRUD path across repository, API contract, WikiNode Inspector, Playwright, and state checks while keeping batch operations, approvals, AI suggestions, Source import, parser execution, vector sync, permissions, packages, and dependencies out of scope.
+Current recommended next step: complete `IM058 Knowledge Relation Requirement Reconciliation`. IM058 should add a requirement trace, update current and registry state, and leave all implementation for later explicitly confirmed medium-sized packets.

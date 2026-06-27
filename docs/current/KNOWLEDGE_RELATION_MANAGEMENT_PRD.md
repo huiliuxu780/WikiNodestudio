@@ -4,6 +4,8 @@ Task: `IM056 Knowledge Relation Management Read Surface`
 
 Date: 2026-06-27
 
+Status note: This document is the IM056 read-surface baseline, not the full requirement completion record. After IM057, single Knowledge Relation CRUD exists, but the external PRD is still only partially complete. Use `docs/current/KNOWLEDGE_RELATION_REQUIREMENT_TRACE.md` for the current requirement completion matrix and remaining packet plan.
+
 ## Purpose
 
 This document turns the external `Knowledge Relation Management PRD` into the current WikiNode Studio execution baseline and implementation plan.

@@ -6,8 +6,8 @@ None.
 
 ## Active Scope Constraints
 
-- `IM057` may add the backend, repository, database migration, frontend service, WikiNode Inspector UI, and tests required for single Knowledge Relation create/update/delete/list operations under one WikiNode.
-- `IM057` must not add batch relation operations, approval workflow, AI relation suggestions, graph algorithms, Broken Link repair/create/associate/ignore actions, Source import, parser execution, vector retrieval changes, permissions, package changes, or new dependencies.
+- `IM058` may update current and registry documentation to reconcile the external Knowledge Relation Management PRD with the implemented IM056 and IM057 baselines.
+- `IM058` must not change source code, tests, backend API, Java model, database migrations, frontend behavior, package files, dependencies, relation operations, graph behavior, Broken Link actions, retrieval behavior, approvals, permissions, Source import, parser execution, vector sync, or AI suggestions.
 - Future frontend work must follow `docs/quality/frontend-ux-guidelines.md`.
 
 ## Standing Constraints

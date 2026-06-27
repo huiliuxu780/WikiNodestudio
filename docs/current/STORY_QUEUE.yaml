@@ -6,15 +6,15 @@ notes:
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
 stories:
-  - id: US057
-    title: "Knowledge relation management mutation baseline"
+  - id: US058
+    title: "Knowledge relation requirement reconciliation"
     status: in_progress
-    goal: "Make one Knowledge Relation editable from a WikiNode while preserving the current WikiNode-centered model and relation read surface."
+    goal: "Reconcile the external Knowledge Relation Management PRD with current IM056 and IM057 implementation, and define remaining medium-sized capability packets."
     acceptance:
-      - "Adds backend, repository, migration, and API support for single Knowledge Relation create, update, delete, and list operations scoped to one WikiNode."
-      - "WikiNode Inspector supports adding, editing, and deleting one structured Knowledge Relation with target WikiNode, relation type, manual source, status, note, and evidence link."
-      - "The existing Markdown WikiLink and Broken Link read surfaces remain separate from the structured Knowledge Relation mutation path."
-      - "Repository, API contract, frontend build, and Playwright coverage validate the single-relation mutation path."
-      - "No batch relation operations, approval workflow, AI suggestion, Source import, parser execution, vector sync, permissions, package change, or dependency change."
+      - "Adds a current requirement trace that maps PRD acceptance items, user stories, and phase recommendations to Done, Partial, Not started, and next-packet status."
+      - "Documents that IM056 and IM057 do not complete the full Knowledge Relation Management PRD."
+      - "Defines remaining medium-sized implementation packets for relation editor completion, Markdown mapping, WikiGraph filters, Broken Links governance, relation review, and relation-aware retrieval evidence."
+      - "Updates current and registry state so future work starts from the reconciled requirement trace rather than the older IM056 read-surface plan."
+      - "No source code, backend, database, API, frontend behavior, package, lockfile, dependency, or test implementation changes."
     non_goals:
-      - "No batch create/update/delete, relation approval workflow, relation suggestion, automatic conflict resolution, graph algorithm, Broken Link repair action, Source import, parser execution, vector retrieval change, AI relation suggestion, permission flow, package change, or dependency change."
+      - "No relation UI implementation, relation API change, database migration, graph change, Broken Link action, retrieval change, approval flow, Source import, parser execution, AI suggestion, permission flow, package change, or dependency change."
