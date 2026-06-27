@@ -12,6 +12,32 @@ Note: this review is documentation-only. It does not include the unmerged pushed
 
 This document was originally written against the IM010 baseline. The section below is the current v0.2 correction after IM014 through IM022 and supersedes older rows where they conflict.
 
+## 0.1 Current MVP Scope Completion Update (IM066)
+
+This document is historical below this section. IM066 recalibrates the remaining MVP frontend evidence surfaces after IM014 through IM065 and supersedes older `Visual Skeleton` rows where they conflict.
+
+Current correction:
+
+- Source Operation pages (`/sources/sync-jobs`, `/sources/sync-logs`) now render dense evidence consoles over existing Source Operation records.
+- Index Jobs (`/index-jobs`) now renders an Index Segment evidence table instead of generic route cards.
+- Vector Sync (`/vector-sync`) now renders external vector-store sync evidence centered on Index Segment and vector document IDs, without implementing real sync.
+- Retrieval Debug (`/retrieval-debug`) now renders the `Query -> Index Segment -> WikiNode` evidence chain and keeps `matchedRelations` as debug evidence.
+- System Health (`/system/health`) now summarizes WikiNode API, Index Segment evidence, Retrieval API evidence, and Source Operation evidence.
+- Admin Users, Roles, Permissions, and Audit Logs now render dense collaboration, role, permission-dimension, and audit-evidence tables without permission enforcement or audit persistence.
+- The UI rule for future B2B/governance pages is now explicit: use compact tables, lists, summary strips, or side panels; do not use AI-style explainer-card stacks as the primary page design.
+
+Still deferred by standing stop conditions:
+
+- Real Source import, file upload, parser execution, embedding, vector-store sync, publish approval, auth, permission enforcement, audit persistence, export, batch operations, backend API expansion, Java model changes, database migrations, package changes, dependencies, Agent, Chatbot, Chat API, Workflow Builder, Vector DB Management, and Chunk Management.
+
+| Area | IM066 status | Evidence | Remaining gap |
+|---|---|---|---|
+| Source Operation | Functional Mock | `src/pages/skeleton-pages.tsx`, `src/services/source-api-service.ts`, `tests/e2e/frontend-skeleton.spec.ts` | Real Source import, upload, sync execution, parser execution, and external storage access remain deferred. |
+| Index Jobs and Vector Sync | Functional Mock | Index Segment evidence tables and vector document ID display. | Real job lifecycle, embedding invocation, and vector-store writes remain deferred. |
+| Retrieval Debug | Functional Mock | Query, matched Index Segment, returned WikiNode, and matchedRelations evidence are visible. | Backend retrieval trace and real scoring remain deferred. |
+| System Health | Functional Mock | Health evidence table across WikiNode, Index Segment, Retrieval API, and Source Operation. | Real service health API and monitoring remain deferred. |
+| Admin | Functional Mock | User, role, permission-dimension, and audit-evidence tables. | Auth, RBAC backend, permission enforcement, audit persistence, and admin write actions remain deferred. |
+
 Current main evidence:
 
 - `948ad67 Merge IM014 frontend localization and UX feedback baseline`

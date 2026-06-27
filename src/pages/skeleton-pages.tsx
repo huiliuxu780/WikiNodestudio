@@ -39,11 +39,13 @@ import {
   listParsedDocumentsForRawMaterial,
   listRawMaterials,
   listRawMaterialsForSource,
+  listSourceOperations,
   listSourceOperationsForRawMaterial,
   listSourceOperationsForSource,
   rejectDraftWikiNodeSuggestion,
   retryDraftWikiNodeSuggestion,
 } from "@/services/source-api-service"
+import type { IndexSegment } from "@/types/index-segment"
 import type { ParserProfile } from "@/types/parser-profile"
 import type { DraftWikiNodeSuggestion } from "@/types/draft-wikinode-suggestion"
 import type { ParsedDocument, RawMaterial } from "@/types/raw-material"
@@ -1035,18 +1037,37 @@ export function SegmentDebugPage() {
 
 export function GenericSkeletonPage({ title, description }: { title: keyof typeof routeCards | string; description?: string }) {
   const isQualityIssuePage = title === "质量问题"
+  const isSourceOperationPage = title === "同步任务" || title === "同步日志"
+  const isIndexJobPage = title === "索引任务"
+  const isVectorSyncPage = title === "外部向量库同步"
+  const isRetrievalDebugPage = title === "召回调试"
+  const isSystemHealthPage = title === "系统健康"
+  const isAdminPage = title === "用户" || title === "角色" || title === "权限" || title === "审计日志"
+  const usesEvidenceConsole = isQualityIssuePage
+    || isSourceOperationPage
+    || isIndexJobPage
+    || isVectorSyncPage
+    || isRetrievalDebugPage
+    || isSystemHealthPage
+    || isAdminPage
   const pageDescription = isQualityIssuePage
     ? "集中查看影响 WikiNode、WikiLink、来源证据、Index Segment 和召回质量的风险线索。"
     : description ?? "查看 WikiNode Studio 对应模块的业务对象、状态和证据。"
 
   return (
     <PageScaffold title={title} description={pageDescription}>
-      {isQualityIssuePage ? null : (
+      {usesEvidenceConsole ? null : (
         <SimpleList items={(routeCards as Record<string, string[]>)[title] ?? ["业务对象", "状态", "证据"]} />
       )}
       <SkeletonBoundaryContent title={title} />
       <RetrievalEvaluationConsoleContent title={title} />
       {isQualityIssuePage ? <QualityIssueConsole issues={mockQualityIssues} /> : null}
+      {isSourceOperationPage ? <SourceOperationEvidenceConsole mode={title === "同步任务" ? "jobs" : "logs"} /> : null}
+      {isIndexJobPage ? <IndexJobEvidenceConsole /> : null}
+      {isVectorSyncPage ? <VectorSyncEvidenceConsole /> : null}
+      {isRetrievalDebugPage ? <RetrievalDebugEvidenceConsole /> : null}
+      {isSystemHealthPage ? <SystemHealthEvidenceConsole /> : null}
+      {isAdminPage ? <AdminEvidenceConsole title={title} /> : null}
     </PageScaffold>
   )
 }
@@ -1209,6 +1230,437 @@ function BoundaryCard({ title, items }: { title: string; items: string[] }) {
       </CardContent>
     </Card>
   )
+}
+
+function SourceOperationEvidenceConsole({ mode }: { mode: "jobs" | "logs" }) {
+  const {
+    data: operations,
+    error,
+    isLoading,
+    reload,
+  } = useAsyncData(listSourceOperations, [], [mode])
+  const succeededCount = operations.filter((operation) => operation.status === "succeeded").length
+  const failedCount = operations.filter((operation) => operation.status === "failed").length
+
+  return (
+    <div className="grid gap-4">
+      <ApiErrorNotice error={error} title="加载 Source Operation 失败" onRetry={reload} />
+      <SummaryGrid items={[
+        ["操作总数", isLoading ? "加载中..." : `${operations.length} 条`],
+        ["已完成", isLoading ? "加载中..." : `${succeededCount} 条`],
+        ["异常", isLoading ? "加载中..." : `${failedCount} 条`],
+        ["关联对象", "Source / Raw Material / Parsed Document"],
+      ]} />
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{mode === "jobs" ? "Source Operation 控制台" : "Source Operation 日志"}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? <LoadingBlock text="正在加载 Source Operation..." /> : null}
+          {!isLoading && operations.length === 0 ? <LoadingBlock text="暂无 Source Operation 记录。" /> : null}
+          {operations.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[900px] text-left text-sm">
+                <thead className="border-b text-xs text-muted-foreground">
+                  <tr>
+                    <th className="px-3 py-2 font-medium">操作 ID</th>
+                    <th className="px-3 py-2 font-medium">操作类型</th>
+                    <th className="px-3 py-2 font-medium">状态</th>
+                    <th className="px-3 py-2 font-medium">Source</th>
+                    <th className="px-3 py-2 font-medium">Raw Material</th>
+                    <th className="px-3 py-2 font-medium">Parsed Document</th>
+                    <th className="px-3 py-2 font-medium">开始时间</th>
+                    <th className="px-3 py-2 font-medium">{mode === "jobs" ? "摘要" : "日志摘要"}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {operations.map((operation) => (
+                    <tr key={operation.operationId} className="align-top">
+                      <td className="whitespace-nowrap px-3 py-3 font-medium">{operation.operationId}</td>
+                      <td className="whitespace-nowrap px-3 py-3">{labelFromMap(sourceOperationTypeLabels, operation.operationType)}</td>
+                      <td className="whitespace-nowrap px-3 py-3">
+                        <Badge variant={operation.status === "failed" ? "destructive" : "secondary"}>
+                          {labelFromMap(sourceOperationStatusLabels, operation.status)}
+                        </Badge>
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-3 text-muted-foreground">{operation.sourceId}</td>
+                      <td className="whitespace-nowrap px-3 py-3 text-muted-foreground">{operation.rawMaterialId ?? "-"}</td>
+                      <td className="whitespace-nowrap px-3 py-3 text-muted-foreground">{operation.parsedDocumentId ?? "-"}</td>
+                      <td className="whitespace-nowrap px-3 py-3 text-muted-foreground">{operation.startedAt}</td>
+                      <td className="min-w-[260px] px-3 py-3 text-muted-foreground">
+                        <div>{operation.summary}</div>
+                        {operation.errorSummary ? (
+                          <div className="mt-1 font-medium text-destructive">{operation.errorSummary}</div>
+                        ) : null}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+function IndexJobEvidenceConsole() {
+  const {
+    data: segments,
+    error,
+    isLoading,
+    reload,
+  } = useAsyncData(listIndexSegments, [])
+  const indexedCount = segments.filter((segment) => segment.indexStatus === "indexed").length
+  const outdatedCount = segments.filter((segment) => segment.indexStatus === "outdated").length
+  const failedCount = segments.filter((segment) => segment.indexStatus === "failed").length
+
+  return (
+    <div className="grid gap-4">
+      <ApiErrorNotice error={error} title="加载 Index Segment 失败" onRetry={reload} />
+      <SummaryGrid items={[
+        ["Index Segment", isLoading ? "加载中..." : `${segments.length} 个`],
+        ["已索引", isLoading ? "加载中..." : `${indexedCount} 个`],
+        ["待更新", isLoading ? "加载中..." : `${outdatedCount} 个`],
+        ["索引失败", isLoading ? "加载中..." : `${failedCount} 个`],
+      ]} />
+      <IndexSegmentEvidenceTable title="Index Segment 索引任务" segments={segments} isLoading={isLoading} />
+    </div>
+  )
+}
+
+function VectorSyncEvidenceConsole() {
+  const {
+    data: segments,
+    error,
+    isLoading,
+    reload,
+  } = useAsyncData(listIndexSegments, [])
+  const vectorReadySegments = segments.filter((segment) => Boolean(segment.vectorDocId))
+
+  return (
+    <div className="grid gap-4">
+      <ApiErrorNotice error={error} title="加载外部向量库同步证据失败" onRetry={reload} />
+      <SummaryGrid items={[
+        ["证据对象", "Index Segment"],
+        ["向量文档 ID", isLoading ? "加载中..." : `${vectorReadySegments.length} 个`],
+        ["关联 WikiNode", isLoading ? "加载中..." : `${new Set(vectorReadySegments.map((segment) => segment.nodeId)).size} 个`],
+        ["召回命中", isLoading ? "加载中..." : `${vectorReadySegments.reduce((sum, segment) => sum + segment.retrievalHits, 0)} 次`],
+      ]} />
+      <IndexSegmentEvidenceTable title="外部向量库同步证据" segments={segments.filter((segment) => segment.vectorDocId).slice(0, 18)} isLoading={isLoading} showVectorDoc />
+    </div>
+  )
+}
+
+function RetrievalDebugEvidenceConsole() {
+  const {
+    data: logs,
+    error: logsError,
+    isLoading: areLogsLoading,
+    reload: reloadLogs,
+  } = useAsyncData(listRetrievalLogs, [])
+  const {
+    data: segments,
+    error: segmentsError,
+    isLoading: areSegmentsLoading,
+    reload: reloadSegments,
+  } = useAsyncData(listIndexSegments, [])
+
+  return (
+    <div className="grid gap-4">
+      <ApiErrorNotice error={logsError} title="加载召回日志失败" onRetry={reloadLogs} />
+      <ApiErrorNotice error={segmentsError} title="加载 Index Segment 失败" onRetry={reloadSegments} />
+      <SummaryGrid items={[
+        ["链路", "Query -> Index Segment -> WikiNode"],
+        ["查询日志", areLogsLoading ? "加载中..." : `${logs.length} 条`],
+        ["命中片段", areSegmentsLoading ? "加载中..." : `${segments.length} 个`],
+        ["关系证据", "matchedRelations"],
+      ]} />
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">召回调试证据链</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {areLogsLoading ? <LoadingBlock text="正在加载召回调试证据..." /> : null}
+          {!areLogsLoading && logs.length === 0 ? <LoadingBlock text="暂无召回调试证据。" /> : null}
+          {logs.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[820px] text-left text-sm">
+                <thead className="border-b text-xs text-muted-foreground">
+                  <tr>
+                    <th className="px-3 py-2 font-medium">Query</th>
+                    <th className="px-3 py-2 font-medium">Index Segment</th>
+                    <th className="px-3 py-2 font-medium">WikiNode</th>
+                    <th className="px-3 py-2 font-medium">matchedRelations</th>
+                    <th className="px-3 py-2 font-medium">状态</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {logs.map((log) => (
+                    <tr key={log.logId} className="align-top">
+                      <td className="max-w-[260px] px-3 py-3 font-medium">{log.query}</td>
+                      <td className="px-3 py-3 text-muted-foreground">{joinEvidenceIds(log.matchedSegmentIds)}</td>
+                      <td className="px-3 py-3 text-muted-foreground">{joinEvidenceIds(log.returnedNodeIds)}</td>
+                      <td className="px-3 py-3 text-muted-foreground">{relationDebugSummary(log.returnedNodeIds)}</td>
+                      <td className="whitespace-nowrap px-3 py-3">
+                        <Badge variant={log.status === "succeeded" ? "secondary" : "destructive"}>{retrievalStatusLabel(log.status)}</Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+function SystemHealthEvidenceConsole() {
+  const indexStatusSummary = countBy(mockIndexSegments, (segment) => segment.indexStatus)
+  const publishedNodeCount = mockWikiNodes.filter((node) => node.status === "published").length
+  const retrievalSuccessCount = mockRetrievalLogs.filter((log) => log.status === "succeeded").length
+
+  const rows = [
+    ["WikiNode API", `${mockWikiNodes.length} 个 WikiNode`, `已发布 ${publishedNodeCount} 个`],
+    ["Index Segment 证据", `${mockIndexSegments.length} 个 Index Segment`, `已索引 ${indexStatusSummary.indexed ?? 0} 个`],
+    ["Retrieval API 证据", `${mockRetrievalLogs.length} 条查询日志`, `成功 ${retrievalSuccessCount} 条`],
+    ["Source Operation 证据", "Source / Raw Material 处理记录", "最近操作可追踪"],
+  ]
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">系统健康证据</CardTitle>
+      </CardHeader>
+      <CardContent className="overflow-x-auto">
+        <table className="w-full min-w-[720px] text-left text-sm">
+          <thead className="border-b text-xs text-muted-foreground">
+            <tr>
+              <th className="px-3 py-2 font-medium">模块</th>
+              <th className="px-3 py-2 font-medium">对象</th>
+              <th className="px-3 py-2 font-medium">最近状态</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {rows.map(([module, object, status]) => (
+              <tr key={module}>
+                <td className="px-3 py-3 font-medium">{module}</td>
+                <td className="px-3 py-3 text-muted-foreground">{object}</td>
+                <td className="px-3 py-3 text-muted-foreground">{status}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </CardContent>
+    </Card>
+  )
+}
+
+function AdminEvidenceConsole({ title }: { title: string }) {
+  if (title === "用户") return <UserCollaborationConsole />
+  if (title === "角色") return <RoleResponsibilityMatrix />
+  if (title === "权限") return <PermissionDimensionMatrix />
+  return <AuditEvidenceLogConsole />
+}
+
+function UserCollaborationConsole() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">用户协作控制台</CardTitle>
+      </CardHeader>
+      <CardContent className="overflow-x-auto">
+        <table className="w-full min-w-[720px] text-left text-sm">
+          <thead className="border-b text-xs text-muted-foreground">
+            <tr>
+              <th className="px-3 py-2 font-medium">用户</th>
+              <th className="px-3 py-2 font-medium">邮箱</th>
+              <th className="px-3 py-2 font-medium">角色</th>
+              <th className="px-3 py-2 font-medium">状态</th>
+              <th className="px-3 py-2 font-medium">最近活跃</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {mockUsers.map((user) => (
+              <tr key={user.userId}>
+                <td className="px-3 py-3 font-medium">{user.name}</td>
+                <td className="px-3 py-3 text-muted-foreground">{user.email}</td>
+                <td className="px-3 py-3">{labelFromMap(userRoleLabels, user.role)}</td>
+                <td className="px-3 py-3">
+                  <Badge variant={user.status === "active" ? "secondary" : "outline"}>
+                    {labelFromMap(userStatusLabels, user.status)}
+                  </Badge>
+                </td>
+                <td className="px-3 py-3 text-muted-foreground">{user.lastActiveAt}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </CardContent>
+    </Card>
+  )
+}
+
+function RoleResponsibilityMatrix() {
+  const rows = [
+    ["知识负责人", "维护知识库范围、发布前检查、质量问题分派", "WikiNode / WikiLink / Source 证据"],
+    ["编辑者", "编辑 WikiNode 内容、补充来源证据、更新元数据", "WikiNode 草稿与变更记录"],
+    ["审核员", "复核关系、断链、召回结果和来源证据", "质量问题与评测用例"],
+    ["查看者", "浏览知识对象、查看召回证据和图谱关系", "只读查询与详情页"],
+    ["管理员", "维护系统配置和团队协作视图", "设置、角色和审计证据"],
+  ]
+
+  return <MatrixTable title="角色职责矩阵" columns={["角色", "职责", "关注对象"]} rows={rows} />
+}
+
+function PermissionDimensionMatrix() {
+  const rows = [
+    ["查看 WikiNode", "浏览知识节点、详情、来源证据和图谱关系", "知识负责人 / 编辑者 / 审核员 / 查看者"],
+    ["编辑 WikiNode", "维护标题、正文、元数据、关系和来源引用", "知识负责人 / 编辑者"],
+    ["评审 WikiNode", "确认 Draft WikiNode Suggestion、断链和质量问题", "知识负责人 / 审核员"],
+    ["管理配置", "维护知识库配置、系统配置和协作角色", "知识负责人 / 管理员"],
+  ]
+
+  return <MatrixTable title="权限维度矩阵" columns={["权限维度", "适用动作", "协作角色"]} rows={rows} />
+}
+
+function AuditEvidenceLogConsole() {
+  const rows = [
+    ["2026-06-22 18:00", "Rivers", "WikiNode 已更新", "wn-001 保修期内维修服务政策"],
+    ["2026-06-22 17:40", "Knowledge Ops", "Index Segment 已生成", "SEG-001 / SEG-002 / SEG-003"],
+    ["2026-06-22 16:55", "Service Finance", "Retrieval API 已测试", "保修收费查询返回 wn-001"],
+    ["2026-06-22 15:20", "Product Docs", "Source 证据已关联", "src-feishu-cc / rm-001"],
+  ]
+
+  return <MatrixTable title="审计证据日志" columns={["时间", "操作者", "动作", "对象"]} rows={rows} />
+}
+
+function MatrixTable({ title, columns, rows }: { title: string; columns: string[]; rows: string[][] }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="overflow-x-auto">
+        <table className="w-full min-w-[760px] text-left text-sm">
+          <thead className="border-b text-xs text-muted-foreground">
+            <tr>
+              {columns.map((column) => (
+                <th key={column} className="px-3 py-2 font-medium">{column}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {rows.map((row) => (
+              <tr key={row.join("-")} className="align-top">
+                {row.map((cell, index) => (
+                  <td key={`${row[0]}-${cell}`} className={index === 0 ? "whitespace-nowrap px-3 py-3 font-medium" : "px-3 py-3 text-muted-foreground"}>
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </CardContent>
+    </Card>
+  )
+}
+
+function IndexSegmentEvidenceTable({
+  title,
+  segments,
+  isLoading,
+  showVectorDoc = false,
+}: {
+  title: string
+  segments: IndexSegment[]
+  isLoading: boolean
+  showVectorDoc?: boolean
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? <LoadingBlock text="正在加载 Index Segment..." /> : null}
+        {!isLoading && segments.length === 0 ? <LoadingBlock text="暂无 Index Segment 证据。" /> : null}
+        {segments.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[900px] text-left text-sm">
+              <thead className="border-b text-xs text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2 font-medium">片段 ID</th>
+                  <th className="px-3 py-2 font-medium">父级 WikiNode</th>
+                  <th className="px-3 py-2 font-medium">Knowledge Object 类型</th>
+                  <th className="px-3 py-2 font-medium">片段类型</th>
+                  <th className="px-3 py-2 font-medium">索引状态</th>
+                  {showVectorDoc ? <th className="px-3 py-2 font-medium">向量文档 ID</th> : null}
+                  <th className="px-3 py-2 font-medium">召回次数</th>
+                  <th className="px-3 py-2 font-medium">更新时间</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {segments.map((segment) => (
+                  <tr key={segment.segmentId} className="align-top">
+                    <td className="whitespace-nowrap px-3 py-3 font-medium">{segment.segmentId}</td>
+                    <td className="min-w-[180px] px-3 py-3">{segment.nodeTitle}</td>
+                    <td className="whitespace-nowrap px-3 py-3 text-muted-foreground">{segment.objectType ? labelFromMap(objectTypeLabels, segment.objectType) : "-"}</td>
+                    <td className="whitespace-nowrap px-3 py-3 text-muted-foreground">{segmentTypeLabel(segment.segmentType)}</td>
+                    <td className="whitespace-nowrap px-3 py-3">
+                      <Badge variant={segment.indexStatus === "failed" ? "destructive" : "secondary"}>
+                        {labelFromMap(indexStatusLabels, segment.indexStatus)}
+                      </Badge>
+                    </td>
+                    {showVectorDoc ? <td className="whitespace-nowrap px-3 py-3 text-muted-foreground">{segment.vectorDocId ?? "-"}</td> : null}
+                    <td className="whitespace-nowrap px-3 py-3 text-muted-foreground">{segment.retrievalHits}</td>
+                    <td className="whitespace-nowrap px-3 py-3 text-muted-foreground">{segment.updatedAt ?? "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+      </CardContent>
+    </Card>
+  )
+}
+
+function segmentTypeLabel(segmentType: IndexSegment["segmentType"]) {
+  const labels: Record<IndexSegment["segmentType"], string> = {
+    title: "标题",
+    summary: "摘要",
+    body: "正文",
+    section: "章节",
+    table: "表格",
+    qa: "问答",
+    metadata: "元数据",
+    condition: "条件",
+    procedure_step: "流程步骤",
+    troubleshooting_step: "排查步骤",
+  }
+
+  return labels[segmentType]
+}
+
+function relationDebugSummary(nodeIds: string[]) {
+  const relatedCount = mockWikiNodes
+    .filter((node) => nodeIds.includes(node.nodeId))
+    .reduce((sum, node) => sum + (node.relations?.length ?? 0), 0)
+
+  return relatedCount > 0 ? `${relatedCount} 条 WikiLink / 语义关系` : "无"
+}
+
+function countBy<T>(items: T[], getKey: (item: T) => string) {
+  return items.reduce<Record<string, number>>((acc, item) => {
+    const key = getKey(item)
+    acc[key] = (acc[key] ?? 0) + 1
+    return acc
+  }, {})
 }
 
 function RetrievalEvaluationConsoleContent({ title }: { title: string }) {

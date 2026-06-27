@@ -37,6 +37,15 @@ This review checked these implementation areas:
 
 No functional code was changed in this review.
 
+## 1.1 Current Rebaseline Correction (IM066)
+
+This review is a historical IM007 snapshot. After IM014 through IM066, the current rebaseline is:
+
+- The frontend shell, WikiNode editor, WikiGraph canvas, Retrieval Test, Source / Raw Material / Parsed Document surfaces, Draft WikiNode Suggestion flow, Index Segment evidence, Quality Issues console, Knowledge Relation follow-up sequence, and the remaining operations/admin evidence pages are now PM-usable local MVP surfaces.
+- Source Operation, Index Jobs, Vector Sync, Retrieval Debug, System Health, and Admin pages are no longer generic placeholder pages. They now show dense evidence tables or matrices backed by existing local/mock evidence.
+- The broad roadmap remains bounded by active task confirmation. Full product-scope documents do not authorize real import, parser execution, embedding, vector writes, publishing approval, permission enforcement, audit persistence, export, batch operation, backend/API/DB/model expansion, package changes, or new dependencies.
+- Future frontend pages should follow the IM066 UX correction: product surfaces should look like operational consoles, not explanatory marketing or AI-generated card stacks.
+
 ## 2. Current Implementation Status
 
 | Module | Current Status | Evidence | Gap |

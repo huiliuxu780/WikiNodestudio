@@ -16,6 +16,17 @@ The review focuses on three questions:
 
 This is a documentation-only review. No functional code, product page behavior, backend behavior, database schema, dependency, or test behavior was changed.
 
+## 1.1 Current Correction (IM066)
+
+This review predates the IM014-IM066 implementation sequence. The current MVP frontend coverage is stronger than the original matrix in several route areas:
+
+- Source Operation, Index Jobs, Vector Sync, Retrieval Debug, System Health, and Admin pages now have dense evidence-console coverage instead of generic placeholder lists.
+- Knowledge Relation management has been completed for the current MVP scope through IM059-IM064: editor experience, Markdown WikiLink evidence, WikiGraph relation filters, Broken Links governance evidence, relation review controls, and relation-aware Retrieval debug evidence.
+- Hidden roadmap pages for conflicts, expired knowledge, and duplicates remain unexposed unless a future confirmed task makes them current product routes.
+- The current UX standard for B2B/governance pages is compact, operational evidence surfaces: tables, queues, lists, summary strips, and side panels. Explainer-card stacks are not the target page pattern.
+
+The deferred boundary remains unchanged: no real Source import, parser execution, embedding, vector sync, publish approval, auth, permission enforcement, audit persistence, export, batch operation, package/dependency change, backend API expansion, Java model change, or database migration is authorized by this review.
+
 ## 2. Reviewed Inputs
 
 Current governance, product, and design documents:
