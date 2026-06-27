@@ -192,6 +192,7 @@ export function SourceDetailPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [importStatus, setImportStatus] = useState<"idle" | "running" | "succeeded" | "skipped" | "failed">("idle")
   const [importSummary, setImportSummary] = useState<string | null>(null)
+  const [importedSuggestionId, setImportedSuggestionId] = useState<string | null>(null)
 
   async function handleRunIngestion() {
     if (!activeSourceId || ingestionStatus === "running") return
@@ -216,10 +217,12 @@ export function SourceDetailPage() {
 
     setImportStatus("running")
     setImportSummary("正在导入文件并生成 Parsed Document...")
+    setImportedSuggestionId(null)
     try {
       const result = await importSourceFile(activeSourceId, selectedFile)
       setImportStatus(result.status)
       setImportSummary(`${result.summary} 文档片段 ${result.segmentCount} 条。`)
+      setImportedSuggestionId(result.suggestionId ?? null)
       setSelectedFile(null)
       await Promise.all([reloadOperations(), reloadRawMaterials(), reloadSource()])
     } catch {
@@ -279,6 +282,11 @@ export function SourceDetailPage() {
             />
             {importSummary ? (
               <p className={importStatus === "failed" ? "text-destructive" : "text-muted-foreground"}>{importSummary}</p>
+            ) : null}
+            {importedSuggestionId ? (
+              <Link to={`/draft-wikinode-suggestions/${importedSuggestionId}`} className="inline-flex font-medium text-primary hover:underline">
+                打开生成的 WikiNode 建议
+              </Link>
             ) : null}
           </div>
           <Button type="button" onClick={handleImportFile} disabled={!activeSourceId || !selectedFile || importStatus === "running"} className="w-fit">

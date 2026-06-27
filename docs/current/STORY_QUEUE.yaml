@@ -6,15 +6,14 @@ notes:
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
 stories:
-  - id: US069
-    title: "Source Import and Document Segment Persistence"
+  - id: US070
+    title: "Source Import to Draft WikiNode Suggestion Flow"
     status: in_progress
     priority: high
-    summary: "Add the local file-entry foundation that turns txt/md/docx uploads into Raw Material, Parsed Document, and persisted document segments."
+    summary: "Connect local Source file import to Draft WikiNode Suggestion generation so an uploaded document reaches the review queue in one local flow."
     acceptance:
-      - "A Source detail page can upload a local txt/md/docx file."
-      - "The backend creates Raw Material and Parsed Document records for the uploaded file."
-      - "The backend persists document segments for the Parsed Document."
-      - "Parsed Result preview can show the generated document segments."
-      - "Source Operation records file import and parse actions."
-      - "The flow does not create WikiNodes, publish, index, embed, sync vector stores, connect external sources, or expose product-facing Chunk Management."
+      - "A Source detail page can import a local txt/md/docx file and generate a Draft WikiNode Suggestion."
+      - "The import response returns Raw Material, Parsed Document, document segment, and suggestion identifiers."
+      - "The generated suggestion can be opened from the import result."
+      - "Source Operation records import, parse, and suggestion generation actions."
+      - "The flow does not create published WikiNodes, publish, index, embed, sync vector stores, connect external sources, or expose product-facing Chunk Management."

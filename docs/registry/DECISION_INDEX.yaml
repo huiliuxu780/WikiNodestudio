@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D070
+    date: "2026-06-28"
+    title: "Connect local Source import to Draft WikiNode Suggestion generation"
+    rationale: "IM070 closes the user-visible gap between local file import and the WikiNode review queue. It keeps the IM069 Raw Material, Parsed Document, and document segment persistence foundation, and adds optional Draft WikiNode Suggestion generation during import so an uploaded txt/md/docx file can reach a reviewable suggestion in one local flow. It deliberately does not publish, index, embed, sync vector stores, create published WikiNodes, add external connectors, permissions, batch/export, Agent, Chatbot, Workflow Builder, Vector DB Management, or product-facing Chunk Management."
+    related:
+      - IM070
+      - US070
+      - SOURCE_IMPORT_TO_DRAFT_WIKINODE_SUGGESTION_FLOW
+      - SOURCE_IMPORT_DOCUMENT_SEGMENT_PERSISTENCE
   - id: D069
     date: "2026-06-28"
     title: "Add local Source import and document segment persistence without vector or publish execution"

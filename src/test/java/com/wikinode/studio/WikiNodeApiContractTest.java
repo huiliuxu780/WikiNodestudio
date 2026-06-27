@@ -193,6 +193,7 @@ class WikiNodeApiContractTest {
     assertThat(imported.body()).contains("\"rawMaterialId\":\"");
     assertThat(imported.body()).contains("\"parsedDocumentId\":\"");
     assertThat(imported.body()).contains("\"segmentCount\":");
+    assertThat(imported.body()).contains("\"suggestionId\":\"");
     assertThat(imported.body()).contains("\"status\":\"succeeded\"");
     assertThat(imported.body()).doesNotContain("\"embedding\"");
     assertThat(imported.body()).doesNotContain("\"vector");
@@ -200,11 +201,14 @@ class WikiNodeApiContractTest {
 
     String rawMaterialId = extract(imported.body(), "rawMaterialId");
     String parsedDocumentId = extract(imported.body(), "parsedDocumentId");
+    String suggestionId = extract(imported.body(), "suggestionId");
 
     HttpResponse<String> rawMaterial = get("/api/raw-materials/%s".formatted(rawMaterialId));
     HttpResponse<String> parsedDocuments = get("/api/raw-materials/%s/parsed-documents".formatted(rawMaterialId));
     HttpResponse<String> parsedDocument = get("/api/parsed-documents/%s".formatted(parsedDocumentId));
     HttpResponse<String> segments = get("/api/parsed-documents/%s/segments".formatted(parsedDocumentId));
+    HttpResponse<String> suggestions = get("/api/parsed-documents/%s/draft-wikinode-suggestions".formatted(parsedDocumentId));
+    HttpResponse<String> suggestionDetail = get("/api/draft-wikinode-suggestions/%s".formatted(suggestionId));
     HttpResponse<String> operations = get("/api/raw-materials/%s/operations".formatted(rawMaterialId));
 
     assertThat(rawMaterial.statusCode()).isEqualTo(200);
@@ -221,9 +225,17 @@ class WikiNodeApiContractTest {
     assertThat(segments.body()).contains("收费提示");
     assertThat(segments.body()).doesNotContain("\"embedding\"");
     assertThat(segments.body()).doesNotContain("\"vector");
+    assertThat(suggestions.statusCode()).isEqualTo(200);
+    assertThat(suggestions.body()).contains(suggestionId);
+    assertThat(suggestionDetail.statusCode()).isEqualTo(200);
+    assertThat(suggestionDetail.body()).contains("\"parsedDocumentId\":\"%s\"".formatted(parsedDocumentId));
+    assertThat(suggestionDetail.body()).contains("\"status\":\"draft\"");
+    assertThat(suggestionDetail.body()).doesNotContain("\"indexSegmentId\"");
+    assertThat(suggestionDetail.body()).doesNotContain("\"nodeId\"");
     assertThat(operations.statusCode()).isEqualTo(200);
     assertThat(operations.body()).contains("\"operationType\":\"import_source_file\"");
     assertThat(operations.body()).contains("\"operationType\":\"parse_raw_material\"");
+    assertThat(operations.body()).contains("\"operationType\":\"suggest_wikinode\"");
   }
 
   @Test
@@ -957,12 +969,16 @@ class WikiNodeApiContractTest {
 
       contract-test
       --%s
+      Content-Disposition: form-data; name="generateSuggestion"
+
+      true
+      --%s
       Content-Disposition: form-data; name="file"; filename="%s"
       Content-Type: text/markdown
 
       %s
       --%s--
-      """.formatted(boundary, boundary, fileName, content, boundary).replace("\n", "\r\n");
+      """.formatted(boundary, boundary, boundary, fileName, content, boundary).replace("\n", "\r\n");
     return httpClient.send(
       HttpRequest.newBuilder(uri(path))
         .header("Content-Type", "multipart/form-data; boundary=%s".formatted(boundary))

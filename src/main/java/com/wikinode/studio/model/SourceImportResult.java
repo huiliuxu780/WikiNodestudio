@@ -10,6 +10,7 @@ public record SourceImportResult(
   String status,
   String summary,
   int segmentCount,
-  List<String> segmentIds
+  List<String> segmentIds,
+  String suggestionId
 ) {
 }

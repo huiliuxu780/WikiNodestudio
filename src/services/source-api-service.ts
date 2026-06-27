@@ -81,6 +81,7 @@ export function importSourceFile(sourceId: string, file: File, requestedBy = "ui
       summary: "本地预览环境暂未连接文件导入接口。",
       segmentCount: 0,
       segmentIds: [],
+      suggestionId: null,
     })
   )
 }

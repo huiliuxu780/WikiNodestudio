@@ -31,6 +31,25 @@ product_docs:
   IMPLEMENTATION_SLICE_PRINCIPLES:
     file: docs/current/IMPLEMENTATION_SLICE_PRINCIPLES.md
 current_corrections:
+  SOURCE_IMPORT_TO_DRAFT_WIKINODE_SUGGESTION_FLOW:
+    decision: D070
+    story_queue: docs/current/STORY_QUEUE.yaml
+    active_task: docs/current/ACTIVE_TASKS.yaml
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    models:
+      - src/main/java/com/wikinode/studio/model/SourceImportResult.java
+    repository:
+      - src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
+      - src/main/java/com/wikinode/studio/repository/AbstractWikiNodeRepository.java
+    frontend:
+      - src/services/source-api-service.ts
+      - src/pages/skeleton-pages.tsx
+      - src/types/source-operation.ts
+    tests:
+      - src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+      - tests/e2e/source-raw-material-acceptance.spec.ts
+      - tests/e2e/source-api-fixtures.ts
+    smoke: scripts/api-smoke.sh
   SOURCE_IMPORT_DOCUMENT_SEGMENT_PERSISTENCE:
     decision: D069
     story_queue: docs/current/STORY_QUEUE.yaml
@@ -464,6 +483,10 @@ baselines:
 quality_guidelines:
   frontend_ux: docs/quality/frontend-ux-guidelines.md
 stories:
+  US070:
+    file: docs/current/STORY_QUEUE.yaml
+    decision: D070
+    previous_import_foundation: SOURCE_IMPORT_DOCUMENT_SEGMENT_PERSISTENCE
   US069:
     file: docs/current/STORY_QUEUE.yaml
     decision: D069
@@ -602,6 +625,9 @@ tasks:
   IM069:
     decision: D069
     implementation: SOURCE_IMPORT_DOCUMENT_SEGMENT_PERSISTENCE
+  IM070:
+    decision: D070
+    implementation: SOURCE_IMPORT_TO_DRAFT_WIKINODE_SUGGESTION_FLOW
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN

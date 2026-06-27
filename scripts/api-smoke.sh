@@ -33,7 +33,7 @@ cleanup() {
       --port="${DB_PORT}" \
       --username="${DB_USER}" \
       --dbname="${DB_NAME}" \
-      --command="delete from source_operations where raw_material_id like 'rm-import-%' or parsed_document_id like 'pd-import-%'; delete from raw_materials where raw_material_id like 'rm-import-%'; delete from wiki_nodes where node_id like 'api-smoke-%';" >/dev/null
+      --command="delete from draft_wikinode_relation_candidates where suggestion_id in (select suggestion_id from draft_wikinode_suggestions where raw_material_id like 'rm-import-%' or parsed_document_id like 'pd-import-%'); delete from draft_wikinode_suggestion_source_refs where suggestion_id in (select suggestion_id from draft_wikinode_suggestions where raw_material_id like 'rm-import-%' or parsed_document_id like 'pd-import-%'); delete from draft_wikinode_suggestions where raw_material_id like 'rm-import-%' or parsed_document_id like 'pd-import-%'; delete from source_operations where raw_material_id like 'rm-import-%' or parsed_document_id like 'pd-import-%'; delete from raw_materials where raw_material_id like 'rm-import-%'; delete from wiki_nodes where node_id like 'api-smoke-%';" >/dev/null
     echo "api-smoke: cleaned temporary api-smoke nodes"
   fi
 }
@@ -155,7 +155,7 @@ const importForm = new FormData()
 importForm.append("requestedBy", "api-smoke")
 importForm.append("file", new Blob(["# API Smoke Import\n\n导入后形成 Parsed Document 和文档片段。"], { type: "text/markdown" }), "api-smoke-import.md")
 const sourceImport = await requestForm("POST /api/sources/{id}/raw-materials/import", "/sources/src-pdf-dishwasher/raw-materials/import", importForm)
-if (sourceImport.sourceId !== "src-pdf-dishwasher" || sourceImport.status !== "succeeded" || sourceImport.segmentCount < 1 || !sourceImport.rawMaterialId || !sourceImport.parsedDocumentId) {
+if (sourceImport.sourceId !== "src-pdf-dishwasher" || sourceImport.status !== "succeeded" || sourceImport.segmentCount < 1 || !sourceImport.rawMaterialId || !sourceImport.parsedDocumentId || !sourceImport.suggestionId) {
   throw new Error("POST /api/sources/{id}/raw-materials/import: FAIL expected import result")
 }
 
@@ -175,6 +175,15 @@ if (!Array.isArray(importedSegments) || importedSegments.length < 1 || importedS
 
 if (JSON.stringify(importedSegments).includes("embedding") || JSON.stringify(importedSegments).includes("vector")) {
   throw new Error("GET /api/parsed-documents/{id}/segments: FAIL response exposed forbidden internals")
+}
+
+const importedSuggestion = await request("GET /api/draft-wikinode-suggestions/{importedSuggestionId}", `/draft-wikinode-suggestions/${sourceImport.suggestionId}`)
+if (importedSuggestion.parsedDocumentId !== sourceImport.parsedDocumentId || importedSuggestion.status !== "draft") {
+  throw new Error("GET /api/draft-wikinode-suggestions/{importedSuggestionId}: FAIL expected generated draft suggestion")
+}
+
+if (JSON.stringify(importedSuggestion).includes("indexSegmentId") || JSON.stringify(importedSuggestion).includes("nodeId") || JSON.stringify(importedSuggestion).includes("embedding") || JSON.stringify(importedSuggestion).includes("vector")) {
+  throw new Error("GET /api/draft-wikinode-suggestions/{importedSuggestionId}: FAIL response exposed forbidden internals")
 }
 
 const sourceOperationDetail = await request("GET /api/source-operations/{id}", "/source-operations/op-src-feishu-sync-001")

@@ -230,13 +230,14 @@ public class WikiNodeController {
   public SourceImportResult importSourceFile(
     @PathVariable String sourceId,
     @RequestPart("file") MultipartFile file,
-    @RequestParam(required = false) String requestedBy
+    @RequestParam(required = false) String requestedBy,
+    @RequestParam(defaultValue = "true") boolean generateSuggestion
   ) throws IOException {
     ensureSourceExists(sourceId);
     if (file == null || file.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File is required");
     }
-    return repository.importSourceFile(sourceId, file.getOriginalFilename(), file.getBytes(), requestedBy);
+    return repository.importSourceFile(sourceId, file.getOriginalFilename(), file.getBytes(), requestedBy, generateSuggestion);
   }
 
   @GetMapping("/raw-materials")
