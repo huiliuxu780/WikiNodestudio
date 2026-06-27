@@ -5,15 +5,4 @@ notes:
   - "Only ready, in_progress, and blocked stories belong here."
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
-stories:
-  - id: US064
-    title: "Relation-aware retrieval evidence"
-    status: in_progress
-    goal: "Use Knowledge Relations as debug retrieval evidence while preserving WikiNode-first Retrieval API results."
-    acceptance:
-      - "Retrieval debug evidence can include matchedRelations without changing the primary WikiNode result."
-      - "APPLIES_TO, REPLACES, CONFLICTS_WITH, and DERIVED_FROM relation evidence is displayed as explainable context."
-      - "Normal Retrieval Test remains WikiNode-first and does not expose raw segment or relationship internals as the main result."
-      - "Playwright covers relation evidence in Retrieval Test debug mode."
-    non_goals:
-      - "No Chat API, answer generation, raw chunk-first output, external vector database implementation, backend API change, database migration, Java model change, package change, dependency change, parser execution, vector sync, Source import, permission model, approval workflow, batch operation, or export."
+stories: []

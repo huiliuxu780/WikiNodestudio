@@ -6,9 +6,8 @@ None.
 
 ## Active Scope Constraints
 
-- `IM064` may update Retrieval Test debug evidence, retrieval result frontend types, the frontend mock retrieval service, and Playwright coverage.
-- `IM064` must preserve WikiNode-first Retrieval API results and show Knowledge Relations only as debug evidence context.
-- `IM064` must not change backend API, Java model, database migrations, package files, dependencies, Chat API behavior, answer generation, raw chunk-first output, external vector database implementation, embedding, parser execution, vector sync, Source import, permission model, approval workflow, batch operations, export, or repair actions.
+- No active executable IM is currently defined.
+- The next implementation slice must be explicitly added to `docs/current/STORY_QUEUE.yaml` and `docs/current/ACTIVE_TASKS.yaml` before work begins.
 - Future frontend work must follow `docs/quality/frontend-ux-guidelines.md`.
 
 ## Standing Constraints

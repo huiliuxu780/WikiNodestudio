@@ -379,6 +379,14 @@ phase2_plans:
     mock_service: src/services/retrieval-mock-service.ts
     fixtures: tests/e2e/retrieval-api-fixtures.ts
     playwright: tests/e2e/retrieval-test-debug.spec.ts
+  KNOWLEDGE_RELATION_FOLLOWUP_CLOSURE:
+    decision: D065
+    requirement_trace: docs/current/KNOWLEDGE_RELATION_REQUIREMENT_TRACE.md
+    story_queue: docs/current/STORY_QUEUE.yaml
+    active_task: docs/current/ACTIVE_TASKS.yaml
+    project_context: docs/current/PROJECT_CONTEXT.md
+    blockers: docs/current/BLOCKERS.md
+    previous_final_packet: RELATION_AWARE_RETRIEVAL_EVIDENCE
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
@@ -507,6 +515,9 @@ tasks:
   IM064:
     decision: D064
     implementation: RELATION_AWARE_RETRIEVAL_EVIDENCE
+  IM065:
+    decision: D065
+    closure: KNOWLEDGE_RELATION_FOLLOWUP_CLOSURE
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN

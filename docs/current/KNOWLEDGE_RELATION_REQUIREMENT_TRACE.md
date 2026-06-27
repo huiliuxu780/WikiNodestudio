@@ -6,7 +6,7 @@ Date: 2026-06-27
 
 ## Purpose
 
-This document reconciles the external `Knowledge Relation Management PRD` with the current WikiNode Studio implementation after `IM056` and `IM057`.
+This document reconciles the external `Knowledge Relation Management PRD` with the current WikiNode Studio implementation after `IM056` through `IM064`.
 
 It is not an implementation task. It records what is done, what is partial, what is not started, and which future implementation packets should close the remaining product gaps.
 
@@ -18,63 +18,69 @@ Current implemented baselines:
 
 - `IM056 Knowledge Relation Management Read Surface`
 - `IM057 Knowledge Relation Management Mutation Baseline`
+- `IM059 Knowledge Relation Editor Experience Completion`
+- `IM060 Markdown WikiLink Relation Mapping Hardening`
+- `IM061 WikiGraph Relation Filter and Legend Completion`
+- `IM062 Broken Link Governance Actions`
+- `IM063 Relation Review and Governance`
+- `IM064 Relation-Aware Retrieval Evidence`
 
 ## Current Completion Summary
 
 | Area | Status | Current evidence | Remaining gap |
 |---|---|---|---|
-| WikiNode relation as first-class information | Partial | WikiNode Inspector has a dedicated `关联关系` tab with structured relations, Markdown WikiLinks, and unresolved links. | WikiNode read/detail display does not yet have the full PRD-style grouped relation summary outside the editor inspector. |
-| Markdown WikiLink compatibility | Done | Existing `[[slug]]` and `[[slug|text]]` parsing, links, backlinks, broken links, and graph behavior are preserved. | Markdown-derived links are displayed beside structured relations, but persistence as full `KnowledgeRelation` rows remains limited by current implementation. |
-| Structured manual relation CRUD | Partial | `GET/POST/PATCH/DELETE /api/wiki-nodes/{id}/relations` and WikiNode Inspector single-relation add/edit/delete are implemented. | UI is an inline compact form, not the PRD drawer; status editing, target object type selection, target search, display name, and Source/Document/Product targets remain open. |
-| Relation type/status/source labels | Partial | Lowercase relation type/status/source labels are mapped to Chinese and displayed in the inspector. | PRD uppercase enum examples are not adopted as wire values; this is an intentional current-contract decision. |
-| Relation grouping | Partial | Relation cards show semantic group badges and separate structured relations from Markdown links and unresolved links. | PRD requires separate groups: `适用范围`, `引用知识`, `相关知识`, `替代关系`, `冲突关系`, `来源依据`, `断链 / 待确认`. |
-| Broken Links relation context | Partial | Broken Links and inspector unresolved links show source node, anchor/target context, relation type/source/status labels where current data supports it. | Create target, ignore, mark processed, repair, and status lifecycle are not implemented. |
-| WikiGraph relation visualization | Partial | React Flow WikiGraph shows node-edge relation graph and existing relation labels. | Relation type/status filters, legend, edge style differences, conflict/broken emphasis, and edge detail inspector are not complete. |
-| Relation governance | Not started | No implemented approval, confirm, reject, audit, or version history flow. | Needed for Phase 3 only. |
-| Retrieval relation usage | Not started | Retrieval remains WikiNode-centered and may show relation evidence only as context. | No `matchedRelations`, `APPLIES_TO` filter, `REPLACES` suppression, `CONFLICTS_WITH` risk handling, or `DERIVED_FROM` citation behavior. |
+| WikiNode relation as first-class information | Done for current MVP scope | WikiNode Inspector has a dedicated `关联关系` tab with structured relations, Markdown WikiLinks, unresolved links, grouped relation cards, and editor drawer actions. | Source/Document/Product targets remain future scope. |
+| Markdown WikiLink compatibility | Done | Existing `[[slug]]` and `[[slug|text]]` parsing, links, backlinks, broken links, graph behavior, anchor text, target identifier, resolved target, relation source, and relation status display are preserved. | Persisting all Markdown-derived links as separate structured relation rows is not required in the current contract. |
+| Structured manual relation CRUD | Done for current MVP scope | `GET/POST/PATCH/DELETE /api/wiki-nodes/{id}/relations` and WikiNode Inspector add/edit/delete are implemented with target WikiNode search, status selection, and drawer UI. | Non-WikiNode targets remain future scope. |
+| Relation type/status/source labels | Done | Lowercase current-contract relation type/status/source labels are mapped to Chinese and displayed in Inspector, Broken Links, WikiGraph, and Retrieval debug evidence. | PRD uppercase enum examples remain documentation semantics, not wire values. |
+| Relation grouping | Done | Relation cards are grouped by semantic sections including `适用范围`, `引用知识`, `相关知识`, `替代关系`, `风险关系`, `来源依据`, and `断链 / 待确认`. | None for current MVP scope. |
+| Broken Links relation context | Done for current MVP scope | Broken Links shows source WikiNode, anchor text, target identifier, resolved target, relation type, relation source, relation status, and safe navigation to source WikiNode. | Repair, ignore, create-target, and batch lifecycle actions are intentionally not implemented. |
+| WikiGraph relation visualization | Done for current MVP scope | React Flow WikiGraph has relation type/status filters, legend, edge style differences, conflict/broken emphasis, and edge detail inspector. | No graph database, new layout algorithm, or backend graph rewrite. |
+| Relation governance | Done for lightweight current MVP scope | Pending/conflict Knowledge Relations can be confirmed or rejected in the WikiNode Inspector using the existing update contract and relation note field. | Full permission model, approval workflow, audit persistence, and version history remain future scope. |
+| Retrieval relation usage | Done for debug evidence scope | Retrieval Test supports optional `matchedRelations` evidence for `applies_to`, `replaces`, `conflicts_with`, and `derived_from` context while keeping primary results WikiNode-first. | No Chat API, answer generation, raw chunk-first output, external vector database implementation, or relation-driven scoring contract change. |
 
 ## PRD Acceptance Trace
 
 | PRD AC | Requirement | Status | Evidence | Next packet |
 |---|---|---|---|---|
 | AC-001 | WikiNode editor has independent `关联关系` entry. | Done | `WikiNodeInspector` includes `关联关系` tab. | None. |
-| AC-002 | Relations are grouped by type. | Partial | Relation cards have semantic group labels; structured/Markdown/unresolved sections are separated. | IM059 relation tab grouping and drawer polish. |
-| AC-003 | Markdown WikiLinks automatically generate reference relations. | Partial | Existing WikiLink parser and outgoing links still work and display as `正文双链`. | IM060 Markdown-to-KnowledgeRelation persistence alignment if needed. |
-| AC-004 | UI supports adding relations. | Partial | Single structured relation can be added from WikiNode Inspector. | IM059 add drawer with target search and status field. |
-| AC-005 | Relation includes type, status, and source. | Partial | Java/frontend model and V11 schema include status/source; Inspector displays them. | IM059 allow user-visible status edit; IM060 markdown mapping hardening. |
+| AC-002 | Relations are grouped by type. | Done | IM059 groups structured Knowledge Relations by semantic sections in the WikiNode Inspector. | None. |
+| AC-003 | Markdown WikiLinks automatically generate reference relations. | Done for current contract | IM060 preserves WikiLink parsing and maps saved Markdown links into relation evidence with anchor, target, source, and status. | None. |
+| AC-004 | UI supports adding relations. | Done | IM059 adds drawer-based relation creation with target WikiNode search and status field. | None. |
+| AC-005 | Relation includes type, status, and source. | Done | Relation type/status/source are displayed consistently across relation surfaces and Markdown-derived evidence where available. | None. |
 | AC-006 | Relation types and statuses display in Chinese. | Done | Display labels use Chinese in relation UI. | None. |
-| AC-007 | Non-Markdown users can add relations. | Partial | Inline form allows add without Markdown syntax. | IM059 full drawer and target search. |
+| AC-007 | Non-Markdown users can add relations. | Done | IM059 enables add/edit/delete without Markdown syntax through the Inspector drawer. | None. |
 | AC-008 | Manual relation does not have to write back to Markdown. | Done | Manual relation API stores structured relation separately. | None. |
-| AC-009 | WikiNode display page shows relation section. | Partial | Editor inspector shows relation section; detail/read display is not fully separated per PRD. | IM059 detail/read relation summary. |
-| AC-010 | Graph distinguishes relation types by edge style. | Partial | Graph has edge labels and React Flow canvas. | IM061 graph relation filters and edge legend. |
-| AC-011 | Graph supports relation type filters. | Not started | No dedicated relationType/status filter set for all PRD relation categories. | IM061 graph relation filters and edge legend. |
-| AC-012 | Broken Links shows relation type and source. | Partial | Broken Links context exists without fake repair actions. | IM062 broken-link governance actions. |
-| AC-013 | Broken state is visually clear. | Partial | Broken/unresolved links use destructive status labeling in relation surfaces. | IM062 broken-link lifecycle and repair UI. |
-| AC-014 | Conflict relation is visually clear. | Partial | `conflicts_with` relation type exists and labels as conflict. | IM059 relation grouping priority; IM061 graph conflict edge treatment. |
+| AC-009 | WikiNode display page shows relation section. | Done for current MVP scope | WikiNode Inspector is the current relation work surface with grouped relation summary and edit controls. | None. |
+| AC-010 | Graph distinguishes relation types by edge style. | Done | IM061 adds relation filters, legend, conflict/broken styling, and edge detail. | None. |
+| AC-011 | Graph supports relation type filters. | Done | IM061 adds relation type and relation status filters. | None. |
+| AC-012 | Broken Links shows relation type and source. | Done | IM062 shows source WikiNode, anchor, target identifier, resolved target, type, source, and status. | None. |
+| AC-013 | Broken state is visually clear. | Done | Broken/unresolved links use destructive status labeling and safe navigation without fake repair actions. | None. |
+| AC-014 | Conflict relation is visually clear. | Done | Conflict relations are risk-styled in Inspector and graph surfaces; pending/conflict review controls are available in IM063. | None. |
 | AC-015 | Legacy Markdown WikiLink remains compatible. | Done | Existing links, backlinks, broken links, tests, and graph behavior remain. | None. |
-| AC-016 | Legacy wiki_link data can map to relations. | Partial | UI maps Markdown links to relation display, but not full persisted relation rows. | IM060 markdown-to-structured relation mapping. |
-| AC-017 | Toasts use Chinese feedback. | Partial | Existing page feedback is Chinese; relation mutation currently updates UI without the full PRD toast set. | IM059 relation mutation feedback polish. |
-| AC-018 | Dark mode badges are readable. | Not verified | No dedicated dark-mode visual acceptance for relation badges. | IM059 visual acceptance sweep. |
-| AC-019 | Relation editing. | Partial | Single relation edit exists for target/type/note. | IM059 full edit drawer and status editing. |
-| AC-020 | Relation review. | Not started | No confirm/reject/review lifecycle. | IM063 relation governance review. |
-| AC-021 | Relation-driven retrieval. | Not started | Retrieval API remains WikiNode-first without relation-driven behavior. | IM064 relation-aware retrieval evidence. |
+| AC-016 | Legacy wiki_link data can map to relations. | Done for current contract | IM060 maps Markdown WikiLinks into relation evidence without forcing manual relations back into Markdown. | None. |
+| AC-017 | Toasts use Chinese feedback. | Done for current MVP scope | Relation create/update/delete/review actions use Chinese labels and feedback in existing UI patterns. | None. |
+| AC-018 | Dark mode badges are readable. | Deferred | No dedicated dark-mode visual acceptance was required by current tasks. Existing badge variants remain system-token based. | Future visual QA only. |
+| AC-019 | Relation editing. | Done | IM059 supports relation edit drawer and status editing. | None. |
+| AC-020 | Relation review. | Done for lightweight scope | IM063 supports confirm/reject with review note using the existing update contract. | None. |
+| AC-021 | Relation-driven retrieval. | Done for debug evidence scope | IM064 adds `matchedRelations` as Retrieval Test debug evidence while keeping Retrieval API results WikiNode-first. | None. |
 
 ## User Story Trace
 
 | PRD story | Status | Notes |
 |---|---|---|
-| US-001 Non-Markdown user adds relation | Partial | Single add path exists, but drawer, target search, and status selection are not complete. |
+| US-001 Non-Markdown user adds relation | Done | Drawer, target WikiNode search, status selection, edit, and delete are implemented for current WikiNode targets. |
 | US-002 Markdown user keeps WikiLinks | Done | Existing WikiLink behavior remains available and visible. |
-| US-003 Business expert views applicability | Partial | `applies_to` exists; grouped read summary is incomplete. |
-| US-004 PM views conflict risk | Partial | `conflicts_with` exists and can be displayed; graph conflict emphasis and review lifecycle are incomplete. |
-| US-005 Operator views source relation | Partial | Source evidence appears; source-object relation targets and parser records are incomplete. |
-| US-006 Operator maintains replacement relation | Partial | `replaces` exists and can be manually saved; graph/retrieval use is incomplete. |
-| US-007 Operator handles broken links | Partial | Broken links are visible; repair actions are not implemented. |
-| US-008 PM filters graph by relation type | Not started | Requires graph filter/legend slice. |
+| US-003 Business expert views applicability | Done | `applies_to` appears in grouped Inspector, graph filters, and Retrieval debug evidence. |
+| US-004 PM views conflict risk | Done | `conflicts_with` is visually emphasized and can be reviewed through lightweight confirm/reject controls. |
+| US-005 Operator views source relation | Done for current MVP scope | Source-backed relation evidence is displayed; non-WikiNode source target mutation remains future scope. |
+| US-006 Operator maintains replacement relation | Done for current MVP scope | `replaces` can be saved as a structured relation and appears in graph/retrieval evidence. |
+| US-007 Operator handles broken links | Done for evidence scope | Broken links show context and safe navigation; repair/ignore/create-target actions are intentionally not implemented. |
+| US-008 PM filters graph by relation type | Done | IM061 adds relation type and status filters with legend and edge detail. |
 
-## Recommended Remaining Packets
+## Completed Follow-up Packets
 
-These packets are intentionally medium-sized product capabilities, not tiny UI patches.
+These packets were intentionally medium-sized product capabilities, not tiny UI patches. They are now complete and merged after IM064.
 
 ### IM059 Knowledge Relation Editor Experience Completion
 
@@ -174,10 +180,10 @@ Non-goals:
 
 ## Immediate Recommendation
 
-Do `IM059 Knowledge Relation Editor Experience Completion` next.
+Close the current Knowledge Relation PRD follow-up queue and define the next medium-sized packet from current product requirements only after an explicit user decision.
 
 Reason:
 
-- It closes the largest PM-visible gap in Phase 2.
-- It makes the manual relation flow feel like a real B2B work surface.
-- It avoids jumping prematurely into graph, broken-link repair, approval, or retrieval semantics.
+- IM059 through IM064 have closed the current Knowledge Relation PRD follow-up sequence for MVP scope.
+- Remaining items are explicitly deferred capabilities such as non-WikiNode relation targets, full approval/audit workflow, repair actions, permissions, and external vector implementation.
+- The next slice should not be inferred from this trace alone.
