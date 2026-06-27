@@ -313,6 +313,21 @@ phase2_plans:
       - src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
       - src/test/java/com/wikinode/studio/repository/JdbcWikiNodeRepositoryTest.java
       - tests/e2e/wikinode-knowledge-object-metadata.spec.ts
+  KNOWLEDGE_RELATION_REQUIREMENT_TRACE:
+    decision: D058
+    file: docs/current/KNOWLEDGE_RELATION_REQUIREMENT_TRACE.md
+    external_prd: /Users/mac/Downloads/KNOWLEDGE_RELATION_MANAGEMENT_PRD.md
+    read_surface: KNOWLEDGE_RELATION_MANAGEMENT_READ_SURFACE
+    mutation_baseline: KNOWLEDGE_RELATION_MANAGEMENT_MUTATION_BASELINE
+    story_queue: docs/current/STORY_QUEUE.yaml
+    active_task: docs/current/ACTIVE_TASKS.yaml
+    recommendation:
+      - IM059_KNOWLEDGE_RELATION_EDITOR_EXPERIENCE_COMPLETION
+      - IM060_MARKDOWN_WIKILINK_RELATION_MAPPING_HARDENING
+      - IM061_WIKIGRAPH_RELATION_FILTER_AND_LEGEND_COMPLETION
+      - IM062_BROKEN_LINK_GOVERNANCE_ACTIONS
+      - IM063_RELATION_REVIEW_AND_GOVERNANCE
+      - IM064_RELATION_AWARE_RETRIEVAL_EVIDENCE
 baselines:
   MVP_V0_1:
     release: docs/release/mvp-baseline-v0.1.md
@@ -420,6 +435,9 @@ tasks:
   IM057:
     decision: D057
     implementation: KNOWLEDGE_RELATION_MANAGEMENT_MUTATION_BASELINE
+  IM058:
+    decision: D058
+    reconciliation: KNOWLEDGE_RELATION_REQUIREMENT_TRACE
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN

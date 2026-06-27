@@ -1,5 +1,15 @@
 version: 1
 decisions:
+  - id: D058
+    date: "2026-06-27"
+    title: "Reconcile Knowledge Relation PRD completion after IM056 and IM057"
+    rationale: "The external Knowledge Relation Management PRD was broader than the implemented IM056 read surface and IM057 single-relation mutation baseline. IM058 records that the PRD is only partially complete, maps each acceptance item and user story to Done, Partial, or Not started status, and defines medium-sized future packets for relation editor completion, Markdown mapping hardening, WikiGraph filters, Broken Link governance actions, relation review, and relation-aware retrieval evidence. The task changes only current and registry documentation and does not implement product behavior."
+    related:
+      - IM058
+      - US058
+      - KNOWLEDGE_RELATION_REQUIREMENT_TRACE
+      - KNOWLEDGE_RELATION_MANAGEMENT_READ_SURFACE
+      - KNOWLEDGE_RELATION_MANAGEMENT_MUTATION_BASELINE
   - id: D057
     date: "2026-06-27"
     title: "Implement single Knowledge Relation mutation baseline"
