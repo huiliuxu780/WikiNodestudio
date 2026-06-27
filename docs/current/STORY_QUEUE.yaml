@@ -6,16 +6,14 @@ notes:
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
 stories:
-  - id: US061
-    title: "WikiGraph relation filter and legend completion"
+  - id: US062
+    title: "Broken Link governance evidence actions"
     status: in_progress
-    goal: "Complete WikiGraph relation filtering, legend, edge visual semantics, and edge detail inspection while preserving the existing React Flow graph."
+    goal: "Turn Broken Links into a clearer governance evidence surface with source context, target evidence, relation status, and safe navigation."
     acceptance:
-      - "WikiGraph toolbar supports relation type filters for all, references, related, applies, replaces, conflicts, derived/source, and broken relations."
-      - "WikiGraph toolbar supports relation status filters for all, active, broken, pending review, and rejected relations."
-      - "Conflict and broken relations have visually distinct edge treatments."
-      - "Graph legend explains normal, conflict, and broken relation edges."
-      - "Clicking an edge opens relation detail in the Inspector."
-      - "Playwright covers relation filters, legend, and edge detail."
+      - "Broken Links shows source WikiNode, anchor text, target identifier, resolved target, relation type, relation source, and relation status."
+      - "Each broken relation provides safe navigation to the source WikiNode."
+      - "The page does not expose unimplemented repair, ignore, batch, or create-target write actions."
+      - "Playwright covers the governance evidence fields and safe navigation boundary."
     non_goals:
-      - "No graph database, backend graph rewrite, new graph layout algorithm, new dependency, backend API, database migration, package change, retrieval behavior, approval workflow, or repair action."
+      - "No batch repair, automatic repair, Source import, parser execution, AI suggestion, permission flow, approval workflow, backend API, database migration, package change, or dependency change."

@@ -6,15 +6,13 @@ notes:
   - "Do not auto-enter the next IM without explicit user confirmation."
   - "Done history stays in release docs or archive."
 tasks:
-  - id: IM061
-    title: "WikiGraph Relation Filter and Legend Completion"
+  - id: IM062
+    title: "Broken Link Governance Actions"
     status: in_progress
-    story_ids: [US061]
+    story_ids: [US062]
     allowed_files:
-      - "src/components/graph/wiki-graph-view.tsx"
-      - "src/components/graph/graph-inspector.tsx"
-      - "src/utils/knowledge-graph.ts"
-      - "tests/e2e/wiki-graph-canvas.spec.ts"
+      - "src/components/wiki/link-list.tsx"
+      - "tests/e2e/frontend-skeleton.spec.ts"
       - "tests/e2e/wiki-node-api-fixtures.ts"
       - "docs/current/STORY_QUEUE.yaml"
       - "docs/current/ACTIVE_TASKS.yaml"
@@ -26,14 +24,15 @@ tasks:
       - "src/main/**"
       - "src/services/**"
       - "src/data/**"
+      - "src/components/graph/**"
+      - "src/utils/knowledge-graph.ts"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/workflows/**"
     gates:
-      - "Relation filter gate: support relation type and relation status filtering on the existing React Flow WikiGraph."
-      - "Visual semantics gate: distinguish normal, conflict, and broken relation edges and expose a legend."
-      - "Edge detail gate: clicking a graph edge opens relation detail in the Inspector."
-      - "No graph rewrite gate: do not add dependencies, layout algorithms, backend graph APIs, or database changes."
+      - "Broken Link evidence gate: show source WikiNode, anchor text, target identifier, resolved target, relation type, relation source, and relation status."
+      - "Safe navigation gate: provide navigation to the source WikiNode without adding fake repair actions."
+      - "No write-action gate: do not expose unimplemented repair, ignore, batch, create-target, approval, or AI actions."
       - "Verification gate: focused Playwright, pnpm lint, pnpm build, bash scripts/check-state.sh, bash scripts/check.sh, full Playwright, and diff check."
     stop_conditions:
-      - "Any backend API, Java model, database migration, new dependency, package or lockfile change, graph database, graph layout algorithm, approval lifecycle, confirm or reject operation, batch operation, repair action, AI suggestion, permission flow, retrieval behavior, parser execution, vector sync, or Source import."
+      - "Any backend API, Java model, database migration, new dependency, package or lockfile change, batch repair, automatic repair, create-target write operation, ignore or mark-processed persistence, approval lifecycle, AI suggestion, permission flow, retrieval behavior, parser execution, vector sync, or Source import."

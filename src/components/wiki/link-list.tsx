@@ -1,4 +1,8 @@
+import { Link } from "react-router-dom"
+import { ExternalLinkIcon } from "lucide-react"
+
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import type { WikiLink } from "@/types/wiki"
 import { labelFromMap, linkStatusLabels, relationSourceLabels, relationStatusLabels, relationTypeLabels } from "@/utils/display-labels"
 
@@ -43,7 +47,7 @@ export function BrokenLinkActionList({ links }: { links: WikiLink[] }) {
   return (
     <div className="flex flex-col gap-2">
       {links.map((link) => (
-        <div key={link.linkId} className="rounded-md border p-3">
+        <div key={link.linkId} className="rounded-md border p-3" data-testid="broken-link-card">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="font-medium">{link.targetTitle}</div>
@@ -55,6 +59,17 @@ export function BrokenLinkActionList({ links }: { links: WikiLink[] }) {
             <InfoCell label="关系类型" value={labelFromMap(relationTypeLabels, link.relationType)} />
             <InfoCell label="关系来源" value={relationSourceLabels.markdown_link} />
             <InfoCell label="关系状态" value={relationStatusLabels.broken} />
+            <InfoCell label="锚文本" value={link.anchorText ?? link.targetTitle} />
+            <InfoCell label="目标标识" value={link.targetSlug ?? link.targetTitle} />
+            <InfoCell label="解析目标" value={link.toTitle ?? "未解析"} />
+          </div>
+          <div className="mt-3 flex justify-end">
+            <Button asChild size="sm" variant="outline">
+              <Link to={`/wiki-nodes/${link.fromNodeId}`}>
+                <ExternalLinkIcon data-icon="inline-start" />
+                打开来源 WikiNode
+              </Link>
+            </Button>
           </div>
         </div>
       ))}

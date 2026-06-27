@@ -6,9 +6,9 @@ None.
 
 ## Active Scope Constraints
 
-- `IM061` may update the existing React Flow WikiGraph relation filters, legend, edge visual treatment, edge click behavior, and Playwright coverage.
-- `IM061` must preserve existing graph data sources and avoid backend or graph algorithm rewrites.
-- `IM061` must not change backend API, Java model, database migrations, package files, dependencies, graph database behavior, new graph layout algorithms, Broken Link repair actions, retrieval behavior, approvals, permissions, Source import, parser execution, vector sync, AI suggestions, or batch operations.
+- `IM062` may update Broken Links evidence display, safe source WikiNode navigation, and Playwright coverage.
+- `IM062` must keep Broken Links evidence-oriented and must not expose fake repair, ignore, batch, create-target, approval, or AI actions.
+- `IM062` must not change backend API, Java model, database migrations, package files, dependencies, graph behavior, retrieval behavior, approvals, permissions, Source import, parser execution, vector sync, AI suggestions, batch repair, automatic repair, or persistent broken-link lifecycle state.
 - Future frontend work must follow `docs/quality/frontend-ux-guidelines.md`.
 
 ## Standing Constraints

@@ -1,5 +1,15 @@
 version: 1
 decisions:
+  - id: D062
+    date: "2026-06-27"
+    title: "Make Broken Links a safe governance evidence surface without fake write actions"
+    rationale: "IM062 improves Broken Links by showing source WikiNode, anchor text, target identifier, resolved target, relation type, relation source, relation status, and safe navigation to the source WikiNode. It deliberately avoids unimplemented repair, ignore, batch, create-target, approval, AI, backend API, database migration, Java model, package, dependency, retrieval, parser, vector sync, or Source import behavior."
+    related:
+      - IM062
+      - US062
+      - BROKEN_LINK_GOVERNANCE_ACTIONS
+      - KNOWLEDGE_RELATION_REQUIREMENT_TRACE
+      - WIKIGRAPH_RELATION_FILTER_AND_LEGEND_COMPLETION
   - id: D061
     date: "2026-06-27"
     title: "Complete WikiGraph relation filtering and edge semantics on the existing canvas"
