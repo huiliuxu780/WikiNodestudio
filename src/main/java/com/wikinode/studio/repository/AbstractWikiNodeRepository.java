@@ -374,7 +374,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   }
 
   @Override
-  public SourceImportResult importSourceFile(String sourceId, String fileName, byte[] content, String requestedBy) {
+  public SourceImportResult importSourceFile(String sourceId, String fileName, byte[] content, String requestedBy, boolean generateSuggestion) {
     SourceItem source = findSource(sourceId).orElseThrow(() -> new IllegalArgumentException("Source not found"));
     String cleanFileName = cleanFileName(fileName);
     String normalizedContent = parseLocalDocument(cleanFileName, content);
@@ -458,6 +458,14 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       "已解析为 Parsed Document，并生成 %d 条文档片段。".formatted(segments.size()),
       null
     ));
+    String suggestionId = null;
+    if (generateSuggestion) {
+      DraftWikiNodeSuggestionGenerationResult result = generateDraftWikiNodeSuggestion(
+        parsedDocumentId,
+        new DraftWikiNodeSuggestionGenerationRequest(parserProfile, "source-import-%s".formatted(parsedDocumentId))
+      );
+      suggestionId = result.suggestionId();
+    }
 
     return new SourceImportResult(
       operationId,
@@ -465,9 +473,12 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       rawMaterialId,
       parsedDocumentId,
       "succeeded",
-      "已导入文件、生成 Parsed Document 和文档片段。",
+      suggestionId == null
+        ? "已导入文件、生成 Parsed Document 和文档片段。"
+        : "已导入文件、生成 Parsed Document、文档片段和待审核 WikiNode 建议。",
       segments.size(),
-      segments.stream().map(ParsedDocumentSegment::segmentId).toList()
+      segments.stream().map(ParsedDocumentSegment::segmentId).toList(),
+      suggestionId
     );
   }
 
@@ -1006,7 +1017,14 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
     String profile = requestedProfile == null || requestedProfile.isBlank()
       ? parsedDocument.parserProfile()
       : requestedProfile;
-    return Set.of("feishu_article_v1", "pdf_manual_article_v1", "excel_fee_table_v1").contains(profile);
+    return Set.of(
+      "feishu_article_v1",
+      "pdf_manual_article_v1",
+      "excel_fee_table_v1",
+      "local_markdown_file_v1",
+      "local_text_file_v1",
+      "local_docx_file_v1"
+    ).contains(profile);
   }
 
   private boolean hasExistingActiveSuggestion(String parsedDocumentId) {

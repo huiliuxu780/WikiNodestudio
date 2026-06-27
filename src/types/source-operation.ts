@@ -37,4 +37,5 @@ export type SourceImportResult = {
   summary: string
   segmentCount: number
   segmentIds: string[]
+  suggestionId?: string | null
 }

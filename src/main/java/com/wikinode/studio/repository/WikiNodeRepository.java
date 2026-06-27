@@ -76,7 +76,7 @@ public interface WikiNodeRepository {
 
   SourceIngestionRunResult runSourceIngestion(String sourceId, SourceIngestionRunRequest request);
 
-  SourceImportResult importSourceFile(String sourceId, String fileName, byte[] content, String requestedBy);
+  SourceImportResult importSourceFile(String sourceId, String fileName, byte[] content, String requestedBy, boolean generateSuggestion);
 
   List<RawMaterial> listRawMaterials();
 

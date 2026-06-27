@@ -49,7 +49,8 @@ test.describe("Source / Raw Material / Parsed Document acceptance", () => {
     })
     await page.getByRole("button", { name: "导入并解析" }).click()
 
-    await expect(page.getByText("已导入文件、生成 Parsed Document 和文档片段。 文档片段 2 条。")).toBeVisible()
+    await expect(page.getByText("已导入文件、生成 Parsed Document、文档片段和待审核 WikiNode 建议。 文档片段 2 条。")).toBeVisible()
+    await expect(page.getByRole("link", { name: "打开生成的 WikiNode 建议" })).toHaveAttribute("href", "/draft-wikinode-suggestions/sug-pd-import-playwright")
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
   })
 

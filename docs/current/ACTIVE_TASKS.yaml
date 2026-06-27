@@ -6,9 +6,9 @@ notes:
   - "Do not auto-enter the next IM without explicit user confirmation."
   - "Done history stays in release docs or archive."
 tasks:
-  - id: IM069
-    story_id: US069
-    title: "Source Import and Document Segment Persistence"
+  - id: IM070
+    story_id: US070
+    title: "Source Import to Draft WikiNode Suggestion Flow"
     status: in_progress
     required_workflow: default
     allowed_files:
@@ -29,9 +29,8 @@ tasks:
       - "package.json"
       - "pnpm-lock.yaml"
     acceptance:
-      - "POST /api/sources/{sourceId}/raw-materials/import accepts local txt/md/docx files."
-      - "The import creates Raw Material, Parsed Document, and persisted document segment records."
-      - "GET /api/parsed-documents/{parsedDocumentId}/segments returns the generated document segments."
-      - "Source detail exposes a compact file import action and refreshes evidence after import."
-      - "Parsed Result preview shows document segments without creating a Chunk Management product surface."
+      - "POST /api/sources/{sourceId}/raw-materials/import can generate a Draft WikiNode Suggestion after local import and parse."
+      - "The import result returns a suggestionId when suggestion generation succeeds."
+      - "Source detail links to the generated Draft WikiNode Suggestion."
+      - "Source Operation evidence includes import, parse, and suggest_wikinode actions."
       - "No embedding, vector sync, external connector, auth, permission, publish, batch, export, Agent, Chatbot, Workflow, or Vector DB Management is added."

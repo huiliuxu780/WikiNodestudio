@@ -258,9 +258,10 @@ export async function mockSourceEvidenceApi(page: Page) {
           rawMaterialId: "rm-import-playwright",
           parsedDocumentId: "pd-import-playwright",
           status: "succeeded",
-          summary: "已导入文件、生成 Parsed Document 和文档片段。",
+          summary: "已导入文件、生成 Parsed Document、文档片段和待审核 WikiNode 建议。",
           segmentCount: 2,
           segmentIds: ["pds-pd-import-playwright-001", "pds-pd-import-playwright-002"],
+          suggestionId: "sug-pd-import-playwright",
         },
       })
     }
