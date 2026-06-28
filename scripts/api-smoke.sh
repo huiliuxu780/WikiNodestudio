@@ -33,7 +33,7 @@ cleanup() {
       --port="${DB_PORT}" \
       --username="${DB_USER}" \
       --dbname="${DB_NAME}" \
-      --command="delete from draft_wikinode_relation_candidates where suggestion_id in (select suggestion_id from draft_wikinode_suggestions where raw_material_id like 'rm-import-%' or parsed_document_id like 'pd-import-%'); delete from draft_wikinode_suggestion_source_refs where suggestion_id in (select suggestion_id from draft_wikinode_suggestions where raw_material_id like 'rm-import-%' or parsed_document_id like 'pd-import-%'); delete from draft_wikinode_suggestions where raw_material_id like 'rm-import-%' or parsed_document_id like 'pd-import-%'; delete from source_operations where raw_material_id like 'rm-import-%' or parsed_document_id like 'pd-import-%'; delete from raw_materials where raw_material_id like 'rm-import-%'; delete from wiki_nodes where node_id like 'api-smoke-%';" >/dev/null
+      --command="delete from draft_wikinode_relation_candidates where suggestion_id in (select suggestion_id from draft_wikinode_suggestions where raw_material_id like 'rm-import-%' or parsed_document_id like 'pd-import-%'); delete from draft_wikinode_suggestion_source_refs where suggestion_id in (select suggestion_id from draft_wikinode_suggestions where raw_material_id like 'rm-import-%' or parsed_document_id like 'pd-import-%'); delete from draft_wikinode_suggestions where raw_material_id like 'rm-import-%' or parsed_document_id like 'pd-import-%'; delete from source_operations where raw_material_id like 'rm-import-%' or parsed_document_id like 'pd-import-%'; delete from raw_materials where raw_material_id like 'rm-import-%'; delete from wiki_nodes where node_id like 'wn-from-sug-pd-import-%'; delete from wiki_nodes where node_id like 'api-smoke-%';" >/dev/null
     echo "api-smoke: cleaned temporary api-smoke nodes"
   fi
 }
@@ -153,7 +153,7 @@ if (Object.prototype.hasOwnProperty.call(parsedDocumentDetail, "chunk")) {
 
 const importForm = new FormData()
 importForm.append("requestedBy", "api-smoke")
-importForm.append("file", new Blob(["# API Smoke Import\n\n导入后形成 Parsed Document 和文档片段。"], { type: "text/markdown" }), "api-smoke-import.md")
+importForm.append("file", new Blob(["# API Smoke 端到端验收排查\n\nAPI Smoke 端到端验收排查用于确认导入、拆分、图谱和召回。\n\n## 关系证据\n\n请参考 [[收费政策]]。"], { type: "text/markdown" }), "api-smoke-import.md")
 const sourceImport = await requestForm("POST /api/sources/{id}/raw-materials/import", "/sources/src-pdf-dishwasher/raw-materials/import", importForm)
 if (sourceImport.sourceId !== "src-pdf-dishwasher" || sourceImport.status !== "succeeded" || sourceImport.segmentCount < 1 || !sourceImport.rawMaterialId || !sourceImport.parsedDocumentId || !sourceImport.suggestionId) {
   throw new Error("POST /api/sources/{id}/raw-materials/import: FAIL expected import result")
@@ -184,6 +184,62 @@ if (importedSuggestion.parsedDocumentId !== sourceImport.parsedDocumentId || imp
 
 if (JSON.stringify(importedSuggestion).includes("indexSegmentId") || JSON.stringify(importedSuggestion).includes("nodeId") || JSON.stringify(importedSuggestion).includes("embedding") || JSON.stringify(importedSuggestion).includes("vector")) {
   throw new Error("GET /api/draft-wikinode-suggestions/{importedSuggestionId}: FAIL response exposed forbidden internals")
+}
+
+const importedAcceptedSuggestion = await request("POST /api/draft-wikinode-suggestions/{importedSuggestionId}/accept", `/draft-wikinode-suggestions/${sourceImport.suggestionId}/accept`, {
+  method: "POST",
+  body: JSON.stringify({
+    reviewNote: "API smoke 确认本地导入建议进入 WikiNode。",
+  }),
+})
+
+if (importedAcceptedSuggestion.status !== "accepted" || !importedAcceptedSuggestion.nodeId || importedAcceptedSuggestion.indexSegmentCount !== 3) {
+  throw new Error("POST /api/draft-wikinode-suggestions/{importedSuggestionId}/accept: FAIL expected imported suggestion to become draft WikiNode")
+}
+
+const importedPublished = await request("POST /api/wiki-nodes/{importedNodeId}/publish", `/wiki-nodes/${importedAcceptedSuggestion.nodeId}/publish`, {
+  method: "POST",
+  body: JSON.stringify({}),
+})
+
+if (importedPublished.status !== "published" || importedPublished.indexStatus !== "outdated" || importedPublished.indexSegmentCount !== 3) {
+  throw new Error("POST /api/wiki-nodes/{importedNodeId}/publish: FAIL expected imported WikiNode local publish preparation")
+}
+
+const importedGraph = await request("GET /api/wiki-graph/overview after imported publish", "/wiki-graph/overview")
+if (
+  !Array.isArray(importedGraph.nodes) ||
+  !importedGraph.nodes.some((node) => node.nodeId === importedAcceptedSuggestion.nodeId && node.title === "API Smoke 端到端验收排查") ||
+  !Array.isArray(importedGraph.edges) ||
+  !importedGraph.edges.some((edge) =>
+    edge.fromNodeId === importedAcceptedSuggestion.nodeId &&
+    edge.targetTitle === "收费政策" &&
+    edge.resolved === true
+  )
+) {
+  throw new Error("GET /api/wiki-graph/overview after imported publish: FAIL expected imported WikiNode and resolved WikiLink edge")
+}
+
+const importedRetrieval = await request("POST /api/retrieval-test imported WikiNode", "/retrieval-test", {
+  method: "POST",
+  body: JSON.stringify({
+    query: "API Smoke 端到端验收排查 图谱 召回",
+    filters: {},
+    topK: 5,
+    debug: true,
+  }),
+})
+
+const importedRetrievalResult = Array.isArray(importedRetrieval)
+  ? importedRetrieval.find((result) => result.node?.nodeId === importedAcceptedSuggestion.nodeId)
+  : null
+
+if (!importedRetrievalResult || !Array.isArray(importedRetrievalResult.matchedSegments) || !importedRetrievalResult.matchedSegments.some((segment) => segment.nodeId === importedAcceptedSuggestion.nodeId)) {
+  throw new Error("POST /api/retrieval-test imported WikiNode: FAIL expected imported WikiNode result with matched Index Segment evidence")
+}
+
+if (importedRetrieval.some((result) => Object.prototype.hasOwnProperty.call(result, "chunk") || Object.prototype.hasOwnProperty.call(result, "document"))) {
+  throw new Error("POST /api/retrieval-test imported WikiNode: FAIL response exposed chunk or document as primary result")
 }
 
 const sourceOperationDetail = await request("GET /api/source-operations/{id}", "/source-operations/op-src-feishu-sync-001")
