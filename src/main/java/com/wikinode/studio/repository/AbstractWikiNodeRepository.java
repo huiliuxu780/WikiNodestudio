@@ -1494,14 +1494,17 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   }
 
   private String suggestedTitle(ParsedDocument parsedDocument) {
+    String content = Optional.ofNullable(parsedDocument.normalizedContent()).orElse("");
+    Matcher heading = Pattern.compile("(?m)^#\\s+(.+)$").matcher(content);
+    if (heading.find()) {
+      return heading.group(1).trim();
+    }
     String title = parsedDocument.title() == null ? "" : parsedDocument.title().trim();
     title = title.replaceAll("\\s*解析结果$", "").trim();
     if (!title.isBlank()) {
       return title;
     }
-    String content = Optional.ofNullable(parsedDocument.normalizedContent()).orElse("");
-    Matcher heading = Pattern.compile("(?m)^#\\s+(.+)$").matcher(content);
-    return heading.find() ? heading.group(1).trim() : parsedDocument.parsedDocumentId();
+    return parsedDocument.parsedDocumentId();
   }
 
   private String suggestedObjectType(ParsedDocument parsedDocument) {

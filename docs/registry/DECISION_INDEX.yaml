@@ -1,5 +1,15 @@
 version: 1
 decisions:
+  - id: D073
+    date: "2026-06-28"
+    title: "Lock Source import through WikiGraph and Retrieval API acceptance"
+    rationale: "After IM069-IM072 made local Source import, document segment persistence, Draft WikiNode Suggestion acceptance, Index Segment preparation, and local publish lifecycle executable, IM073 adds an end-to-end acceptance guard so the same imported file can become a WikiNode, appear in WikiGraph with a resolved WikiLink edge, and be returned by Retrieval API as a WikiNode result. It also makes local import suggestion titles prefer the document H1 over the filename. The work keeps embedding, vector document writes, external vector sync, approval/RBAC, batch/export, Agent, Chatbot, Workflow Builder, Vector DB Management, and product-facing Chunk Management out of scope."
+    related:
+      - IM073
+      - US073
+      - SOURCE_TO_GRAPH_RETRIEVAL_ACCEPTANCE_CHAIN
+      - PUBLISHING_INDEX_LIFECYCLE_LOCAL_EXECUTION
+      - SOURCE_IMPORT_TO_DRAFT_WIKINODE_SUGGESTION_FLOW
   - id: D072
     date: "2026-06-28"
     title: "Execute local WikiNode publish and reindex lifecycle without vector sync"

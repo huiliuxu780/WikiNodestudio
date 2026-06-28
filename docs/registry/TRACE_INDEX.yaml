@@ -31,6 +31,15 @@ product_docs:
   IMPLEMENTATION_SLICE_PRINCIPLES:
     file: docs/current/IMPLEMENTATION_SLICE_PRINCIPLES.md
 current_corrections:
+  SOURCE_TO_GRAPH_RETRIEVAL_ACCEPTANCE_CHAIN:
+    decision: D073
+    story_queue: docs/current/STORY_QUEUE.yaml
+    active_task: docs/current/ACTIVE_TASKS.yaml
+    repository:
+      - src/main/java/com/wikinode/studio/repository/AbstractWikiNodeRepository.java
+    tests:
+      - src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+    smoke: scripts/api-smoke.sh
   PUBLISHING_INDEX_LIFECYCLE_LOCAL_EXECUTION:
     decision: D072
     story_queue: docs/current/STORY_QUEUE.yaml
@@ -668,6 +677,9 @@ tasks:
   IM072:
     decision: D072
     implementation: PUBLISHING_INDEX_LIFECYCLE_LOCAL_EXECUTION
+  IM073:
+    decision: D073
+    implementation: SOURCE_TO_GRAPH_RETRIEVAL_ACCEPTANCE_CHAIN
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN

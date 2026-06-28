@@ -239,6 +239,96 @@ class WikiNodeApiContractTest {
   }
 
   @Test
+  void importedSourceCanReachWikiGraphAndRetrievalAsWikiNode() throws Exception {
+    String boundary = "----wikinode-e2e-boundary";
+    String markdown = """
+      # 端到端验收排查规范
+
+      端到端验收排查用于确认导入、拆分、图谱和召回链路。
+
+      ## 处理口径
+
+      端到端验收排查需要参考 [[收费政策]]，并保留图谱关系。
+      """;
+
+    HttpResponse<String> imported = postMultipart(
+      "/api/sources/src-pdf-dishwasher/raw-materials/import",
+      boundary,
+      "e2e-acceptance.md",
+      markdown
+    );
+
+    assertThat(imported.statusCode()).isEqualTo(200);
+    assertThat(imported.body()).contains("\"segmentCount\":");
+    assertThat(imported.body()).contains("\"suggestionId\":\"");
+
+    String parsedDocumentId = extract(imported.body(), "parsedDocumentId");
+    String suggestionId = extract(imported.body(), "suggestionId");
+
+    HttpResponse<String> documentSegments = get("/api/parsed-documents/%s/segments".formatted(parsedDocumentId));
+    assertThat(documentSegments.statusCode()).isEqualTo(200);
+    assertThat(documentSegments.body()).contains("\"parsedDocumentId\":\"%s\"".formatted(parsedDocumentId));
+    assertThat(documentSegments.body()).contains("端到端验收排查");
+    assertThat(documentSegments.body()).doesNotContain("\"chunk\"");
+
+    HttpResponse<String> accepted = post(
+      "/api/draft-wikinode-suggestions/%s/accept".formatted(suggestionId),
+      """
+        {
+          "reviewNote": "端到端验收链路通过后进入草稿 WikiNode。"
+        }
+        """
+    );
+
+    assertThat(accepted.statusCode()).isEqualTo(200);
+    assertThat(accepted.body()).contains("\"status\":\"accepted\"");
+    assertThat(accepted.body()).contains("\"nodeId\":\"");
+    assertThat(accepted.body()).contains("\"indexSegmentCount\":3");
+
+    String nodeId = extract(accepted.body(), "nodeId");
+
+    HttpResponse<String> published = post("/api/wiki-nodes/%s/publish".formatted(nodeId), "{}");
+    HttpResponse<String> indexSegments = get("/api/wiki-nodes/%s/index-segments".formatted(nodeId));
+    HttpResponse<String> graph = get("/api/wiki-graph/overview");
+    HttpResponse<String> retrieval = post(
+      "/api/retrieval-test",
+      """
+        {
+          "query": "端到端验收排查 图谱 召回",
+          "filters": {},
+          "topK": 5,
+          "debug": true
+        }
+        """
+    );
+
+    assertThat(published.statusCode()).isEqualTo(200);
+    assertThat(published.body()).contains("\"nodeId\":\"%s\"".formatted(nodeId));
+    assertThat(published.body()).contains("\"status\":\"published\"");
+    assertThat(published.body()).contains("\"indexStatus\":\"outdated\"");
+
+    assertThat(indexSegments.statusCode()).isEqualTo(200);
+    assertThat(indexSegments.body()).contains("\"nodeId\":\"%s\"".formatted(nodeId));
+    assertThat(indexSegments.body()).contains("\"traceSource\":\"wiki_node\"");
+    assertThat(indexSegments.body()).contains("\"vectorDocId\":null");
+
+    assertThat(graph.statusCode()).isEqualTo(200);
+    assertThat(graph.body()).contains("\"nodeId\":\"%s\"".formatted(nodeId));
+    assertThat(graph.body()).contains("\"title\":\"端到端验收排查规范\"");
+    assertThat(graph.body()).contains("\"fromNodeId\":\"%s\"".formatted(nodeId));
+    assertThat(graph.body()).contains("\"targetTitle\":\"收费政策\"");
+    assertThat(graph.body()).contains("\"resolved\":true");
+
+    assertThat(retrieval.statusCode()).isEqualTo(200);
+    assertThat(retrieval.body()).contains("\"node\":");
+    assertThat(retrieval.body()).contains("\"nodeId\":\"%s\"".formatted(nodeId));
+    assertThat(retrieval.body()).contains("\"matchedSegments\"");
+    assertThat(retrieval.body()).contains("\"segmentId\":\"seg-%s-title\"".formatted(nodeId));
+    assertThat(retrieval.body()).doesNotContain("\"chunk\"");
+    assertThat(retrieval.body()).doesNotContain("\"document\"");
+  }
+
+  @Test
   void exposesSourceOperationLogsAsReadOnlyEvidence() throws Exception {
     HttpResponse<String> sourceOperations = get("/api/sources/src-feishu-cc/operations");
     HttpResponse<String> rawMaterialOperations = get("/api/raw-materials/rm-001/operations");

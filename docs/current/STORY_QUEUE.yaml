@@ -6,13 +6,14 @@ notes:
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
 stories:
-  - id: US072
-    title: "Publishing and Index Lifecycle Local Execution"
+  - id: US073
+    title: "Source to Graph Retrieval Acceptance Chain"
     status: in_progress
     priority: high
-    summary: "Make WikiNode publish and reindex actions execute against local backend state, preparing Index Segments while keeping embedding and external vector sync out of scope."
+    summary: "Lock the local end-to-end acceptance chain from Source import and document segment persistence through Draft WikiNode Suggestion, local publish preparation, WikiGraph visibility, and Retrieval API WikiNode results."
     acceptance:
-      - "POST /api/wiki-nodes/{nodeId}/publish updates an eligible WikiNode to published/outdated and prepares local Index Segments."
-      - "POST /api/wiki-nodes/{nodeId}/reindex regenerates local Index Segments and keeps external vector sync pending."
-      - "WikiNode editor publish and reindex buttons use the backend lifecycle APIs instead of local mock state."
+      - "A local imported markdown file creates Raw Material, Parsed Document, and document segment evidence."
+      - "The generated Draft WikiNode Suggestion can be accepted into a WikiNode and locally published with prepared Index Segments."
+      - "The accepted imported WikiNode appears in WikiGraph overview with a resolved WikiLink edge from imported content."
+      - "Retrieval API returns the accepted imported WikiNode as a WikiNode result and exposes matched Index Segment evidence only in debug mode."
       - "The flow does not invoke embedding, write vector documents, sync external vector stores, add approval/RBAC, batch/export, Agent, Chatbot, Workflow, or product-facing Chunk Management."
