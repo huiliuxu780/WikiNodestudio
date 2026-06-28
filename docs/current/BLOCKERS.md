@@ -6,8 +6,8 @@ None.
 
 ## Active Scope Constraints
 
-- Active executable IM: `IM073 Source to Graph Retrieval Acceptance Chain`.
-- IM073 may change repository behavior, backend contract tests, API smoke, and current/registry docs only where required to lock the Source import -> document segments -> Draft WikiNode Suggestion -> WikiNode publish preparation -> WikiGraph -> Retrieval API acceptance chain.
+- Active executable IM: `IM074 Manual E2E Acceptance Pack`.
+- IM074 may change only current/registry documentation needed to make the Source import -> document segments -> Draft WikiNode Suggestion -> WikiNode publish preparation -> WikiGraph -> Retrieval API acceptance chain manually repeatable.
 - Future frontend work must follow `docs/quality/frontend-ux-guidelines.md`.
 - Future B2B/governance pages must use dense evidence consoles, tables, lists, or side panels instead of AI-style explainer-card stacks.
 

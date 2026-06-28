@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D074
+    date: "2026-06-29"
+    title: "Document the manual Source to Graph Retrieval acceptance pack"
+    rationale: "After IM073 locked the API-level guard for Source import through WikiGraph and Retrieval API, IM074 adds a repository-owned manual acceptance pack so PM testing can repeat the same chain through browser steps and the existing API smoke guard. The work is documentation-only and does not change product UI, backend API, database migrations, dependencies, external vector sync, approval/RBAC, batch/export, Agent, Chatbot, Workflow Builder, Vector DB Management, or product-facing Chunk Management."
+    related:
+      - IM074
+      - US074
+      - SOURCE_TO_GRAPH_RETRIEVAL_MANUAL_ACCEPTANCE_PACK
+      - SOURCE_TO_GRAPH_RETRIEVAL_ACCEPTANCE_CHAIN
   - id: D073
     date: "2026-06-28"
     title: "Lock Source import through WikiGraph and Retrieval API acceptance"

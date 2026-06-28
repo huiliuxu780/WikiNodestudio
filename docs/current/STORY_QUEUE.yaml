@@ -1,19 +1,18 @@
 version: 2
-updated_at: "2026-06-28"
+updated_at: "2026-06-29"
 source_of_truth: "current_story_queue"
 notes:
   - "Only ready, in_progress, and blocked stories belong here."
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
 stories:
-  - id: US073
-    title: "Source to Graph Retrieval Acceptance Chain"
+  - id: US074
+    title: "Manual E2E Acceptance Pack"
     status: in_progress
     priority: high
-    summary: "Lock the local end-to-end acceptance chain from Source import and document segment persistence through Draft WikiNode Suggestion, local publish preparation, WikiGraph visibility, and Retrieval API WikiNode results."
+    summary: "Provide a repeatable local manual acceptance pack for Source import through WikiGraph and Retrieval API so PM testing can validate the full chain without relying on chat notes."
     acceptance:
-      - "A local imported markdown file creates Raw Material, Parsed Document, and document segment evidence."
-      - "The generated Draft WikiNode Suggestion can be accepted into a WikiNode and locally published with prepared Index Segments."
-      - "The accepted imported WikiNode appears in WikiGraph overview with a resolved WikiLink edge from imported content."
-      - "Retrieval API returns the accepted imported WikiNode as a WikiNode result and exposes matched Index Segment evidence only in debug mode."
-      - "The flow does not invoke embedding, write vector documents, sync external vector stores, add approval/RBAC, batch/export, Agent, Chatbot, Workflow, or product-facing Chunk Management."
+      - "The pack lists environment preconditions, sample markdown content, browser steps, API guard, pass criteria, fail criteria, and explicit non-goals."
+      - "The browser steps cover Source import, Raw Material, Parsed Document, document segments, Draft WikiNode Suggestion, WikiNode publish, WikiGraph, and Retrieval API."
+      - "The API guard points to the existing smoke checks that verify the same imported WikiNode reaches WikiGraph and Retrieval API."
+      - "The pack remains documentation-only and does not add product UI, backend API, DB migration, dependency, external vector sync, Agent, Chatbot, Workflow, or Vector DB Management scope."

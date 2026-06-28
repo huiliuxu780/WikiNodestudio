@@ -1,30 +1,24 @@
 version: 2
-updated_at: "2026-06-28"
+updated_at: "2026-06-29"
 source_of_truth: "current_active_tasks"
 notes:
   - "Each IM is a product capability slice and must stop after local verification and commit."
   - "Do not auto-enter the next IM without explicit user confirmation."
   - "Done history stays in release docs or archive."
 tasks:
-  - id: IM073
-    story_id: US073
-    title: "Source to Graph Retrieval Acceptance Chain"
+  - id: IM074
+    story_id: US074
+    title: "Manual E2E Acceptance Pack"
     status: in_progress
     required_workflow: default
     allowed_files:
-      - "src/main/java/com/wikinode/studio/api/**"
-      - "src/main/java/com/wikinode/studio/model/**"
-      - "src/main/java/com/wikinode/studio/repository/**"
-      - "src/test/java/**"
-      - "scripts/api-smoke.sh"
       - "docs/current/**"
       - "docs/registry/**"
     forbidden_files:
       - "package.json"
       - "pnpm-lock.yaml"
     acceptance:
-      - "A local imported markdown file persists Raw Material, Parsed Document, and document segment evidence."
-      - "The generated Draft WikiNode Suggestion is accepted into a WikiNode and locally published with prepared Index Segments."
-      - "WikiGraph overview contains the accepted imported WikiNode and its resolved WikiLink edge."
-      - "Retrieval API returns the accepted imported WikiNode as a WikiNode result, with matched Index Segment evidence only in debug mode."
-      - "No embedding, external vector write/sync, connector, auth, permission, approval, batch, export, Agent, Chatbot, Workflow, or Vector DB Management is added."
+      - "Add a manual acceptance pack for Source import through WikiGraph and Retrieval API."
+      - "List preconditions, sample markdown content, browser steps, API guard, pass criteria, fail criteria, and explicit non-goals."
+      - "Reference existing API smoke guard instead of adding product behavior."
+      - "Do not change product code, backend API, DB migration, package files, dependency, external vector sync, Agent, Chatbot, Workflow, or Vector DB Management scope."

@@ -31,6 +31,11 @@ product_docs:
   IMPLEMENTATION_SLICE_PRINCIPLES:
     file: docs/current/IMPLEMENTATION_SLICE_PRINCIPLES.md
 current_corrections:
+  SOURCE_TO_GRAPH_RETRIEVAL_MANUAL_ACCEPTANCE_PACK:
+    decision: D074
+    story_queue: docs/current/STORY_QUEUE.yaml
+    active_task: docs/current/ACTIVE_TASKS.yaml
+    document: docs/current/SOURCE_TO_GRAPH_RETRIEVAL_MANUAL_ACCEPTANCE_PACK.md
   SOURCE_TO_GRAPH_RETRIEVAL_ACCEPTANCE_CHAIN:
     decision: D073
     story_queue: docs/current/STORY_QUEUE.yaml
@@ -680,6 +685,9 @@ tasks:
   IM073:
     decision: D073
     implementation: SOURCE_TO_GRAPH_RETRIEVAL_ACCEPTANCE_CHAIN
+  IM074:
+    decision: D074
+    implementation: SOURCE_TO_GRAPH_RETRIEVAL_MANUAL_ACCEPTANCE_PACK
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN
