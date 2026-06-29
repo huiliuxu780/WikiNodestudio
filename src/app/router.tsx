@@ -3,6 +3,11 @@ import { createBrowserRouter, Navigate } from "react-router-dom"
 import { AppShell } from "@/components/layout/app-shell"
 import { BrokenLinksPage } from "@/pages/broken-links-page"
 import { IndexStatusPage } from "@/pages/index-status-page"
+import {
+  KnowledgeBaseDetailPage,
+  KnowledgeBaseListPage,
+  KnowledgeBaseSettingsPage,
+} from "@/pages/knowledge-base-pages"
 import { OverviewPage } from "@/pages/overview-page"
 import { RetrievalTestPage } from "@/pages/retrieval-test-page"
 import { SettingsPage } from "@/pages/settings-page"
@@ -17,9 +22,6 @@ import {
   DraftWikiNodeSuggestionReviewConsolePage,
   GenericSkeletonPage,
   IndexSegmentListPage,
-  KnowledgeBaseDetailPage,
-  KnowledgeBaseListPage,
-  KnowledgeBaseSettingsPage,
   ParserEnginePage,
   ParsedResultPreviewPage,
   PublishingPage,

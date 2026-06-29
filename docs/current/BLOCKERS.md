@@ -6,8 +6,8 @@ None.
 
 ## Active Scope Constraints
 
-- Active executable IM: `IM073 Source to Graph Retrieval Acceptance Chain`.
-- IM073 may change repository behavior, backend contract tests, API smoke, and current/registry docs only where required to lock the Source import -> document segments -> Draft WikiNode Suggestion -> WikiNode publish preparation -> WikiGraph -> Retrieval API acceptance chain.
+- Active executable IM: `IM075 Knowledge Base Administration`.
+- IM075 may change backend model/API/repository, database migration, frontend Knowledge Base pages, frontend services/types, tests, and current/registry docs only where required to implement Knowledge Base administration as the scope container around WikiNodes and Sources.
 - Future frontend work must follow `docs/quality/frontend-ux-guidelines.md`.
 - Future B2B/governance pages must use dense evidence consoles, tables, lists, or side panels instead of AI-style explainer-card stacks.
 

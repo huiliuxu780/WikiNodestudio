@@ -31,6 +31,31 @@ product_docs:
   IMPLEMENTATION_SLICE_PRINCIPLES:
     file: docs/current/IMPLEMENTATION_SLICE_PRINCIPLES.md
 current_corrections:
+  KNOWLEDGE_BASE_ADMINISTRATION:
+    decision: D075
+    story_queue: docs/current/STORY_QUEUE.yaml
+    active_task: docs/current/ACTIVE_TASKS.yaml
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    models:
+      - src/main/java/com/wikinode/studio/model/KnowledgeBase.java
+      - src/main/java/com/wikinode/studio/model/KnowledgeBaseRequest.java
+      - src/main/java/com/wikinode/studio/model/KnowledgeBaseLifecycleResult.java
+    repository:
+      - src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
+      - src/main/java/com/wikinode/studio/repository/AbstractWikiNodeRepository.java
+      - src/main/java/com/wikinode/studio/repository/JdbcWikiNodeRepository.java
+      - src/main/java/com/wikinode/studio/repository/InMemoryWikiNodeRepository.java
+    migration: src/main/resources/db/migration/V13__create_knowledge_base_schema.sql
+    frontend:
+      - src/pages/knowledge-base-pages.tsx
+      - src/services/knowledge-base-api-service.ts
+      - src/types/knowledge-base.ts
+      - src/utils/display-labels.ts
+    tests:
+      - src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+      - src/test/java/com/wikinode/studio/repository/JdbcWikiNodeRepositoryTest.java
+      - tests/e2e/knowledge-base-administration.spec.ts
+    smoke: scripts/api-smoke.sh
   SOURCE_TO_GRAPH_RETRIEVAL_ACCEPTANCE_CHAIN:
     decision: D073
     story_queue: docs/current/STORY_QUEUE.yaml
@@ -680,6 +705,9 @@ tasks:
   IM073:
     decision: D073
     implementation: SOURCE_TO_GRAPH_RETRIEVAL_ACCEPTANCE_CHAIN
+  IM075:
+    decision: D075
+    implementation: KNOWLEDGE_BASE_ADMINISTRATION
   IM033:
     decision: D033
     plan: SINGLE_RAW_MATERIAL_PARSE_PLAN

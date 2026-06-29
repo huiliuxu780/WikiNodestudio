@@ -2,6 +2,9 @@ package com.wikinode.studio.api;
 
 import com.wikinode.studio.model.IndexStatusSummary;
 import com.wikinode.studio.model.IndexSegment;
+import com.wikinode.studio.model.KnowledgeBase;
+import com.wikinode.studio.model.KnowledgeBaseLifecycleResult;
+import com.wikinode.studio.model.KnowledgeBaseRequest;
 import com.wikinode.studio.model.KnowledgeRelation;
 import com.wikinode.studio.model.KnowledgeRelationRequest;
 import com.wikinode.studio.model.ParsedDocument;
@@ -69,6 +72,58 @@ public class WikiNodeController {
 
   public WikiNodeController(WikiNodeRepository repository) {
     this.repository = repository;
+  }
+
+  @GetMapping("/knowledge-bases")
+  public List<KnowledgeBase> listKnowledgeBases(
+    @RequestParam(required = false) String keyword,
+    @RequestParam(required = false) String status,
+    @RequestParam(required = false) String visibility
+  ) {
+    return repository.listKnowledgeBases(keyword, status, visibility);
+  }
+
+  @GetMapping("/knowledge-bases/{kbId}")
+  public KnowledgeBase getKnowledgeBase(@PathVariable String kbId) {
+    return repository.findKnowledgeBase(kbId)
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Knowledge Base not found"));
+  }
+
+  @PostMapping("/knowledge-bases")
+  public KnowledgeBase createKnowledgeBase(@RequestBody KnowledgeBaseRequest request) {
+    try {
+      return repository.createKnowledgeBase(request);
+    } catch (IllegalArgumentException error) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, error.getMessage());
+    }
+  }
+
+  @PutMapping("/knowledge-bases/{kbId}")
+  public KnowledgeBase updateKnowledgeBase(@PathVariable String kbId, @RequestBody KnowledgeBaseRequest request) {
+    ensureKnowledgeBaseExists(kbId);
+    try {
+      return repository.updateKnowledgeBase(kbId, request);
+    } catch (IllegalArgumentException error) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, error.getMessage());
+    }
+  }
+
+  @PostMapping("/knowledge-bases/{kbId}/disable")
+  public KnowledgeBaseLifecycleResult disableKnowledgeBase(@PathVariable String kbId) {
+    ensureKnowledgeBaseExists(kbId);
+    return repository.disableKnowledgeBase(kbId);
+  }
+
+  @PostMapping("/knowledge-bases/{kbId}/archive")
+  public KnowledgeBaseLifecycleResult archiveKnowledgeBase(@PathVariable String kbId) {
+    ensureKnowledgeBaseExists(kbId);
+    return repository.archiveKnowledgeBase(kbId);
+  }
+
+  @PostMapping("/knowledge-bases/{kbId}/restore")
+  public KnowledgeBaseLifecycleResult restoreKnowledgeBase(@PathVariable String kbId) {
+    ensureKnowledgeBaseExists(kbId);
+    return repository.restoreKnowledgeBase(kbId);
   }
 
   @GetMapping("/wiki-nodes")
@@ -414,6 +469,12 @@ public class WikiNodeController {
   private void ensureNodeExists(String id) {
     if (repository.findNode(id).isEmpty()) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "WikiNode not found");
+    }
+  }
+
+  private void ensureKnowledgeBaseExists(String kbId) {
+    if (repository.findKnowledgeBase(kbId).isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Knowledge Base not found");
     }
   }
 

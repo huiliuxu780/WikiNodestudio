@@ -28,9 +28,127 @@ class WikiNodeApiContractTest {
 
     assertThat(response.statusCode()).isEqualTo(200);
     assertThat(response.body()).contains("\"nodeId\"");
+    assertThat(response.body()).contains("\"knowledgeBaseId\"");
     assertThat(response.body()).contains("\"contentMarkdown\"");
     assertThat(response.body()).contains("\"sourceRefs\"");
     assertThat(response.body()).contains("\"indexStatus\"");
+  }
+
+  @Test
+  void managesKnowledgeBasesThroughApi() throws Exception {
+    HttpResponse<String> list = get("/api/knowledge-bases");
+    HttpResponse<String> filtered = get("/api/knowledge-bases?keyword=after&status=active&visibility=internal");
+    HttpResponse<String> detail = get("/api/knowledge-bases/kb-cc-after-sales");
+
+    assertThat(list.statusCode()).isEqualTo(200);
+    assertThat(list.body()).contains("\"kbId\":\"kb-cc-after-sales\"");
+    assertThat(list.body()).contains("\"name\":\"CC After-sales KB\"");
+    assertThat(list.body()).contains("\"status\":\"active\"");
+    assertThat(list.body()).contains("\"visibility\":\"internal\"");
+    assertThat(list.body()).contains("\"wikiNodeCount\":");
+    assertThat(list.body()).contains("\"sourceCount\":");
+    assertThat(list.body()).contains("\"settings\"");
+    assertThat(list.body()).doesNotContain("\"permission\"");
+    assertThat(list.body()).doesNotContain("\"Chatbot\"");
+    assertThat(list.body()).doesNotContain("\"Workflow Builder\"");
+
+    assertThat(filtered.statusCode()).isEqualTo(200);
+    assertThat(filtered.body()).contains("\"kbId\":\"kb-cc-after-sales\"");
+    assertThat(filtered.body()).doesNotContain("\"kbId\":\"kb-product-guide\"");
+
+    assertThat(detail.statusCode()).isEqualTo(200);
+    assertThat(detail.body()).contains("\"kbId\":\"kb-cc-after-sales\"");
+    assertThat(detail.body()).contains("\"defaultRetrievalStrategy\":\"wikinode_first\"");
+    assertThat(detail.body()).contains("\"wikiNodeCount\":");
+
+    String createBody = """
+      {
+        "kbId": "kb-api-service",
+        "name": "API Service KB",
+        "description": "API 服务知识库，用于验证 Knowledge Base 管理。",
+        "businessDomain": "api_service",
+        "type": "mixed",
+        "visibility": "internal",
+        "owner": "Knowledge Ops",
+        "settings": {
+          "defaultNodeType": "policy",
+          "defaultParserEngine": "markdown",
+          "defaultStorageProvider": "workspace",
+          "defaultVectorStore": "external_vector_store",
+          "defaultPublishingPolicy": "manual",
+          "defaultRetrievalStrategy": "wikinode_first"
+        }
+      }
+      """;
+    HttpResponse<String> created = post("/api/knowledge-bases", createBody);
+    assertThat(created.statusCode()).isEqualTo(200);
+    assertThat(created.body()).contains("\"kbId\":\"kb-api-service\"");
+    assertThat(created.body()).contains("\"status\":\"active\"");
+    assertThat(created.body()).contains("\"defaultRetrievalStrategy\":\"wikinode_first\"");
+
+    String updateBody = """
+      {
+        "name": "API Service Knowledge Base",
+        "description": "更新后的 API 服务知识库。",
+        "businessDomain": "api_service",
+        "type": "mixed",
+        "visibility": "private",
+        "owner": "Knowledge Ops",
+        "settings": {
+          "defaultNodeType": "procedure",
+          "defaultParserEngine": "markdown",
+          "defaultStorageProvider": "workspace",
+          "defaultVectorStore": "external_vector_store",
+          "defaultPublishingPolicy": "manual",
+          "defaultRetrievalStrategy": "wikinode_first"
+        }
+      }
+      """;
+    HttpResponse<String> updated = put("/api/knowledge-bases/kb-api-service", updateBody);
+    HttpResponse<String> disabled = post("/api/knowledge-bases/kb-api-service/disable", "{}");
+    HttpResponse<String> archived = post("/api/knowledge-bases/kb-api-service/archive", "{}");
+    HttpResponse<String> restored = post("/api/knowledge-bases/kb-api-service/restore", "{}");
+
+    assertThat(updated.statusCode()).isEqualTo(200);
+    assertThat(updated.body()).contains("\"name\":\"API Service Knowledge Base\"");
+    assertThat(updated.body()).contains("\"visibility\":\"private\"");
+    assertThat(disabled.statusCode()).isEqualTo(200);
+    assertThat(disabled.body()).contains("\"status\":\"disabled\"");
+    assertThat(disabled.body()).contains("已停用知识库");
+    assertThat(archived.statusCode()).isEqualTo(200);
+    assertThat(archived.body()).contains("\"status\":\"archived\"");
+    assertThat(archived.body()).contains("\"archivedAt\":\"");
+    assertThat(restored.statusCode()).isEqualTo(200);
+    assertThat(restored.body()).contains("\"status\":\"active\"");
+    assertThat(restored.body()).contains("\"archivedAt\":null");
+  }
+
+  @Test
+  void scopesWikiNodesSourcesAndRetrievalByKnowledgeBase() throws Exception {
+    HttpResponse<String> afterSalesNode = get("/api/wiki-nodes/wn-001");
+    HttpResponse<String> productSource = get("/api/sources/src-pdf-dishwasher");
+    String retrievalBody = """
+      {
+        "query": "保修政策",
+        "filters": {
+          "knowledgeBaseId": "kb-product-guide"
+        },
+        "topK": 5,
+        "debug": true
+      }
+      """;
+    HttpResponse<String> retrieval = post("/api/retrieval-test", retrievalBody);
+
+    assertThat(afterSalesNode.statusCode()).isEqualTo(200);
+    assertThat(afterSalesNode.body()).contains("\"knowledgeBaseId\":\"kb-cc-after-sales\"");
+    assertThat(productSource.statusCode()).isEqualTo(200);
+    assertThat(productSource.body()).contains("\"knowledgeBaseId\":\"kb-product-guide\"");
+
+    assertThat(retrieval.statusCode()).isEqualTo(200);
+    assertThat(retrieval.body()).contains("\"node\":");
+    assertThat(retrieval.body()).contains("\"knowledgeBaseId\":\"kb-product-guide\"");
+    assertThat(retrieval.body()).doesNotContain("\"knowledgeBaseId\":\"kb-cc-after-sales\"");
+    assertThat(retrieval.body()).doesNotContain("\"chunk\"");
   }
 
   @Test

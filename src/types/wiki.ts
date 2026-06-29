@@ -107,6 +107,7 @@ export type KnowledgeRelationInput = {
 
 export type WikiNode = {
   nodeId: string
+  knowledgeBaseId?: string | null
   slug: string
   title: string
   /**

@@ -1,19 +1,19 @@
 version: 2
-updated_at: "2026-06-28"
+updated_at: "2026-06-29"
 source_of_truth: "current_story_queue"
 notes:
   - "Only ready, in_progress, and blocked stories belong here."
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
 stories:
-  - id: US073
-    title: "Source to Graph Retrieval Acceptance Chain"
+  - id: US075
+    title: "Knowledge Base Administration"
     status: in_progress
     priority: high
-    summary: "Lock the local end-to-end acceptance chain from Source import and document segment persistence through Draft WikiNode Suggestion, local publish preparation, WikiGraph visibility, and Retrieval API WikiNode results."
+    summary: "Implement Knowledge Base as the management container around WikiNodes and Sources, with backend persistence, lifecycle APIs, frontend administration pages, and minimal Retrieval API scope."
     acceptance:
-      - "A local imported markdown file creates Raw Material, Parsed Document, and document segment evidence."
-      - "The generated Draft WikiNode Suggestion can be accepted into a WikiNode and locally published with prepared Index Segments."
-      - "The accepted imported WikiNode appears in WikiGraph overview with a resolved WikiLink edge from imported content."
-      - "Retrieval API returns the accepted imported WikiNode as a WikiNode result and exposes matched Index Segment evidence only in debug mode."
-      - "The flow does not invoke embedding, write vector documents, sync external vector stores, add approval/RBAC, batch/export, Agent, Chatbot, Workflow, or product-facing Chunk Management."
+      - "Knowledge Base has persisted backend model, seeded baseline records, CRUD APIs, and disable/archive/restore lifecycle APIs."
+      - "WikiNode and Source records expose knowledgeBaseId so Knowledge Base can act as the scope container."
+      - "Retrieval API accepts a Knowledge Base filter while continuing to return WikiNode results by default."
+      - "The frontend /knowledge-bases list, detail, and settings pages use API-backed dense management surfaces."
+      - "The flow does not implement full RBAC, permission enforcement, approval workflow, copy/move/delete, external sync, embedding, vector store sync, Agent, Chatbot, Workflow, Vector DB Management, or product-facing Chunk Management."

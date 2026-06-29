@@ -239,6 +239,40 @@ export const healthLabels: Record<string, string> = {
   failed: "异常",
 }
 
+export const knowledgeBaseStatusLabels: Record<string, string> = {
+  active: "已启用",
+  disabled: "已停用",
+  archived: "已归档",
+}
+
+export const knowledgeBaseVisibilityLabels: Record<string, string> = {
+  internal: "内部可见",
+  private: "私有",
+  public: "公开",
+}
+
+export const knowledgeBaseTypeLabels: Record<string, string> = {
+  wikinode: "WikiNode 知识库",
+  document: "文档知识库",
+  faq: "问答知识库",
+  mixed: "混合知识库",
+}
+
+export const knowledgeBaseSettingLabels: Record<string, string> = {
+  defaultNodeType: "默认节点类型",
+  defaultParserEngine: "默认解析引擎",
+  defaultStorageProvider: "默认存储",
+  defaultVectorStore: "外部向量库",
+  defaultPublishingPolicy: "发布策略",
+  defaultRetrievalStrategy: "默认召回策略",
+  wikinode_first: "WikiNode 优先",
+  manual: "人工发布",
+  workspace: "工作区快照",
+  object_storage: "对象存储",
+  external_vector_store: "外部向量库",
+  markdown: "Markdown",
+}
+
 export const storageProviderLabels: Record<string, string> = {
   workspace: "工作区快照",
   local_workspace: "本地工作区",

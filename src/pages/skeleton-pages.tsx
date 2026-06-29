@@ -147,7 +147,7 @@ export function KnowledgeBaseDetailPage() {
         ["业务域", kb.businessDomain],
         ["WikiNode 数", String(kb.wikiNodeCount)],
         ["知识来源数", String(kb.sourceCount)],
-        ["索引健康度", labelFromMap(healthLabels, kb.indexHealth)],
+        ["索引健康度", labelFromMap(healthLabels, kb.indexHealth ?? "warning")],
       ]} />
     </PageScaffold>
   )

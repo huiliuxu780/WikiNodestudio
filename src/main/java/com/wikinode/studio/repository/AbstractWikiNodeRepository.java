@@ -5,6 +5,9 @@ import com.wikinode.studio.model.GraphNode;
 import com.wikinode.studio.model.IndexStatusSummary;
 import com.wikinode.studio.model.IndexSegment;
 import com.wikinode.studio.model.IndexSegmentMetadataSummaryItem;
+import com.wikinode.studio.model.KnowledgeBase;
+import com.wikinode.studio.model.KnowledgeBaseLifecycleResult;
+import com.wikinode.studio.model.KnowledgeBaseRequest;
 import com.wikinode.studio.model.KnowledgeRelation;
 import com.wikinode.studio.model.KnowledgeRelationEvidence;
 import com.wikinode.studio.model.KnowledgeRelationRequest;
@@ -70,6 +73,12 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
 
   protected abstract List<WikiNode> loadNodes();
 
+  protected abstract List<KnowledgeBase> loadKnowledgeBases();
+
+  protected abstract void insertKnowledgeBase(KnowledgeBase knowledgeBase);
+
+  protected abstract void replaceKnowledgeBase(String kbId, KnowledgeBase knowledgeBase);
+
   protected abstract Optional<WikiNode> loadNode(String nodeId);
 
   protected abstract void insertNode(WikiNode node);
@@ -111,6 +120,64 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   protected abstract void replaceParsedDocumentSegments(String parsedDocumentId, List<ParsedDocumentSegment> segments);
 
   protected abstract void insertDraftWikiNodeSuggestion(DraftWikiNodeSuggestion suggestion);
+
+  @Override
+  public List<KnowledgeBase> listKnowledgeBases(String keyword, String status, String visibility) {
+    String cleanKeyword = Optional.ofNullable(keyword).orElse("").trim().toLowerCase(Locale.ROOT);
+    return loadKnowledgeBases().stream()
+      .map(this::withKnowledgeBaseCounts)
+      .filter(kb -> cleanKeyword.isBlank()
+        || kb.kbId().toLowerCase(Locale.ROOT).contains(cleanKeyword)
+        || kb.name().toLowerCase(Locale.ROOT).contains(cleanKeyword)
+        || kb.description().toLowerCase(Locale.ROOT).contains(cleanKeyword)
+        || kb.businessDomain().toLowerCase(Locale.ROOT).contains(cleanKeyword))
+      .filter(kb -> status == null || status.isBlank() || status.equals(kb.status()))
+      .filter(kb -> visibility == null || visibility.isBlank() || visibility.equals(kb.visibility()))
+      .toList();
+  }
+
+  @Override
+  public Optional<KnowledgeBase> findKnowledgeBase(String kbId) {
+    return loadKnowledgeBases().stream()
+      .filter(kb -> kb.kbId().equals(kbId))
+      .findFirst()
+      .map(this::withKnowledgeBaseCounts);
+  }
+
+  @Override
+  public KnowledgeBase createKnowledgeBase(KnowledgeBaseRequest request) {
+    KnowledgeBase knowledgeBase = knowledgeBaseFromRequest(null, request, null);
+    if (findKnowledgeBase(knowledgeBase.kbId()).isPresent()) {
+      throw new IllegalArgumentException("Knowledge Base already exists");
+    }
+    insertKnowledgeBase(knowledgeBase);
+    return findKnowledgeBase(knowledgeBase.kbId()).orElse(knowledgeBase);
+  }
+
+  @Override
+  public KnowledgeBase updateKnowledgeBase(String kbId, KnowledgeBaseRequest request) {
+    KnowledgeBase existing = findKnowledgeBase(kbId)
+      .orElseThrow(() -> new IllegalArgumentException("Knowledge Base not found"));
+    KnowledgeBase knowledgeBase = knowledgeBaseFromRequest(kbId, request, existing);
+    replaceKnowledgeBase(kbId, knowledgeBase);
+    return findKnowledgeBase(kbId).orElse(knowledgeBase);
+  }
+
+  @Override
+  public KnowledgeBaseLifecycleResult disableKnowledgeBase(String kbId) {
+    return transitionKnowledgeBase(kbId, "disabled", "已停用知识库，现有关联 WikiNode 和 Source 保持不变。", null);
+  }
+
+  @Override
+  public KnowledgeBaseLifecycleResult archiveKnowledgeBase(String kbId) {
+    String today = LocalDate.now().toString();
+    return transitionKnowledgeBase(kbId, "archived", "已归档知识库，现有关联 WikiNode 和 Source 保留为只读范围。", today);
+  }
+
+  @Override
+  public KnowledgeBaseLifecycleResult restoreKnowledgeBase(String kbId) {
+    return transitionKnowledgeBase(kbId, "active", "已恢复知识库，可继续作为 WikiNode、Source 和 Retrieval API 范围。", null);
+  }
 
   @Override
   public List<WikiNode> listNodes() {
@@ -303,6 +370,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
     boolean debug = Boolean.TRUE.equals(query.debug());
 
     return listNodes().stream()
+      .filter(node -> filters.knowledgeBaseId() == null || filters.knowledgeBaseId().equals(node.knowledgeBaseId()))
       .filter(node -> filters.nodeType() == null || filters.nodeType().equals(node.nodeType()))
       .filter(node -> filters.status() == null || filters.status().equals(node.status()))
       .map(node -> retrievalResult(node, cleanQuery, filters, debug))
@@ -1186,8 +1254,18 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       0,
       today(),
       today(),
-      null
+      null,
+      knowledgeBaseIdForSuggestion(suggestion)
     );
+  }
+
+  private String knowledgeBaseIdForSuggestion(DraftWikiNodeSuggestion suggestion) {
+    return loadSources().stream()
+      .filter(source -> source.sourceId().equals(suggestion.sourceId()))
+      .map(SourceItem::knowledgeBaseId)
+      .filter(id -> id != null && !id.isBlank())
+      .findFirst()
+      .orElse(defaultKnowledgeBaseId(nodeTypeForSuggestion(suggestion)));
   }
 
   private String acceptedNodeIdFor(DraftWikiNodeSuggestion suggestion) {
@@ -1764,7 +1842,8 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       (int) outgoingLinks.stream().filter(link -> !link.resolved()).count(),
       node.createdAt(),
       node.updatedAt(),
-      node.lastIndexedAt()
+      node.lastIndexedAt(),
+      node.knowledgeBaseId()
     );
   }
 
@@ -1802,7 +1881,8 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       node.brokenLinkCount(),
       node.createdAt(),
       LocalDate.now().toString(),
-      lastIndexedAt
+      lastIndexedAt,
+      node.knowledgeBaseId()
     );
   }
 
@@ -1835,7 +1915,8 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       0,
       createdAt,
       valueOrDefault(request.updatedAt(), today),
-      request.lastIndexedAt() == null && existing != null ? existing.lastIndexedAt() : request.lastIndexedAt()
+      request.lastIndexedAt() == null && existing != null ? existing.lastIndexedAt() : request.lastIndexedAt(),
+      existing == null ? defaultKnowledgeBaseId(nodeType) : existing.knowledgeBaseId()
     );
   }
 
@@ -1904,8 +1985,89 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       0,
       node.createdAt(),
       LocalDate.now().toString(),
-      node.lastIndexedAt()
+      node.lastIndexedAt(),
+      node.knowledgeBaseId()
     );
+  }
+
+  private KnowledgeBase withKnowledgeBaseCounts(KnowledgeBase knowledgeBase) {
+    int wikiNodeCount = (int) loadNodes().stream()
+      .filter(node -> knowledgeBase.kbId().equals(node.knowledgeBaseId()))
+      .count();
+    int sourceCount = (int) loadSources().stream()
+      .filter(source -> knowledgeBase.kbId().equals(source.knowledgeBaseId()))
+      .count();
+    return new KnowledgeBase(
+      knowledgeBase.kbId(),
+      knowledgeBase.name(),
+      knowledgeBase.description(),
+      knowledgeBase.businessDomain(),
+      knowledgeBase.type(),
+      knowledgeBase.status(),
+      knowledgeBase.visibility(),
+      knowledgeBase.owner(),
+      knowledgeBase.settings(),
+      wikiNodeCount,
+      sourceCount,
+      knowledgeBase.archivedAt(),
+      knowledgeBase.createdAt(),
+      knowledgeBase.updatedAt()
+    );
+  }
+
+  private KnowledgeBase knowledgeBaseFromRequest(String pathKbId, KnowledgeBaseRequest request, KnowledgeBase existing) {
+    if (request == null) {
+      throw new IllegalArgumentException("Knowledge Base 内容不能为空。");
+    }
+    String today = LocalDate.now().toString();
+    String kbId = valueOrDefault(pathKbId, valueOrDefault(request.kbId(), existing == null ? null : existing.kbId()));
+    if (kbId == null || kbId.isBlank()) {
+      throw new IllegalArgumentException("Knowledge Base ID 不能为空。");
+    }
+    String name = valueOrDefault(request.name(), existing == null ? null : existing.name());
+    if (name == null || name.isBlank()) {
+      throw new IllegalArgumentException("知识库名称不能为空。");
+    }
+    return new KnowledgeBase(
+      kbId,
+      name,
+      valueOrDefault(request.description(), existing == null ? "" : existing.description()),
+      valueOrDefault(request.businessDomain(), existing == null ? "general" : existing.businessDomain()),
+      valueOrDefault(request.type(), existing == null ? "mixed" : existing.type()),
+      valueOrDefault(request.status(), existing == null ? "active" : existing.status()),
+      valueOrDefault(request.visibility(), existing == null ? "internal" : existing.visibility()),
+      valueOrDefault(request.owner(), existing == null ? "Knowledge Ops" : existing.owner()),
+      mapOrDefault(request.settings(), existing == null ? defaultKnowledgeBaseSettings() : existing.settings()),
+      existing == null ? 0 : existing.wikiNodeCount(),
+      existing == null ? 0 : existing.sourceCount(),
+      existing == null ? null : existing.archivedAt(),
+      existing == null ? today : existing.createdAt(),
+      today
+    );
+  }
+
+  private KnowledgeBaseLifecycleResult transitionKnowledgeBase(String kbId, String status, String summary, String archivedAt) {
+    KnowledgeBase existing = findKnowledgeBase(kbId)
+      .orElseThrow(() -> new IllegalArgumentException("Knowledge Base not found"));
+    String today = LocalDate.now().toString();
+    KnowledgeBase next = new KnowledgeBase(
+      existing.kbId(),
+      existing.name(),
+      existing.description(),
+      existing.businessDomain(),
+      existing.type(),
+      status,
+      existing.visibility(),
+      existing.owner(),
+      existing.settings(),
+      existing.wikiNodeCount(),
+      existing.sourceCount(),
+      archivedAt,
+      existing.createdAt(),
+      today
+    );
+    replaceKnowledgeBase(kbId, next);
+    return new KnowledgeBaseLifecycleResult(kbId, status, summary, archivedAt, today);
   }
 
   private String blankToNull(String value) {
@@ -1961,6 +2123,23 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       "language", "zh-CN",
       "lifecycleStatus", status == null ? "draft" : status
     );
+  }
+
+  private Map<String, Object> defaultKnowledgeBaseSettings() {
+    return Map.of(
+      "defaultNodeType", "policy",
+      "defaultParserEngine", "markdown",
+      "defaultStorageProvider", "workspace",
+      "defaultVectorStore", "external_vector_store",
+      "defaultPublishingPolicy", "manual",
+      "defaultRetrievalStrategy", "wikinode_first"
+    );
+  }
+
+  private String defaultKnowledgeBaseId(String nodeType) {
+    return "troubleshooting".equals(nodeType) || "product".equals(nodeType) || "guide".equals(nodeType)
+      ? "kb-product-guide"
+      : "kb-cc-after-sales";
   }
 
   private String processingProfileForNodeType(String nodeType) {

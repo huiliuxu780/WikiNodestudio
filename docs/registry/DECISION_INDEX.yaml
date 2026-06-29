@@ -1,5 +1,13 @@
 version: 1
 decisions:
+  - id: D075
+    date: "2026-06-29"
+    title: "Implement Knowledge Base administration as the scope container"
+    rationale: "After the Source-to-Graph-to-Retrieval chain was accepted, IM075 implements Knowledge Base as the management container around WikiNodes and Sources. It adds a persisted Knowledge Base model, CRUD and lifecycle APIs, knowledgeBaseId bindings on WikiNode and Source records, Retrieval API filtering by Knowledge Base while preserving WikiNode-first results, and API-backed dense frontend pages for list, detail, and settings. It deliberately does not implement full RBAC, permission enforcement, approval workflow, copy/move/delete, external sync, embedding, vector store sync, Agent, Chatbot, Workflow Builder, Vector DB Management, or product-facing Chunk Management."
+    related:
+      - IM075
+      - US075
+      - KNOWLEDGE_BASE_ADMINISTRATION
   - id: D073
     date: "2026-06-28"
     title: "Lock Source import through WikiGraph and Retrieval API acceptance"

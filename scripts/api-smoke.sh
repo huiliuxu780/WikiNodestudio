@@ -97,9 +97,27 @@ if (!Array.isArray(nodes) || nodes.length < 5) {
   throw new Error("GET /api/wiki-nodes: FAIL expected at least 5 nodes")
 }
 
+if (!nodes.some((node) => node.nodeId === "wn-001" && node.knowledgeBaseId === "kb-cc-after-sales")) {
+  throw new Error("GET /api/wiki-nodes: FAIL expected WikiNode knowledgeBaseId")
+}
+
 const nodeDetail = await request("GET /api/wiki-nodes/{id}", "/wiki-nodes/wn-001")
 if (nodeDetail.objectType !== "Article" || !nodeDetail.subtype || !nodeDetail.metadata || !Array.isArray(nodeDetail.relations) || !nodeDetail.processingProfile) {
   throw new Error("GET /api/wiki-nodes/{id}: FAIL expected Knowledge Object fields")
+}
+
+if (nodeDetail.knowledgeBaseId !== "kb-cc-after-sales") {
+  throw new Error("GET /api/wiki-nodes/{id}: FAIL expected WikiNode Knowledge Base scope")
+}
+
+const knowledgeBases = await request("GET /api/knowledge-bases", "/knowledge-bases")
+if (!Array.isArray(knowledgeBases) || !knowledgeBases.some((kb) => kb.kbId === "kb-cc-after-sales" && kb.status === "active")) {
+  throw new Error("GET /api/knowledge-bases: FAIL expected seeded active Knowledge Base")
+}
+
+const knowledgeBaseDetail = await request("GET /api/knowledge-bases/{id}", "/knowledge-bases/kb-product-guide")
+if (knowledgeBaseDetail.kbId !== "kb-product-guide" || knowledgeBaseDetail.visibility !== "internal") {
+  throw new Error("GET /api/knowledge-bases/{id}: FAIL expected Knowledge Base detail")
 }
 
 const sources = await request("GET /api/sources", "/sources")
@@ -107,9 +125,37 @@ if (!Array.isArray(sources) || !sources.some((source) => source.sourceId === "sr
   throw new Error("GET /api/sources: FAIL expected source rawMaterialCount")
 }
 
+if (!sources.some((source) => source.sourceId === "src-pdf-dishwasher" && source.knowledgeBaseId === "kb-product-guide")) {
+  throw new Error("GET /api/sources: FAIL expected Source knowledgeBaseId")
+}
+
 const sourceDetail = await request("GET /api/sources/{id}", "/sources/src-feishu-cc")
 if (sourceDetail.sourceType !== "feishu") {
   throw new Error("GET /api/sources/{id}: FAIL expected Source detail")
+}
+
+if (sourceDetail.knowledgeBaseId !== "kb-cc-after-sales") {
+  throw new Error("GET /api/sources/{id}: FAIL expected Source Knowledge Base scope")
+}
+
+const scopedRetrieval = await request("POST /api/retrieval-test Knowledge Base scoped", "/retrieval-test", {
+  method: "POST",
+  body: JSON.stringify({
+    query: "",
+    filters: {
+      knowledgeBaseId: "kb-product-guide",
+    },
+    topK: 5,
+    debug: false,
+  }),
+})
+
+if (
+  !Array.isArray(scopedRetrieval) ||
+  !scopedRetrieval.some((result) => result.node?.knowledgeBaseId === "kb-product-guide") ||
+  scopedRetrieval.some((result) => result.node?.knowledgeBaseId === "kb-cc-after-sales")
+) {
+  throw new Error("POST /api/retrieval-test Knowledge Base scoped: FAIL expected Knowledge Base-scoped WikiNode results")
 }
 
 const sourceRawMaterials = await request("GET /api/sources/{id}/raw-materials", "/sources/src-feishu-cc/raw-materials")

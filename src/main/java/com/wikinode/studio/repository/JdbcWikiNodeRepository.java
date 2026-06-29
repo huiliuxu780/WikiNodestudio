@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wikinode.studio.model.IndexSegment;
 import com.wikinode.studio.model.IndexSegmentMetadataSummaryItem;
+import com.wikinode.studio.model.KnowledgeBase;
 import com.wikinode.studio.model.KnowledgeRelation;
 import com.wikinode.studio.model.KnowledgeRelationEvidence;
 import com.wikinode.studio.model.ParsedDocument;
@@ -51,10 +52,88 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
   }
 
   @Override
+  protected List<KnowledgeBase> loadKnowledgeBases() {
+    return jdbcTemplate.query(
+      """
+      select kb_id, name, description, business_domain, kb_type, status, visibility, owner,
+             settings_json, archived_at, created_at, updated_at
+      from knowledge_bases
+      order by created_at, kb_id
+      """,
+      (resultSet, rowNumber) -> new KnowledgeBase(
+        resultSet.getString("kb_id"),
+        resultSet.getString("name"),
+        resultSet.getString("description"),
+        resultSet.getString("business_domain"),
+        resultSet.getString("kb_type"),
+        resultSet.getString("status"),
+        resultSet.getString("visibility"),
+        resultSet.getString("owner"),
+        metadataFromJson(resultSet.getString("settings_json")),
+        0,
+        0,
+        resultSet.getString("archived_at"),
+        resultSet.getString("created_at"),
+        resultSet.getString("updated_at")
+      )
+    );
+  }
+
+  @Override
+  protected void insertKnowledgeBase(KnowledgeBase knowledgeBase) {
+    jdbcTemplate.update(
+      """
+      insert into knowledge_bases (
+        kb_id, name, description, business_domain, kb_type, status, visibility, owner,
+        settings_json, archived_at, created_at, updated_at
+      ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      """,
+      knowledgeBase.kbId(),
+      knowledgeBase.name(),
+      knowledgeBase.description(),
+      knowledgeBase.businessDomain(),
+      knowledgeBase.type(),
+      knowledgeBase.status(),
+      knowledgeBase.visibility(),
+      knowledgeBase.owner(),
+      toJson(knowledgeBase.settings()),
+      knowledgeBase.archivedAt(),
+      knowledgeBase.createdAt(),
+      knowledgeBase.updatedAt()
+    );
+  }
+
+  @Override
+  protected void replaceKnowledgeBase(String kbId, KnowledgeBase knowledgeBase) {
+    int updated = jdbcTemplate.update(
+      """
+      update knowledge_bases
+      set name = ?, description = ?, business_domain = ?, kb_type = ?, status = ?, visibility = ?,
+          owner = ?, settings_json = ?, archived_at = ?, updated_at = ?
+      where kb_id = ?
+      """,
+      knowledgeBase.name(),
+      knowledgeBase.description(),
+      knowledgeBase.businessDomain(),
+      knowledgeBase.type(),
+      knowledgeBase.status(),
+      knowledgeBase.visibility(),
+      knowledgeBase.owner(),
+      toJson(knowledgeBase.settings()),
+      knowledgeBase.archivedAt(),
+      knowledgeBase.updatedAt(),
+      kbId
+    );
+    if (updated == 0) {
+      throw new IllegalArgumentException("Knowledge Base not found");
+    }
+  }
+
+  @Override
   protected List<WikiNode> loadNodes() {
     return jdbcTemplate.query(
       """
-      select node_id, slug, title, node_type, object_type, subtype, metadata_json, processing_profile,
+      select node_id, slug, title, node_type, object_type, subtype, metadata_json, processing_profile, knowledge_base_id,
              summary, content_markdown, status, index_status, created_at, updated_at, last_indexed_at
       from wiki_nodes
       order by created_at, node_id
@@ -68,7 +147,7 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
     try {
       return Optional.ofNullable(jdbcTemplate.queryForObject(
         """
-        select node_id, slug, title, node_type, object_type, subtype, metadata_json, processing_profile,
+        select node_id, slug, title, node_type, object_type, subtype, metadata_json, processing_profile, knowledge_base_id,
                summary, content_markdown, status, index_status, created_at, updated_at, last_indexed_at
         from wiki_nodes
         where node_id = ?
@@ -88,9 +167,9 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       jdbcTemplate.update(
         """
         insert into wiki_nodes (
-          node_id, slug, title, node_type, object_type, subtype, metadata_json, processing_profile,
+          node_id, slug, title, node_type, object_type, subtype, metadata_json, processing_profile, knowledge_base_id,
           summary, content_markdown, status, index_status, created_at, updated_at, last_indexed_at
-        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         node.nodeId(),
         node.slug(),
@@ -100,6 +179,7 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
         node.subtype(),
         toJson(node.metadata()),
         node.processingProfile(),
+        node.knowledgeBaseId(),
         node.summary(),
         node.contentMarkdown(),
         node.status(),
@@ -124,7 +204,7 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
         """
         update wiki_nodes
         set slug = ?, title = ?, node_type = ?, object_type = ?, subtype = ?, metadata_json = ?,
-            processing_profile = ?, summary = ?, content_markdown = ?, status = ?, index_status = ?,
+            processing_profile = ?, knowledge_base_id = ?, summary = ?, content_markdown = ?, status = ?, index_status = ?,
             created_at = ?, updated_at = ?, last_indexed_at = ?
         where node_id = ?
         """,
@@ -135,6 +215,7 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
         node.subtype(),
         toJson(node.metadata()),
         node.processingProfile(),
+        node.knowledgeBaseId(),
         node.summary(),
         node.contentMarkdown(),
         node.status(),
@@ -163,6 +244,7 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
     return jdbcTemplate.query(
       """
       select s.source_id, s.source_type, s.title, s.owner, s.sync_status, s.last_synced_at, s.generated_nodes,
+             s.knowledge_base_id,
              (select count(*) from raw_materials rm where rm.source_id = s.source_id) as raw_material_count
       from source_items s
       order by s.source_id
@@ -175,7 +257,8 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
         resultSet.getString("sync_status"),
         resultSet.getString("last_synced_at"),
         resultSet.getInt("generated_nodes"),
-        resultSet.getInt("raw_material_count")
+        resultSet.getInt("raw_material_count"),
+        resultSet.getString("knowledge_base_id")
       )
     );
   }
@@ -733,7 +816,8 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       0,
       resultSet.getString("created_at"),
       resultSet.getString("updated_at"),
-      resultSet.getString("last_indexed_at")
+      resultSet.getString("last_indexed_at"),
+      resultSet.getString("knowledge_base_id")
     );
   }
 
@@ -759,7 +843,8 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       node.brokenLinkCount(),
       node.createdAt(),
       node.updatedAt(),
-      node.lastIndexedAt()
+      node.lastIndexedAt(),
+      node.knowledgeBaseId()
     );
   }
 
@@ -1027,7 +1112,8 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
     return new RetrievalQuery.RetrievalFilters(
       stringValue(values.get("nodeType")),
       stringValue(values.get("status")),
-      tags instanceof List<?> tagList ? tagList.stream().map(String::valueOf).toList() : List.of()
+      tags instanceof List<?> tagList ? tagList.stream().map(String::valueOf).toList() : List.of(),
+      stringValue(values.get("knowledgeBaseId"))
     );
   }
 
@@ -1039,6 +1125,7 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
     values.put("nodeType", filters.nodeType());
     values.put("status", filters.status());
     values.put("tags", filters.tags() == null ? List.of() : filters.tags());
+    values.put("knowledgeBaseId", filters.knowledgeBaseId());
     return toJson(values);
   }
 

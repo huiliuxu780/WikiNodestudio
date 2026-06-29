@@ -7,4 +7,5 @@ export type SourceItem = {
   lastSyncedAt: string
   generatedNodes: number
   rawMaterialCount: number
+  knowledgeBaseId?: string | null
 }

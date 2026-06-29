@@ -12,7 +12,11 @@ public record RetrievalQuery(
   public record RetrievalFilters(
     String nodeType,
     String status,
-    List<String> tags
+    List<String> tags,
+    String knowledgeBaseId
   ) {
+    public RetrievalFilters(String nodeType, String status, List<String> tags) {
+      this(nodeType, status, tags, null);
+    }
   }
 }

@@ -1,6 +1,7 @@
 package com.wikinode.studio.repository;
 
 import com.wikinode.studio.model.IndexSegment;
+import com.wikinode.studio.model.KnowledgeBase;
 import com.wikinode.studio.model.ParsedDocumentSegment;
 import com.wikinode.studio.model.SourceItem;
 import com.wikinode.studio.model.DraftWikiNodeSuggestion;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Repository;
 @Profile({"test", "mock"})
 public class InMemoryWikiNodeRepository extends AbstractWikiNodeRepository {
 
+  private final Map<String, KnowledgeBase> knowledgeBases = new LinkedHashMap<>();
   private final Map<String, WikiNode> nodes = new LinkedHashMap<>();
   private final List<SourceItem> sources = WikiNodeSeedData.sources();
   private final List<RawMaterial> rawMaterials = new ArrayList<>(WikiNodeSeedData.rawMaterials());
@@ -36,7 +38,29 @@ public class InMemoryWikiNodeRepository extends AbstractWikiNodeRepository {
   private final List<DraftWikiNodeSuggestion> draftWikiNodeSuggestions = new ArrayList<>(WikiNodeSeedData.draftWikiNodeSuggestions());
 
   public InMemoryWikiNodeRepository() {
+    WikiNodeSeedData.knowledgeBases().forEach(kb -> knowledgeBases.put(kb.kbId(), kb));
     WikiNodeSeedData.nodes().forEach(node -> nodes.put(node.nodeId(), node));
+  }
+
+  @Override
+  protected List<KnowledgeBase> loadKnowledgeBases() {
+    return List.copyOf(knowledgeBases.values());
+  }
+
+  @Override
+  protected void insertKnowledgeBase(KnowledgeBase knowledgeBase) {
+    if (knowledgeBases.containsKey(knowledgeBase.kbId())) {
+      throw new IllegalArgumentException("Knowledge Base already exists");
+    }
+    knowledgeBases.put(knowledgeBase.kbId(), knowledgeBase);
+  }
+
+  @Override
+  protected void replaceKnowledgeBase(String kbId, KnowledgeBase knowledgeBase) {
+    if (!knowledgeBases.containsKey(kbId)) {
+      throw new IllegalArgumentException("Knowledge Base not found");
+    }
+    knowledgeBases.put(kbId, knowledgeBase);
   }
 
   @Override
