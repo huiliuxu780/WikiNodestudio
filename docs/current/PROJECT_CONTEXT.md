@@ -30,7 +30,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-The active executable packet is `US073` / `IM073`: Source to Graph Retrieval Acceptance Chain. It locks the local end-to-end acceptance chain from Source import and document segment persistence through Draft WikiNode Suggestion acceptance, local publish preparation, WikiGraph visibility, and Retrieval API WikiNode results. It does not invoke embedding, write vector documents, sync external vector stores, add approval/RBAC, batch/export, Agent, Chatbot, Workflow, or product-facing Chunk Management.
+The active executable packet is `US075` / `IM075`: Knowledge Base Administration. It implements Knowledge Base as the persisted management container around WikiNodes and Sources, adds CRUD and lifecycle APIs, binds WikiNode / Source records to a knowledgeBaseId, keeps Retrieval API WikiNode-first while adding minimal Knowledge Base filtering, and upgrades `/knowledge-bases` list/detail/settings into API-backed dense administration pages. It does not implement full RBAC, permission enforcement, approval workflow, copy/move/delete, external sync, embedding, vector store sync, Agent, Chatbot, Workflow, Vector DB Management, or product-facing Chunk Management.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -61,4 +61,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Current recommended next step: complete and verify `IM073`, then continue with the next explicitly confirmed product capability packet.
+Current recommended next step: complete and verify `IM075`, then decide the next larger product capability packet from the remaining full-scope gaps.

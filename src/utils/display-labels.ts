@@ -73,10 +73,13 @@ export const objectTypeLabels: Record<KnowledgeObjectType, string> = {
 
 export const subtypeLabels: Record<string, string> = {
   service_fee_policy: "收费政策",
+  fee_policy: "收费政策",
   warranty_policy: "保修政策",
   repair_policy: "维修政策",
   service_script: "服务话术",
   faq: "常见问题",
+  procedure: "流程",
+  term: "术语",
   product_model: "产品型号",
   product_category: "产品品类",
   troubleshooting_flow: "故障处理流程",
@@ -237,6 +240,41 @@ export const healthLabels: Record<string, string> = {
   healthy: "健康",
   warning: "需关注",
   failed: "异常",
+}
+
+export const knowledgeBaseStatusLabels: Record<string, string> = {
+  active: "已启用",
+  disabled: "已停用",
+  archived: "已归档",
+}
+
+export const knowledgeBaseVisibilityLabels: Record<string, string> = {
+  internal: "内部可见",
+  private: "私有",
+  public: "公开",
+}
+
+export const knowledgeBaseTypeLabels: Record<string, string> = {
+  wikinode: "WikiNode 知识库",
+  document: "文档知识库",
+  faq: "问答知识库",
+  mixed: "混合知识库",
+}
+
+export const knowledgeBaseSettingLabels: Record<string, string> = {
+  defaultNodeType: "默认节点类型",
+  defaultParserEngine: "默认解析引擎",
+  defaultStorageProvider: "默认存储",
+  defaultVectorStore: "外部向量库",
+  defaultPublishingPolicy: "发布策略",
+  defaultRetrievalStrategy: "默认召回策略",
+  wikinode_first: "WikiNode 优先",
+  manual: "人工发布",
+  workspace: "工作区快照",
+  object_storage: "对象存储",
+  external_vector_store: "外部向量库",
+  markdown: "Markdown",
+  pdf_manual_article_v1: "PDF 手册解析",
 }
 
 export const storageProviderLabels: Record<string, string> = {

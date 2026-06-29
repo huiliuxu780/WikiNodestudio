@@ -6,6 +6,7 @@ export type RetrievalQuery = {
     nodeType?: string
     status?: string
     tags?: string[]
+    knowledgeBaseId?: string
   }
   topK: number
   debug?: boolean

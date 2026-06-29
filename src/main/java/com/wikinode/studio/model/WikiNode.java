@@ -24,7 +24,8 @@ public record WikiNode(
   int brokenLinkCount,
   String createdAt,
   String updatedAt,
-  String lastIndexedAt
+  String lastIndexedAt,
+  String knowledgeBaseId
 ) {
   public WikiNode(
     String nodeId,
@@ -65,7 +66,8 @@ public record WikiNode(
       brokenLinkCount,
       createdAt,
       updatedAt,
-      lastIndexedAt
+      lastIndexedAt,
+      defaultKnowledgeBaseId(nodeType)
     );
   }
 
@@ -105,6 +107,13 @@ public record WikiNode(
       case "procedure", "troubleshooting" -> "feishu_service_process_v1";
       case "fee_rule" -> "excel_fee_rule_v1";
       default -> "web_article_policy_v1";
+    };
+  }
+
+  private static String defaultKnowledgeBaseId(String nodeType) {
+    return switch (nodeType == null ? "" : nodeType) {
+      case "product", "guide", "troubleshooting" -> "kb-product-guide";
+      default -> "kb-cc-after-sales";
     };
   }
 }

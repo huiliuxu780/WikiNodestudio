@@ -13,6 +13,57 @@ test.describe("Frontend skeleton IA", () => {
     await routeIndexSegmentApi(page)
     await routeRetrievalApiFixtures(page)
     await routeWikiNodeApiFixtures(page)
+    await page.route("**/api/knowledge-bases**", async (route) => {
+      const knowledgeBases = [
+        {
+          kbId: "kb-cc-after-sales",
+          name: "CC After-sales KB",
+          description: "客服售后政策、流程、收费和升级处理知识库。",
+          businessDomain: "after_sales",
+          type: "wikinode",
+          status: "active",
+          visibility: "internal",
+          owner: "Rivers",
+          settings: {
+            defaultNodeType: "policy",
+            defaultParserEngine: "markdown",
+            defaultStorageProvider: "workspace",
+            defaultVectorStore: "external_vector_store",
+            defaultPublishingPolicy: "manual",
+            defaultRetrievalStrategy: "wikinode_first",
+          },
+          wikiNodeCount: 3,
+          sourceCount: 2,
+          archivedAt: null,
+          createdAt: "2026-06-01",
+          updatedAt: "2026-06-22",
+        },
+      ]
+      const request = route.request()
+      const url = new URL(request.url())
+      const kbId = url.pathname.split("/").filter(Boolean)[2]
+      const activeKb = knowledgeBases.find((kb) => kb.kbId === kbId)
+
+      if (url.pathname === "/api/knowledge-bases") {
+        return route.fulfill({ json: knowledgeBases })
+      }
+
+      if (request.method() === "GET" && activeKb) {
+        return route.fulfill({ json: activeKb })
+      }
+
+      if (request.method() === "PUT" && activeKb) {
+        return route.fulfill({
+          json: {
+            ...activeKb,
+            ...request.postDataJSON(),
+            updatedAt: "2026-06-29",
+          },
+        })
+      }
+
+      return route.fulfill({ status: 404, json: { message: "Knowledge Base not found" } })
+    })
   })
 
   test("sidebar exposes the complete product navigation groups", async ({ page }) => {
@@ -54,7 +105,7 @@ test.describe("Frontend skeleton IA", () => {
     const routes = [
       ["/", "总览"],
       ["/knowledge-bases", "知识库"],
-      ["/knowledge-bases/kb-cc-after-sales", "CC After-sales KB 知识库详情"],
+      ["/knowledge-bases/kb-cc-after-sales", "CC After-sales KB"],
       ["/knowledge-bases/kb-cc-after-sales/settings", "知识库设置"],
       ["/sources", "知识来源"],
       ["/sources/src-feishu-cc", "知识来源详情"],
@@ -140,9 +191,15 @@ test.describe("Frontend skeleton IA", () => {
     await expect(page.locator("main").last()).not.toContainText(/\bobject-storage\b|\bworkspace\b/i)
 
     await page.goto("/knowledge-bases/kb-cc-after-sales")
-    await expect(page.getByText("索引健康度")).toBeVisible()
-    await expect(page.getByText("需关注")).toBeVisible()
-    await expect(page.locator("main").last()).not.toContainText(/\bhealthy\b|\bwarning\b|\bfailed\b/i)
+    await expect(page.getByText("范围概览")).toHaveCount(0)
+    await expect(page.getByText("知识资产")).toBeVisible()
+    await expect(page.getByText("数据来源")).toBeVisible()
+    await expect(page.getByText("召回范围", { exact: true }).first()).toBeVisible()
+    await expect(page.getByRole("tab", { name: "设置摘要" })).toBeVisible()
+    await expect(page.getByText("已启用")).toBeVisible()
+    await page.getByRole("tab", { name: "设置摘要" }).click()
+    await expect(page.getByText("默认召回策略")).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/\bactive\b|\bdisabled\b|\barchived\b/i)
 
     await page.goto("/wiki-nodes/wn-001/detail")
     await expect(page.getByText("发布状态")).toBeVisible()

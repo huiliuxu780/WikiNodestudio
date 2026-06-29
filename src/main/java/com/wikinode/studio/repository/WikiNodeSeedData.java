@@ -2,6 +2,7 @@ package com.wikinode.studio.repository;
 
 import com.wikinode.studio.model.IndexSegment;
 import com.wikinode.studio.model.IndexSegmentMetadataSummaryItem;
+import com.wikinode.studio.model.KnowledgeBase;
 import com.wikinode.studio.model.KnowledgeRelation;
 import com.wikinode.studio.model.KnowledgeRelationEvidence;
 import com.wikinode.studio.model.ParsedDocument;
@@ -22,12 +23,63 @@ final class WikiNodeSeedData {
   private WikiNodeSeedData() {
   }
 
+  static List<KnowledgeBase> knowledgeBases() {
+    return List.of(
+      new KnowledgeBase(
+        "kb-cc-after-sales",
+        "CC After-sales KB",
+        "客服售后政策、流程、收费和升级处理知识库。",
+        "after_sales",
+        "wikinode",
+        "active",
+        "internal",
+        "Rivers",
+        Map.of(
+          "defaultNodeType", "policy",
+          "defaultParserEngine", "markdown",
+          "defaultStorageProvider", "workspace",
+          "defaultVectorStore", "external_vector_store",
+          "defaultPublishingPolicy", "manual",
+          "defaultRetrievalStrategy", "wikinode_first"
+        ),
+        0,
+        0,
+        null,
+        "2026-06-01",
+        "2026-06-22"
+      ),
+      new KnowledgeBase(
+        "kb-product-guide",
+        "Product Guide KB",
+        "产品说明、安装指导和常见故障处理知识库。",
+        "product_support",
+        "mixed",
+        "active",
+        "internal",
+        "Product Docs",
+        Map.of(
+          "defaultNodeType", "guide",
+          "defaultParserEngine", "pdf_manual_article_v1",
+          "defaultStorageProvider", "object_storage",
+          "defaultVectorStore", "external_vector_store",
+          "defaultPublishingPolicy", "manual",
+          "defaultRetrievalStrategy", "wikinode_first"
+        ),
+        0,
+        0,
+        null,
+        "2026-05-18",
+        "2026-06-20"
+      )
+    );
+  }
+
   static List<SourceItem> sources() {
     return List.of(
-      new SourceItem("src-feishu-cc", "feishu", "CC 售后政策飞书空间", "售后运营", "synced", "2026-06-18", 4, 2),
-      new SourceItem("src-pdf-dishwasher", "pdf", "洗碗机培训 PDF", "产品培训", "synced", "2026-06-17", 2, 1),
-      new SourceItem("src-excel-fee", "excel", "维修收费标准 Excel", "服务财务", "pending", "2026-06-16", 1, 1),
-      new SourceItem("src-word-manual", "word", "产品说明书 Word", "产品资料", "synced", "2026-06-15", 1, 1)
+      new SourceItem("src-feishu-cc", "feishu", "CC 售后政策飞书空间", "售后运营", "synced", "2026-06-18", 4, 2, "kb-cc-after-sales"),
+      new SourceItem("src-pdf-dishwasher", "pdf", "洗碗机培训 PDF", "产品培训", "synced", "2026-06-17", 2, 1, "kb-product-guide"),
+      new SourceItem("src-excel-fee", "excel", "维修收费标准 Excel", "服务财务", "pending", "2026-06-16", 1, 1, "kb-cc-after-sales"),
+      new SourceItem("src-word-manual", "word", "产品说明书 Word", "产品资料", "synced", "2026-06-15", 1, 1, "kb-product-guide")
     );
   }
 
@@ -388,7 +440,8 @@ final class WikiNodeSeedData {
         0,
         "2026-06-10",
         "2026-06-18",
-        "2026-06-18"
+        "2026-06-18",
+        "kb-cc-after-sales"
       ),
       new WikiNode(
         "wn-002",

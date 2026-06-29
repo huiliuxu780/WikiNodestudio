@@ -2,6 +2,9 @@ package com.wikinode.studio.repository;
 
 import com.wikinode.studio.model.IndexStatusSummary;
 import com.wikinode.studio.model.IndexSegment;
+import com.wikinode.studio.model.KnowledgeBase;
+import com.wikinode.studio.model.KnowledgeBaseLifecycleResult;
+import com.wikinode.studio.model.KnowledgeBaseRequest;
 import com.wikinode.studio.model.KnowledgeRelation;
 import com.wikinode.studio.model.KnowledgeRelationRequest;
 import com.wikinode.studio.model.ParsedDocument;
@@ -36,6 +39,20 @@ import java.util.List;
 import java.util.Optional;
 
 public interface WikiNodeRepository {
+
+  List<KnowledgeBase> listKnowledgeBases(String keyword, String status, String visibility);
+
+  Optional<KnowledgeBase> findKnowledgeBase(String kbId);
+
+  KnowledgeBase createKnowledgeBase(KnowledgeBaseRequest request);
+
+  KnowledgeBase updateKnowledgeBase(String kbId, KnowledgeBaseRequest request);
+
+  KnowledgeBaseLifecycleResult disableKnowledgeBase(String kbId);
+
+  KnowledgeBaseLifecycleResult archiveKnowledgeBase(String kbId);
+
+  KnowledgeBaseLifecycleResult restoreKnowledgeBase(String kbId);
 
   List<WikiNode> listNodes();
 

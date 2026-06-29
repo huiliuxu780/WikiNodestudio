@@ -690,7 +690,8 @@ class JdbcWikiNodeRepositoryTest {
     ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
       new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
       new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql"),
-      new ClassPathResource("db/migration/V11__add_knowledge_relation_mutation_fields.sql")
+      new ClassPathResource("db/migration/V11__add_knowledge_relation_mutation_fields.sql"),
+      new ClassPathResource("db/migration/V13__create_knowledge_base_schema.sql")
     );
     populator.execute(dataSource);
     return new JdbcTemplate(dataSource);
@@ -707,7 +708,8 @@ class JdbcWikiNodeRepositoryTest {
       new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
       new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql"),
       new ClassPathResource("db/migration/V11__add_knowledge_relation_mutation_fields.sql"),
-      new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql")
+      new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql"),
+      new ClassPathResource("db/migration/V13__create_knowledge_base_schema.sql")
     );
     populator.execute(dataSource);
     return new JdbcTemplate(dataSource);
@@ -724,7 +726,8 @@ class JdbcWikiNodeRepositoryTest {
       new ClassPathResource("db/migration/V1__create_wikinode_schema.sql"),
       new ClassPathResource("db/migration/V2__seed_wikinode_data.sql"),
       new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql"),
-      new ClassPathResource("db/migration/V11__add_knowledge_relation_mutation_fields.sql")
+      new ClassPathResource("db/migration/V11__add_knowledge_relation_mutation_fields.sql"),
+      new ClassPathResource("db/migration/V13__create_knowledge_base_schema.sql")
     );
     populator.execute(dataSource);
     return new JdbcTemplate(dataSource);
@@ -744,6 +747,7 @@ class JdbcWikiNodeRepositoryTest {
       new ClassPathResource("db/migration/V7__create_index_segment_schema.sql"),
       new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql"),
       new ClassPathResource("db/migration/V11__add_knowledge_relation_mutation_fields.sql"),
+      new ClassPathResource("db/migration/V13__create_knowledge_base_schema.sql"),
       new ClassPathResource("db/migration/V9__add_index_segment_trace_metadata.sql")
     );
     populator.execute(dataSource);
@@ -762,7 +766,8 @@ class JdbcWikiNodeRepositoryTest {
       new ClassPathResource("db/migration/V8__align_wikinode_knowledge_object_fields.sql"),
       new ClassPathResource("db/migration/V11__add_knowledge_relation_mutation_fields.sql"),
       new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql"),
-      new ClassPathResource("db/migration/V4__create_source_operation_schema.sql")
+      new ClassPathResource("db/migration/V4__create_source_operation_schema.sql"),
+      new ClassPathResource("db/migration/V13__create_knowledge_base_schema.sql")
     );
     populator.execute(dataSource);
     return new JdbcTemplate(dataSource);
@@ -781,7 +786,8 @@ class JdbcWikiNodeRepositoryTest {
       new ClassPathResource("db/migration/V11__add_knowledge_relation_mutation_fields.sql"),
       new ClassPathResource("db/migration/V3__create_source_evidence_schema.sql"),
       new ClassPathResource("db/migration/V4__create_source_operation_schema.sql"),
-      new ClassPathResource("db/migration/V5__create_parser_profile_schema.sql")
+      new ClassPathResource("db/migration/V5__create_parser_profile_schema.sql"),
+      new ClassPathResource("db/migration/V13__create_knowledge_base_schema.sql")
     );
     populator.execute(dataSource);
     return new JdbcTemplate(dataSource);
@@ -804,7 +810,8 @@ class JdbcWikiNodeRepositoryTest {
       new ClassPathResource("db/migration/V5__create_parser_profile_schema.sql"),
       new ClassPathResource("db/migration/V6__create_draft_wikinode_suggestion_schema.sql"),
       new ClassPathResource("db/migration/V7__create_index_segment_schema.sql"),
-      new ClassPathResource("db/migration/V9__add_index_segment_trace_metadata.sql")
+      new ClassPathResource("db/migration/V9__add_index_segment_trace_metadata.sql"),
+      new ClassPathResource("db/migration/V13__create_knowledge_base_schema.sql")
     );
     populator.execute(dataSource);
     return new JdbcTemplate(dataSource);
