@@ -10,13 +10,16 @@ test.describe("Source / Raw Material / Parsed Document acceptance", () => {
     await mockSourceEvidenceApi(page)
   })
 
-  test("Sources page shows the upstream evidence chain", async ({ page }) => {
+  test("Sources page exposes Source import actions without explainer cards", async ({ page }) => {
     await page.goto("/sources")
 
     await expect(page.getByRole("heading", { name: "知识来源" })).toBeVisible()
-    await expect(page.getByText("上游证据链", { exact: true })).toBeVisible()
-    await expect(page.getByText("Source -> Raw Material -> Parsed Document -> WikiNode", { exact: true })).toBeVisible()
-    await expect(page.getByText("按来源查看快照、解析预览和生成的 WikiNode。", { exact: true })).toBeVisible()
+    await expect(page.getByText("来源清单", { exact: true })).toBeVisible()
+    await expect(page.getByText("上游证据链", { exact: true })).toHaveCount(0)
+    await expect(page.getByText("Source 是原始知识的来源。", { exact: true })).toHaveCount(0)
+    await expect(page.getByText("Raw Material 是来源快照。", { exact: true })).toHaveCount(0)
+    await expect(page.getByText("Parsed Document 是标准化预览。", { exact: true })).toHaveCount(0)
+    await expect(page.getByRole("link", { name: "导入文件" }).first()).toHaveAttribute("href", "/sources/src-feishu-cc#source-import")
     await expect(page.getByText("生成的 WikiNode", { exact: true })).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
     await expect(page.locator("main").last()).not.toContainText(forbiddenBoundaryCopy)
@@ -27,15 +30,13 @@ test.describe("Source / Raw Material / Parsed Document acceptance", () => {
     await page.goto("/sources/src-feishu-cc")
 
     await expect(page.getByRole("heading", { name: "知识来源详情" })).toBeVisible()
-    await expect(page.getByText("证据链位置", { exact: true })).toBeVisible()
-    await expect(page.getByText("Source 阶段", { exact: true })).toBeVisible()
     await expect(page.getByText("Knowledge Base", { exact: true })).toBeVisible()
     await expect(page.getByText("kb-cc-after-sales", { exact: true })).toBeVisible()
-    await expect(page.getByText("Knowledge Base -> Source -> Raw Material", { exact: true })).toBeVisible()
+    await expect(page.getByText("文件接入", { exact: true })).toBeVisible()
     await expect(page.getByText("关联 Raw Material", { exact: true })).toBeVisible()
     await expect(page.getByRole("link", { name: /售后政策空间快照/ })).toBeVisible()
-    await expect(page.getByText("来源处理状态", { exact: true })).toBeVisible()
-    await expect(page.getByText("重点查看快照数量、解析状态、生成节点和异常提示。", { exact: true })).toBeVisible()
+    await expect(page.getByText("来源处理状态", { exact: true })).toHaveCount(0)
+    await expect(page.getByText("证据链位置", { exact: true })).toHaveCount(0)
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
     await expect(page.locator("main").last()).not.toContainText(forbiddenBoundaryCopy)
     await expect(page.getByRole("button", { name: forbiddenActions })).toHaveCount(0)
@@ -45,6 +46,7 @@ test.describe("Source / Raw Material / Parsed Document acceptance", () => {
     await page.goto("/sources/src-feishu-cc")
 
     await expect(page.getByText("文件接入", { exact: true })).toBeVisible()
+    await expect(page.locator("#source-import")).toBeVisible()
     await page.getByLabel("选择 txt / md / docx").setInputFiles({
       name: "service-policy.md",
       mimeType: "text/markdown",
@@ -63,14 +65,14 @@ test.describe("Source / Raw Material / Parsed Document acceptance", () => {
 
     await expect(page.getByRole("heading", { name: "原始材料" })).toBeVisible()
     await expect(page.getByText("快照清单", { exact: true })).toBeVisible()
-    await expect(page.getByText("Source -> Raw Material -> Parsed Document", { exact: true })).toBeVisible()
+    await expect(page.getByText("Raw Material 是 Source 的原始快照。", { exact: true })).toHaveCount(0)
+    await expect(page.getByText("解析状态用于判断是否已形成 Parsed Document。", { exact: true })).toHaveCount(0)
     await expect(page.getByRole("link", { name: /售后政策空间快照/ })).toBeVisible()
 
     await page.goto("/raw-materials/rm-001")
 
-    await expect(page.getByText("证据链位置", { exact: true })).toBeVisible()
-    await expect(page.getByText("Raw Material 阶段", { exact: true })).toBeVisible()
-    await expect(page.getByText("Knowledge Base -> Source -> Raw Material", { exact: true })).toBeVisible()
+    await expect(page.getByText("证据链位置", { exact: true })).toHaveCount(0)
+    await expect(page.getByText("Raw Material 阶段", { exact: true })).toHaveCount(0)
     await expect(page.getByText("kb-cc-after-sales", { exact: true })).toBeVisible()
     await expect(page.getByText("关联 Source", { exact: true })).toBeVisible()
     await expect(page.getByText("CC 售后政策飞书空间", { exact: true })).toBeVisible()

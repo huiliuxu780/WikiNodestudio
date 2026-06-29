@@ -249,29 +249,7 @@ export function SourceDetailPage() {
           ["生成 WikiNode", String(source.generatedNodes)],
         ]} />
       ) : null}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">证据链位置</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2 text-sm">
-            <Badge variant="outline" className="w-fit">Source 阶段</Badge>
-            <p className="font-medium">{"Knowledge Base -> Source -> Raw Material"}</p>
-            <p className="text-muted-foreground">Knowledge Base：{knowledgeBaseId}</p>
-            <p className="font-medium">{"Source -> Raw Material -> Parsed Document -> WikiNode"}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">来源处理状态</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm text-muted-foreground">
-            <p>按 Source、Raw Material、Parsed Document 和 WikiNode 追踪来源处理进度。</p>
-            <p>重点查看快照数量、解析状态、生成节点和异常提示。</p>
-          </CardContent>
-        </Card>
-      </div>
-      <Card>
+      <Card id="source-import">
         <CardHeader>
           <CardTitle className="text-base">文件接入</CardTitle>
         </CardHeader>
@@ -355,23 +333,6 @@ export function RawMaterialListPage() {
         <CardHeader>
           <CardTitle className="text-base">快照清单</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-3 text-sm md:grid-cols-[1fr_1.2fr]">
-          <div className="rounded-md border bg-muted/20 px-3 py-2">
-            <div className="font-medium">{"Source -> Raw Material -> Parsed Document"}</div>
-            <p className="mt-1 text-muted-foreground">Raw Material 是 Source 的快照证据，还不是 WikiNode。</p>
-          </div>
-          <div className="rounded-md border border-dashed px-3 py-2">
-            <div className="font-medium">按来源、类型和解析状态查看材料快照。</div>
-            <p className="mt-1 text-muted-foreground">点击条目查看关联 Source、Parsed Document 和 WikiNode 建议。</p>
-          </div>
-        </CardContent>
-      </Card>
-      <SimpleList items={[
-        "Raw Material 是 Source 的原始快照。",
-        "解析状态用于判断是否已形成 Parsed Document。",
-        "Parsed Document 用于进入 WikiNode 标准化评审。",
-      ]} />
-      <Card>
         <CardContent className="grid gap-2 p-4 md:grid-cols-2 xl:grid-cols-3">
           {isLoading ? (
             <LoadingBlock text="正在加载 Raw Material..." />
@@ -440,41 +401,28 @@ export function RawMaterialDetailPage() {
           ["Parsed Document", `${raw.parsedDocumentCount} 个`],
         ]} />
       ) : null}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">证据链位置</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2 text-sm">
-            <Badge variant="outline" className="w-fit">Raw Material 阶段</Badge>
-            <p className="font-medium">{"Knowledge Base -> Source -> Raw Material"}</p>
-            <p className="text-muted-foreground">Knowledge Base：{knowledgeBaseId}</p>
-            <p className="font-medium">{"Source -> Raw Material -> Parsed Document -> WikiNode"}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">关联 Source</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            {source ? (
-              <Link to={`/sources/${source.sourceId}`} className="block rounded-md border p-3 hover:bg-muted/40">
-                <div className="font-medium">{source.title}</div>
-                <div className="mt-1 text-muted-foreground">{labelFromMap(sourceTypeLabels, source.sourceType)} · {labelFromMap(syncStatusLabels, source.syncStatus)}</div>
-              </Link>
-            ) : (
-              <div className="rounded-md border border-dashed p-3 text-muted-foreground">未找到关联 Source。</div>
-            )}
-            {raw && parsedDocuments.length > 0 ? (
-              <Link to={`/raw-materials/${raw.rawMaterialId}/parsed-result`} className="inline-flex text-sm font-medium text-primary hover:underline">
-                查看解析结果
-              </Link>
-            ) : (
-              <div className="text-muted-foreground">尚未生成 Parsed Document。</div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">关联 Source</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          {source ? (
+            <Link to={`/sources/${source.sourceId}`} className="block rounded-md border p-3 hover:bg-muted/40">
+              <div className="font-medium">{source.title}</div>
+              <div className="mt-1 text-muted-foreground">{labelFromMap(sourceTypeLabels, source.sourceType)} · {labelFromMap(syncStatusLabels, source.syncStatus)}</div>
+            </Link>
+          ) : (
+            <div className="rounded-md border border-dashed p-3 text-muted-foreground">未找到关联 Source。</div>
+          )}
+          {raw && parsedDocuments.length > 0 ? (
+            <Link to={`/raw-materials/${raw.rawMaterialId}/parsed-result`} className="inline-flex text-sm font-medium text-primary hover:underline">
+              查看解析结果
+            </Link>
+          ) : (
+            <div className="text-muted-foreground">尚未生成 Parsed Document。</div>
+          )}
+        </CardContent>
+      </Card>
       <SimpleList items={[
         "材料元数据",
         "解析状态",
