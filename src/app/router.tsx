@@ -8,6 +8,7 @@ import {
   KnowledgeBaseListPage,
   KnowledgeBaseSettingsPage,
 } from "@/pages/knowledge-base-pages"
+import { KnowledgeBaseImportPage } from "@/pages/knowledge-base-import-page"
 import { OverviewPage } from "@/pages/overview-page"
 import { RetrievalTestPage } from "@/pages/retrieval-test-page"
 import { SettingsPage } from "@/pages/settings-page"
@@ -43,6 +44,7 @@ export const router = createBrowserRouter([
       { path: "/", element: <OverviewPage /> },
       { path: "/knowledge-bases", element: <KnowledgeBaseListPage /> },
       { path: "/knowledge-bases/:kbId", element: <KnowledgeBaseDetailPage /> },
+      { path: "/knowledge-bases/:kbId/import", element: <KnowledgeBaseImportPage /> },
       { path: "/knowledge-bases/:kbId/settings", element: <KnowledgeBaseSettingsPage /> },
       { path: "/wiki-nodes", element: <WikiNodeListPage /> },
       { path: "/wiki-nodes/create", element: <WikiNodeCreatePage /> },

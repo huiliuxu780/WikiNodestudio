@@ -294,7 +294,7 @@ export function KnowledgeBaseSettingsPage() {
         description="维护知识库基础信息和默认策略。"
         actions={firstSource ? (
           <Button asChild variant="outline">
-            <Link to={`/sources/${firstSource.sourceId}#source-import`}>导入文件</Link>
+            <Link to={`/knowledge-bases/${kbId}/import?sourceId=${firstSource.sourceId}`}>导入文件</Link>
           </Button>
         ) : (
           <Button asChild variant="outline">
@@ -613,7 +613,7 @@ function ScopedSourceTable({ sources, isLoading }: { sources: SourceItem[]; isLo
             <TableCell>{source.owner}</TableCell>
             <TableCell>{source.lastSyncedAt}</TableCell>
             <TableCell>
-              <Link to={`/sources/${source.sourceId}#source-import`} className="whitespace-nowrap font-medium text-primary hover:underline">
+              <Link to={`/knowledge-bases/${source.knowledgeBaseId ?? ""}/import?sourceId=${source.sourceId}`} className="whitespace-nowrap font-medium text-primary hover:underline">
                 导入文件
               </Link>
             </TableCell>

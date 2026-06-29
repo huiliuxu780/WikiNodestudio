@@ -59,6 +59,10 @@ function AppBreadcrumb() {
 }
 
 function currentRouteLabel(parts: string[], section: string) {
+  if (section === "knowledge-bases" && parts.length > 2 && parts[2] === "import") {
+    return "导入文件"
+  }
+
   if (section === "knowledge-bases" && parts.length > 2 && parts[2] === "settings") {
     return "知识库设置"
   }

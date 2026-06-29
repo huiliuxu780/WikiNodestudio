@@ -19,7 +19,7 @@ test.describe("Source / Raw Material / Parsed Document acceptance", () => {
     await expect(page.getByText("Source 是原始知识的来源。", { exact: true })).toHaveCount(0)
     await expect(page.getByText("Raw Material 是来源快照。", { exact: true })).toHaveCount(0)
     await expect(page.getByText("Parsed Document 是标准化预览。", { exact: true })).toHaveCount(0)
-    await expect(page.getByRole("link", { name: "导入文件" }).first()).toHaveAttribute("href", "/sources/src-feishu-cc#source-import")
+    await expect(page.getByRole("link", { name: "导入文件" }).first()).toHaveAttribute("href", "/knowledge-bases/kb-cc-after-sales/import?sourceId=src-feishu-cc")
     await expect(page.getByText("生成的 WikiNode", { exact: true })).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
     await expect(page.locator("main").last()).not.toContainText(forbiddenBoundaryCopy)
@@ -32,7 +32,8 @@ test.describe("Source / Raw Material / Parsed Document acceptance", () => {
     await expect(page.getByRole("heading", { name: "知识来源详情" })).toBeVisible()
     await expect(page.getByText("Knowledge Base", { exact: true })).toBeVisible()
     await expect(page.getByText("kb-cc-after-sales", { exact: true })).toBeVisible()
-    await expect(page.getByText("文件接入", { exact: true })).toBeVisible()
+    await expect(page.getByRole("link", { name: "导入文件" })).toHaveAttribute("href", "/knowledge-bases/kb-cc-after-sales/import?sourceId=src-feishu-cc")
+    await expect(page.getByText("文件接入", { exact: true })).toHaveCount(0)
     await expect(page.getByText("关联 Raw Material", { exact: true })).toBeVisible()
     await expect(page.getByRole("link", { name: /售后政策空间快照/ })).toBeVisible()
     await expect(page.getByText("来源处理状态", { exact: true })).toHaveCount(0)
@@ -42,12 +43,17 @@ test.describe("Source / Raw Material / Parsed Document acceptance", () => {
     await expect(page.getByRole("button", { name: forbiddenActions })).toHaveCount(0)
   })
 
-  test("Source detail imports a local file into parsed document evidence", async ({ page }) => {
-    await page.goto("/sources/src-feishu-cc")
+  test("Knowledge Base import page imports a local file as a focused task flow", async ({ page }) => {
+    await page.goto("/knowledge-bases/kb-cc-after-sales/import?sourceId=src-feishu-cc")
 
-    await expect(page.getByText("文件接入", { exact: true })).toBeVisible()
-    await expect(page.locator("#source-import")).toBeVisible()
-    await page.getByLabel("选择 txt / md / docx").setInputFiles({
+    await expect(page.getByRole("heading", { name: "导入文件到知识库" })).toBeVisible()
+    await expect(page.getByText("CC After-sales KB", { exact: true })).toBeVisible()
+    await expect(page.getByLabel("Source")).toContainText("CC 售后政策飞书空间")
+    await expect(page.getByText("操作日志", { exact: true })).toHaveCount(0)
+    await expect(page.getByText("WikiNode 建议生成", { exact: true })).toHaveCount(0)
+    await expect(page.getByText("关联 Raw Material", { exact: true })).toHaveCount(0)
+
+    await page.getByLabel("选择文件").setInputFiles({
       name: "service-policy.md",
       mimeType: "text/markdown",
       buffer: Buffer.from("# 服务政策\n\n导入后形成 Parsed Document 和文档片段。"),
@@ -55,8 +61,10 @@ test.describe("Source / Raw Material / Parsed Document acceptance", () => {
     await page.getByRole("button", { name: "导入并解析" }).click()
 
     await expect(page.getByRole("status").filter({ hasText: "导入完成" })).toContainText("kb-cc-after-sales")
-    await expect(page.getByRole("status").filter({ hasText: "导入完成" })).toContainText("文档片段 2 条")
-    await expect(page.getByRole("link", { name: "打开生成的 WikiNode 建议" })).toHaveAttribute("href", "/draft-wikinode-suggestions/sug-pd-import-playwright")
+    await expect(page.getByText("导入结果", { exact: true })).toBeVisible()
+    await expect(page.getByText("文档片段 2 条", { exact: true })).toBeVisible()
+    await expect(page.getByRole("link", { name: "打开解析结果" })).toHaveAttribute("href", "/raw-materials/rm-import-playwright/parsed-result")
+    await expect(page.getByRole("link", { name: "打开 WikiNode 建议" })).toHaveAttribute("href", "/draft-wikinode-suggestions/sug-pd-import-playwright")
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
   })
 

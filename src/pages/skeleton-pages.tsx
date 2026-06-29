@@ -33,7 +33,6 @@ import {
   getDraftWikiNodeSuggestion,
   getSource,
   generateDraftWikiNodeSuggestion,
-  importSourceFile,
   listDraftWikiNodeSuggestions,
   listDraftWikiNodeSuggestionsForParsedDocument,
   listDraftWikiNodeSuggestionsForRawMaterial,
@@ -189,10 +188,6 @@ export function SourceDetailPage() {
   } = useAsyncData(() => activeSourceId ? listSourceOperationsForSource(activeSourceId) : Promise.resolve([]), [], [activeSourceId])
   const [ingestionStatus, setIngestionStatus] = useState<"idle" | "running" | "succeeded" | "skipped" | "failed">("idle")
   const [ingestionSummary, setIngestionSummary] = useState<string | null>(null)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [importStatus, setImportStatus] = useState<"idle" | "running" | "succeeded" | "skipped" | "failed">("idle")
-  const [importSummary, setImportSummary] = useState<string | null>(null)
-  const [importedSuggestionId, setImportedSuggestionId] = useState<string | null>(null)
   const knowledgeBaseId = source?.knowledgeBaseId ?? relatedRawMaterials[0]?.knowledgeBaseId ?? "未绑定"
 
   async function handleRunIngestion() {
@@ -213,28 +208,16 @@ export function SourceDetailPage() {
     }
   }
 
-  async function handleImportFile() {
-    if (!activeSourceId || !selectedFile || importStatus === "running") return
-
-    setImportStatus("running")
-    setImportSummary("正在导入文件并生成 Parsed Document...")
-    setImportedSuggestionId(null)
-    try {
-      const result = await importSourceFile(activeSourceId, selectedFile)
-      setImportStatus(result.status)
-      setImportSummary(`导入完成 · ${result.knowledgeBaseId ?? knowledgeBaseId} · ${result.summary} 文档片段 ${result.segmentCount} 条。`)
-      setImportedSuggestionId(result.suggestionId ?? null)
-      setSelectedFile(null)
-      await Promise.all([reloadOperations(), reloadRawMaterials(), reloadSource()])
-    } catch {
-      setImportStatus("failed")
-      setImportSummary("文件导入失败，请检查文件格式或后端服务。")
-    }
-  }
-
   return (
-    <PageScaffold title="知识来源详情" description={source ? `${source.title}。查看来源配置、快照和生成的 WikiNode。` : "查看 Source 到 Raw Material 的证据链。"}>
-      <StatusToast message={importSummary} variant={importStatus === "failed" ? "error" : "default"} onClose={() => setImportSummary(null)} />
+    <PageScaffold
+      title="知识来源详情"
+      description={source ? `${source.title}。查看来源配置、快照和生成的 WikiNode。` : "查看 Source 到 Raw Material 的证据链。"}
+      actions={source?.knowledgeBaseId ? (
+        <Button asChild>
+          <Link to={`/knowledge-bases/${source.knowledgeBaseId}/import?sourceId=${source.sourceId}`}>导入文件</Link>
+        </Button>
+      ) : null}
+    >
       <ApiErrorNotice error={sourceError} onRetry={reloadSource} />
       <ApiErrorNotice error={rawMaterialsError} onRetry={reloadRawMaterials} />
       <ApiErrorNotice error={operationsError} onRetry={reloadOperations} />
@@ -249,30 +232,6 @@ export function SourceDetailPage() {
           ["生成 WikiNode", String(source.generatedNodes)],
         ]} />
       ) : null}
-      <Card id="source-import">
-        <CardHeader>
-          <CardTitle className="text-base">文件接入</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-3 text-sm lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-          <div className="space-y-1">
-            <Label htmlFor="source-import-file">选择 txt / md / docx</Label>
-            <Input
-              id="source-import-file"
-              type="file"
-              accept=".txt,.md,.markdown,.docx,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-              onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
-            />
-            {importedSuggestionId ? (
-              <Link to={`/draft-wikinode-suggestions/${importedSuggestionId}`} className="inline-flex font-medium text-primary hover:underline">
-                打开生成的 WikiNode 建议
-              </Link>
-            ) : null}
-          </div>
-          <Button type="button" onClick={handleImportFile} disabled={!activeSourceId || !selectedFile || importStatus === "running"} className="w-fit">
-            {importStatus === "running" ? "导入中..." : "导入并解析"}
-          </Button>
-        </CardContent>
-      </Card>
       <Card>
         <CardHeader>
           <CardTitle className="text-base">WikiNode 建议生成</CardTitle>
@@ -1207,10 +1166,10 @@ export function ParserEnginePage() {
   )
 }
 
-export function PageScaffold({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
+export function PageScaffold({ title, description, actions, children }: { title: string; description?: string; actions?: ReactNode; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader title={title} description={description} />
+      <PageHeader title={title} description={description} actions={actions} />
       {children}
     </div>
   )
@@ -1225,29 +1184,6 @@ function SummaryGrid({ items }: { items: Array<[string, string]> }) {
           <CardContent className="text-lg font-semibold">{value}</CardContent>
         </Card>
       ))}
-    </div>
-  )
-}
-
-function StatusToast({
-  message,
-  onClose,
-  variant = "default",
-}: {
-  message: string | null
-  onClose: () => void
-  variant?: "default" | "error"
-}) {
-  if (!message) return null
-
-  return (
-    <div
-      role="status"
-      aria-live="polite"
-      className={`fixed right-6 top-6 z-50 flex max-w-[min(36rem,calc(100vw-3rem))] items-center justify-between gap-4 rounded-md border bg-popover px-4 py-3 text-sm shadow-md ${variant === "error" ? "border-destructive/40 text-destructive" : ""}`}
-    >
-      <span className="font-medium">{message}</span>
-      <Button type="button" variant="ghost" size="sm" onClick={onClose}>关闭</Button>
     </div>
   )
 }

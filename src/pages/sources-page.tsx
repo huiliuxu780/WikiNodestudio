@@ -14,6 +14,7 @@ export function SourcesPage() {
   const { data: sources, error: sourcesError, reload: reloadSources } = useAsyncData(listSources, [])
   const [selectedSourceId, setSelectedSourceId] = useState("")
   const activeSourceId = selectedSourceId || sources[0]?.sourceId || ""
+  const activeSource = sources.find((source) => source.sourceId === activeSourceId) ?? sources[0]
   const { data: selectedNodes, error: nodesError, reload: reloadNodes } = useAsyncData(() => getNodesBySourceId(activeSourceId), [], [activeSourceId])
 
   return (
@@ -21,9 +22,9 @@ export function SourcesPage() {
       <PageHeader
         title="知识来源"
         description="按 Source 查看快照、解析结果、生成的 WikiNode 和最近处理状态。"
-        actions={activeSourceId ? (
+        actions={activeSource ? (
           <Button asChild>
-            <Link to={`/sources/${activeSourceId}#source-import`}>导入文件</Link>
+            <Link to={sourceImportHref(activeSource)}>导入文件</Link>
           </Button>
         ) : null}
       />
@@ -68,7 +69,7 @@ export function SourcesPage() {
                     <td className="p-2">{source.generatedNodes}</td>
                     <td className="p-2">
                       <Link
-                        to={`/sources/${source.sourceId}#source-import`}
+                        to={sourceImportHref(source)}
                         className="whitespace-nowrap font-medium text-primary hover:underline"
                         onClick={(event) => event.stopPropagation()}
                       >
@@ -101,4 +102,10 @@ export function SourcesPage() {
       </div>
     </div>
   )
+}
+
+function sourceImportHref(source: { sourceId: string; knowledgeBaseId?: string | null }) {
+  return source.knowledgeBaseId
+    ? `/knowledge-bases/${source.knowledgeBaseId}/import?sourceId=${source.sourceId}`
+    : `/sources/${source.sourceId}`
 }

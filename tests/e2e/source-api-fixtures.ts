@@ -47,6 +47,55 @@ const sources = [
   },
 ]
 
+const knowledgeBases = [
+  {
+    kbId: "kb-cc-after-sales",
+    name: "CC After-sales KB",
+    description: "客服售后政策、流程、收费和升级处理知识库。",
+    businessDomain: "after_sales",
+    type: "mixed",
+    visibility: "internal",
+    status: "active",
+    owner: "Rivers",
+    settings: {
+      defaultNodeType: "policy",
+      defaultParserEngine: "pdf_manual_article_v1",
+      defaultStorageProvider: "workspace",
+      defaultVectorStore: "external_vector_store",
+      defaultPublishingPolicy: "manual",
+      defaultRetrievalStrategy: "wikinode_first",
+    },
+    wikiNodeCount: 12,
+    sourceCount: 2,
+    archivedAt: null,
+    createdAt: "2026-05-01",
+    updatedAt: "2026-06-20",
+  },
+  {
+    kbId: "kb-product-guide",
+    name: "Product Guide KB",
+    description: "产品手册和培训知识库。",
+    businessDomain: "product_support",
+    type: "product",
+    visibility: "internal",
+    status: "active",
+    owner: "Product Ops",
+    settings: {
+      defaultNodeType: "guide",
+      defaultParserEngine: "pdf_manual_article_v1",
+      defaultStorageProvider: "object_storage",
+      defaultVectorStore: "external_vector_store",
+      defaultPublishingPolicy: "manual",
+      defaultRetrievalStrategy: "wikinode_first",
+    },
+    wikiNodeCount: 4,
+    sourceCount: 2,
+    archivedAt: null,
+    createdAt: "2026-05-18",
+    updatedAt: "2026-06-20",
+  },
+]
+
 const rawMaterials = [
   {
     rawMaterialId: "rm-001",
@@ -255,6 +304,13 @@ export async function mockSourceEvidenceApi(page: Page) {
 
     if (path === "/api/parser-profiles") {
       return route.fulfill({ json: parserProfiles })
+    }
+
+    const knowledgeBaseMatch = path.match(/^\/api\/knowledge-bases\/([^/]+)$/)
+    if (knowledgeBaseMatch) {
+      const [, kbId] = knowledgeBaseMatch
+      const knowledgeBase = knowledgeBases.find((item) => item.kbId === kbId)
+      return knowledgeBase ? route.fulfill({ json: knowledgeBase }) : route.fulfill({ status: 404, json: { message: "Knowledge Base not found" } })
     }
 
     if (path === "/api/sources") {
