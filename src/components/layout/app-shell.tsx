@@ -41,7 +41,7 @@ function AppBreadcrumb() {
   const { pathname } = useLocation()
   const parts = pathname.split("/").filter(Boolean)
   const section = parts[0] ?? ""
-  const current = parts.length > 1 ? "编辑" : routeLabels[section]
+  const current = currentRouteLabel(parts, section)
 
   return (
     <Breadcrumb>
@@ -56,6 +56,18 @@ function AppBreadcrumb() {
       </BreadcrumbList>
     </Breadcrumb>
   )
+}
+
+function currentRouteLabel(parts: string[], section: string) {
+  if (section === "knowledge-bases" && parts.length > 2 && parts[2] === "settings") {
+    return "知识库设置"
+  }
+
+  if (section === "knowledge-bases" && parts.length > 1) {
+    return "知识库详情"
+  }
+
+  return parts.length > 1 ? "编辑" : routeLabels[section]
 }
 
 export function AppShell() {

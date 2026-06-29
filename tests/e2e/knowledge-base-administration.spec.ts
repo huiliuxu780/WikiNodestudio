@@ -120,6 +120,66 @@ test.describe("Knowledge Base administration", () => {
 
       return route.fallback()
     })
+
+    await page.route("**/api/wiki-nodes", async (route) => {
+      return route.fulfill({
+        json: [
+          {
+            nodeId: "wn-001",
+            knowledgeBaseId: "kb-cc-after-sales",
+            title: "保修期内维修服务政策",
+            nodeType: "policy",
+            objectType: "Article",
+            subtype: "service_fee_policy",
+            status: "published",
+            indexStatus: "indexed",
+            owner: "Rivers",
+            updatedAt: "2026-06-20",
+          },
+          {
+            nodeId: "wn-013",
+            knowledgeBaseId: "kb-product-guide",
+            title: "西门子 WM14U 洗衣机",
+            nodeType: "product",
+            objectType: "Product",
+            subtype: "product_model",
+            status: "published",
+            indexStatus: "indexed",
+            owner: "Product Docs",
+            updatedAt: "2026-06-19",
+          },
+        ],
+      })
+    })
+
+    await page.route("**/api/sources", async (route) => {
+      return route.fulfill({
+        json: [
+          {
+            sourceId: "src-feishu-cc",
+            knowledgeBaseId: "kb-cc-after-sales",
+            title: "售后政策飞书空间",
+            sourceType: "feishu",
+            owner: "Rivers",
+            syncStatus: "synced",
+            lastSyncedAt: "2026-06-20",
+            generatedNodes: 3,
+            rawMaterialCount: 4,
+          },
+          {
+            sourceId: "src-pdf-dishwasher",
+            knowledgeBaseId: "kb-product-guide",
+            title: "洗碗机培训 PDF",
+            sourceType: "pdf",
+            owner: "Product Docs",
+            syncStatus: "synced",
+            lastSyncedAt: "2026-06-17",
+            generatedNodes: 1,
+            rawMaterialCount: 2,
+          },
+        ],
+      })
+    })
   })
 
   test("list page supports dense search and status lifecycle actions", async ({ page }) => {
@@ -153,20 +213,48 @@ test.describe("Knowledge Base administration", () => {
     await page.goto("/knowledge-bases/kb-cc-after-sales")
 
     await expect(page.getByRole("heading", { name: "CC After-sales KB" })).toBeVisible()
+    await expect(page.getByLabel("breadcrumb")).toContainText("知识库详情")
+    await expect(page.getByLabel("breadcrumb")).not.toContainText("编辑")
     await expect(page.getByText("客服售后政策、流程、收费和升级处理知识库。")).toBeVisible()
+    await expect(page.getByText("知识资产")).toBeVisible()
+    await expect(page.getByText("数据来源")).toBeVisible()
+    await expect(page.getByText("召回范围", { exact: true }).first()).toBeVisible()
+    await expect(page.getByRole("tab", { name: "WikiNode" })).toBeVisible()
+    await expect(page.getByRole("tab", { name: "Source" })).toBeVisible()
+    await expect(page.getByRole("tab", { name: "召回范围" })).toBeVisible()
+    await expect(page.getByRole("row", { name: /保修期内维修服务政策/ })).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/\bfee_policy\b|\bprocedure\b|\bterm\b/)
+    await page.getByRole("tab", { name: "Source" }).click()
+    await expect(page.getByRole("row", { name: /售后政策飞书空间/ })).toBeVisible()
+    await page.getByRole("tab", { name: "召回范围" }).click()
+    await expect(page.getByText("filters.knowledgeBaseId = kb-cc-after-sales")).toBeVisible()
     await expect(page.getByText("默认召回策略")).toBeVisible()
     await expect(page.getByText("WikiNode 优先")).toBeVisible()
+    await expect(page.getByText("范围概览")).toHaveCount(0)
+    await expect(page.locator("main").last()).not.toContainText(/执行边界|当前只|不会执行|不提供|不执行/)
 
     await page.getByRole("button", { name: "停用" }).click()
-    await expect(page.getByText("状态已更新")).toBeVisible()
+    await expect(page.getByRole("status").filter({ hasText: "状态已更新" })).toBeVisible()
     await expect(page.getByText("已停用")).toBeVisible()
+    await expect(page.getByRole("button", { name: "停用" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "恢复" })).toBeVisible()
+    await expect(page.getByText("操作结果已更新")).toHaveCount(0)
 
     await page.goto("/knowledge-bases/kb-cc-after-sales/settings")
     await expect(page.getByRole("heading", { name: "知识库设置" })).toBeVisible()
+    await expect(page.getByLabel("breadcrumb")).toContainText("知识库设置")
     await expect(page.getByLabel("知识库名称")).toHaveValue("CC After-sales KB")
+    await expect(page.getByText("危险操作")).toBeVisible()
+    await expect(page.getByText("当前状态：已停用")).toBeVisible()
+    await expect(page.getByRole("button", { name: "停用" })).toHaveCount(0)
+    await page.getByRole("button", { name: "恢复" }).click()
+    await expect(page.getByRole("status").filter({ hasText: "状态已更新" })).toBeVisible()
+    await expect(page.getByText("当前状态：已启用")).toBeVisible()
+    await expect(page.getByRole("button", { name: "停用" })).toBeVisible()
+    await expect(page.locator("main").last()).not.toContainText(/\bwikinode_first\b|\bpdf_manual_article_v1\b/)
     await page.getByLabel("知识库名称").fill("CC After-sales Knowledge Base")
     await page.getByRole("button", { name: "保存设置" }).click()
-    await expect(page.getByText("保存成功")).toBeVisible()
+    await expect(page.getByRole("status").filter({ hasText: "保存成功" })).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
   })
 })

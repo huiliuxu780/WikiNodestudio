@@ -73,10 +73,13 @@ export const objectTypeLabels: Record<KnowledgeObjectType, string> = {
 
 export const subtypeLabels: Record<string, string> = {
   service_fee_policy: "收费政策",
+  fee_policy: "收费政策",
   warranty_policy: "保修政策",
   repair_policy: "维修政策",
   service_script: "服务话术",
   faq: "常见问题",
+  procedure: "流程",
+  term: "术语",
   product_model: "产品型号",
   product_category: "产品品类",
   troubleshooting_flow: "故障处理流程",
@@ -271,6 +274,7 @@ export const knowledgeBaseSettingLabels: Record<string, string> = {
   object_storage: "对象存储",
   external_vector_store: "外部向量库",
   markdown: "Markdown",
+  pdf_manual_article_v1: "PDF 手册解析",
 }
 
 export const storageProviderLabels: Record<string, string> = {

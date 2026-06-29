@@ -191,8 +191,13 @@ test.describe("Frontend skeleton IA", () => {
     await expect(page.locator("main").last()).not.toContainText(/\bobject-storage\b|\bworkspace\b/i)
 
     await page.goto("/knowledge-bases/kb-cc-after-sales")
-    await expect(page.getByText("范围概览")).toBeVisible()
+    await expect(page.getByText("范围概览")).toHaveCount(0)
+    await expect(page.getByText("知识资产")).toBeVisible()
+    await expect(page.getByText("数据来源")).toBeVisible()
+    await expect(page.getByText("召回范围", { exact: true }).first()).toBeVisible()
+    await expect(page.getByRole("tab", { name: "设置摘要" })).toBeVisible()
     await expect(page.getByText("已启用")).toBeVisible()
+    await page.getByRole("tab", { name: "设置摘要" }).click()
     await expect(page.getByText("默认召回策略")).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(/\bactive\b|\bdisabled\b|\barchived\b/i)
 
