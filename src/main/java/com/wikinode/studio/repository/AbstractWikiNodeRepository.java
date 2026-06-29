@@ -64,6 +64,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -220,6 +221,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
 
     return new WikiNodeLifecycleResult(
       nodeId,
+      published.knowledgeBaseId(),
       "published",
       "outdated",
       "已发布 WikiNode，并准备 %d 条 Index Segment；外部向量库同步待后续执行。".formatted(segments.size()),
@@ -239,6 +241,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
 
     return new WikiNodeLifecycleResult(
       nodeId,
+      prepared.knowledgeBaseId(),
       prepared.status(),
       nextIndexStatus,
       "已重新准备 %d 条本地 Index Segment；外部向量库同步待后续执行。".formatted(segments.size()),
@@ -499,10 +502,12 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
     String contentFormat = contentFormatFor(cleanFileName);
     String parserProfile = parserProfileFor(cleanFileName);
     String title = titleFor(cleanFileName);
+    String knowledgeBaseId = knowledgeBaseIdForSource(source);
 
     RawMaterial rawMaterial = new RawMaterial(
       rawMaterialId,
       sourceId,
+      knowledgeBaseId,
       title,
       "file",
       day,
@@ -519,6 +524,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       parsedDocumentId,
       rawMaterialId,
       sourceId,
+      knowledgeBaseId,
       "%s 解析结果".formatted(title),
       contentFormat,
       normalizedContent,
@@ -547,6 +553,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       operationId,
       "import_source_file",
       sourceId,
+      knowledgeBaseId,
       rawMaterialId,
       parsedDocumentId,
       "succeeded",
@@ -560,6 +567,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       parseOperationId,
       "parse_raw_material",
       sourceId,
+      knowledgeBaseId,
       rawMaterialId,
       parsedDocumentId,
       "succeeded",
@@ -581,6 +589,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
     return new SourceImportResult(
       operationId,
       sourceId,
+      knowledgeBaseId,
       rawMaterialId,
       parsedDocumentId,
       "succeeded",
@@ -760,6 +769,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       suggestion.parsedDocumentId(),
       suggestion.rawMaterialId(),
       suggestion.sourceId(),
+      suggestion.knowledgeBaseId(),
       suggestion.operationId(),
       suggestion.title(),
       suggestion.objectType(),
@@ -806,6 +816,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       String existingNodeId = suggestion.matchedWikiNodeIds().isEmpty() ? null : suggestion.matchedWikiNodeIds().getFirst();
       return new DraftWikiNodeSuggestionAcceptResult(
         suggestion.suggestionId(),
+        suggestion.knowledgeBaseId(),
         "skipped",
         "该 WikiNode 建议已采纳。",
         suggestion.reviewNote(),
@@ -817,6 +828,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
     if (!Set.of("draft", "needs_review").contains(suggestion.status())) {
       return new DraftWikiNodeSuggestionAcceptResult(
         suggestion.suggestionId(),
+        suggestion.knowledgeBaseId(),
         "skipped",
         "当前状态不能采纳该 WikiNode 建议。",
         suggestion.reviewNote(),
@@ -828,6 +840,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
     if (!"none".equals(suggestion.conflictStatus())) {
       return new DraftWikiNodeSuggestionAcceptResult(
         suggestion.suggestionId(),
+        suggestion.knowledgeBaseId(),
         "skipped",
         "存在冲突，不能直接采纳为 WikiNode。",
         suggestion.reviewNote(),
@@ -839,6 +852,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
     if (loadNodes().stream().anyMatch(node -> suggestion.title().equals(node.title()))) {
       return new DraftWikiNodeSuggestionAcceptResult(
         suggestion.suggestionId(),
+        suggestion.knowledgeBaseId(),
         "skipped",
         "已有 WikiNode 使用相同标题，不能直接采纳。",
         suggestion.reviewNote(),
@@ -857,6 +871,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       suggestion.parsedDocumentId(),
       suggestion.rawMaterialId(),
       suggestion.sourceId(),
+      suggestion.knowledgeBaseId(),
       suggestion.operationId(),
       suggestion.title(),
       suggestion.objectType(),
@@ -881,6 +896,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
 
     return new DraftWikiNodeSuggestionAcceptResult(
       accepted.suggestionId(),
+      accepted.knowledgeBaseId(),
       accepted.status(),
       "已采纳为草稿 WikiNode，并准备 %d 条 Index Segment。".formatted(preparedSegments.size()),
       accepted.reviewNote(),
@@ -947,6 +963,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       suggestion.parsedDocumentId(),
       suggestion.rawMaterialId(),
       suggestion.sourceId(),
+      suggestion.knowledgeBaseId(),
       suggestion.operationId(),
       suggestion.title(),
       suggestion.objectType(),
@@ -984,10 +1001,22 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   }
 
   @Override
-  public WikiGraphOverview graphOverview() {
+  public WikiGraphOverview graphOverview(String knowledgeBaseId) {
+    String scope = knowledgeBaseId == null || knowledgeBaseId.isBlank() ? null : knowledgeBaseId;
+    List<WikiNode> scopedNodes = listNodes().stream()
+      .filter(node -> scope == null || scope.equals(node.knowledgeBaseId()))
+      .toList();
+    Set<String> scopedNodeIds = scopedNodes.stream()
+      .map(WikiNode::nodeId)
+      .collect(Collectors.toSet());
+
     return new WikiGraphOverview(
-      listNodes().stream().map(this::graphNode).toList(),
-      allLinks().stream().map(this::graphEdge).toList()
+      scopedNodes.stream().map(this::graphNode).toList(),
+      allLinks().stream()
+        .filter(link -> scopedNodeIds.contains(link.fromNodeId()))
+        .filter(link -> link.toNodeId() == null || scopedNodeIds.contains(link.toNodeId()))
+        .map(this::graphEdge)
+        .toList()
     );
   }
 
@@ -1160,6 +1189,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       parsedDocument.parsedDocumentId(),
       parsedDocument.rawMaterialId(),
       parsedDocument.sourceId(),
+      knowledgeBaseIdForParsedDocument(parsedDocument),
       operationId,
       suggestedTitle,
       objectType,
@@ -1199,6 +1229,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       suggestion.parsedDocumentId(),
       suggestion.rawMaterialId(),
       suggestion.sourceId(),
+      suggestion.knowledgeBaseId(),
       suggestion.operationId(),
       suggestion.title(),
       suggestion.objectType(),
@@ -1260,12 +1291,33 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   }
 
   private String knowledgeBaseIdForSuggestion(DraftWikiNodeSuggestion suggestion) {
+    if (suggestion.knowledgeBaseId() != null && !suggestion.knowledgeBaseId().isBlank()) {
+      return suggestion.knowledgeBaseId();
+    }
     return loadSources().stream()
       .filter(source -> source.sourceId().equals(suggestion.sourceId()))
       .map(SourceItem::knowledgeBaseId)
       .filter(id -> id != null && !id.isBlank())
       .findFirst()
       .orElse(defaultKnowledgeBaseId(nodeTypeForSuggestion(suggestion)));
+  }
+
+  private String knowledgeBaseIdForParsedDocument(ParsedDocument parsedDocument) {
+    if (parsedDocument.knowledgeBaseId() != null && !parsedDocument.knowledgeBaseId().isBlank()) {
+      return parsedDocument.knowledgeBaseId();
+    }
+    return loadSources().stream()
+      .filter(source -> source.sourceId().equals(parsedDocument.sourceId()))
+      .map(this::knowledgeBaseIdForSource)
+      .findFirst()
+      .orElse(defaultKnowledgeBaseId("policy"));
+  }
+
+  private String knowledgeBaseIdForSource(SourceItem source) {
+    if (source.knowledgeBaseId() != null && !source.knowledgeBaseId().isBlank()) {
+      return source.knowledgeBaseId();
+    }
+    return "kb-cc-after-sales";
   }
 
   private String acceptedNodeIdFor(DraftWikiNodeSuggestion suggestion) {
@@ -1341,6 +1393,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       operationId,
       "suggest_wikinode",
       parsedDocument.sourceId(),
+      knowledgeBaseIdForParsedDocument(parsedDocument),
       parsedDocument.rawMaterialId(),
       parsedDocument.parsedDocumentId(),
       status,
@@ -1429,6 +1482,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
         parsedDocument.parsedDocumentId(),
         parsedDocument.rawMaterialId(),
         parsedDocument.sourceId(),
+        knowledgeBaseIdForParsedDocument(parsedDocument),
         index,
         segmentType(content),
         title,
@@ -1447,6 +1501,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
         parsedDocument.parsedDocumentId(),
         parsedDocument.rawMaterialId(),
         parsedDocument.sourceId(),
+        knowledgeBaseIdForParsedDocument(parsedDocument),
         0,
         "body",
         documentTitle,
@@ -1794,6 +1849,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   private GraphNode graphNode(WikiNode node) {
     return new GraphNode(
       node.nodeId(),
+      node.knowledgeBaseId(),
       node.title(),
       node.nodeType(),
       node.status(),

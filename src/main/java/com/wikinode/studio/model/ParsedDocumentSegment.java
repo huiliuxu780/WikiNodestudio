@@ -5,6 +5,7 @@ public record ParsedDocumentSegment(
   String parsedDocumentId,
   String rawMaterialId,
   String sourceId,
+  String knowledgeBaseId,
   int position,
   String segmentType,
   String title,
@@ -15,4 +16,36 @@ public record ParsedDocumentSegment(
   String createdAt,
   String updatedAt
 ) {
+  public ParsedDocumentSegment(
+    String segmentId,
+    String parsedDocumentId,
+    String rawMaterialId,
+    String sourceId,
+    int position,
+    String segmentType,
+    String title,
+    String content,
+    String contentPreview,
+    int tokenCount,
+    String sourceLocator,
+    String createdAt,
+    String updatedAt
+  ) {
+    this(
+      segmentId,
+      parsedDocumentId,
+      rawMaterialId,
+      sourceId,
+      null,
+      position,
+      segmentType,
+      title,
+      content,
+      contentPreview,
+      tokenCount,
+      sourceLocator,
+      createdAt,
+      updatedAt
+    );
+  }
 }

@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
+import type { KnowledgeBase } from "@/types/knowledge-base"
 import type { WikiNode } from "@/types/wiki"
 import { actionLabels, commonLabels, indexStatusLabels, labelFromMap, objectTypeLabels, relationStatusLabels } from "@/utils/display-labels"
 import {
@@ -44,6 +45,7 @@ import { getIncomingLinks, getOutgoingLinks } from "@/utils/link-parser"
 
 const defaultFilters: KnowledgeGraphFilters = {
   search: "",
+  knowledgeBaseId: "all",
   objectType: "all",
   indexStatus: "all",
   relationType: "all",
@@ -75,7 +77,7 @@ const nodeTypes = {
   brokenLink: BrokenLinkNode,
 }
 
-export function WikiGraphView({ nodes }: { nodes: WikiNode[] }) {
+export function WikiGraphView({ nodes, knowledgeBases = [] }: { nodes: WikiNode[]; knowledgeBases?: KnowledgeBase[] }) {
   const [filters, setFilters] = useState<KnowledgeGraphFilters>(defaultFilters)
   const [selectedNodeId, setSelectedNodeId] = useState("")
   const [selectedEdgeId, setSelectedEdgeId] = useState("")
@@ -134,7 +136,7 @@ export function WikiGraphView({ nodes }: { nodes: WikiNode[] }) {
         data-testid="wiki-graph-toolbar"
         className="flex flex-col gap-3 rounded-md border bg-card p-3"
       >
-        <div className="grid gap-3 lg:grid-cols-[minmax(220px,1.4fr)_minmax(170px,0.7fr)_minmax(150px,0.7fr)_minmax(150px,0.7fr)_minmax(150px,0.7fr)_auto]">
+        <div className="grid gap-3 lg:grid-cols-[minmax(220px,1.4fr)_minmax(170px,0.8fr)_minmax(170px,0.8fr)_minmax(150px,0.7fr)_minmax(150px,0.7fr)_minmax(150px,0.7fr)_auto]">
           <div className="flex flex-col gap-2">
             <Label htmlFor="knowledge-graph-search">搜索知识对象</Label>
             <Input
@@ -146,6 +148,14 @@ export function WikiGraphView({ nodes }: { nodes: WikiNode[] }) {
               onChange={(event) => setFilters({ ...filters, search: event.target.value })}
             />
           </div>
+          <FilterSelect
+            label="Knowledge Base"
+            testId="wiki-graph-filter-knowledge-base"
+            value={filters.knowledgeBaseId}
+            labels={Object.fromEntries(knowledgeBases.map((kb) => [kb.kbId, kb.name]))}
+            items={knowledgeBases.map((kb) => kb.kbId)}
+            onChange={(knowledgeBaseId) => setFilters({ ...filters, knowledgeBaseId })}
+          />
           <FilterSelect
             label="Knowledge Object 类型"
             testId="wiki-graph-filter-object-type"

@@ -113,7 +113,7 @@ test.describe.serial("MVP browser smoke", () => {
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
 
     await page.getByLabel("检索问题").fill("zzzz-no-result-前端验收")
-    await page.getByRole("combobox").nth(1).click()
+    await page.getByLabel("发布状态").click()
     await page.getByRole("option", { name: "已归档" }).click()
     await page.getByRole("button", { name: "检索" }).click()
 

@@ -161,6 +161,7 @@ export type WikiNodeCreateInput = {
 
 export type WikiNodeLifecycleResult = {
   nodeId: string
+  knowledgeBaseId?: string | null
   status: WikiNodeStatus
   indexStatus: WikiIndexStatus
   summary: string
@@ -201,6 +202,7 @@ export type BrokenLink = WikiLink & {
 
 export type GraphNode = {
   nodeId: string
+  knowledgeBaseId?: string | null
   title: string
   nodeType: WikiNodeType
   status: WikiNodeStatus

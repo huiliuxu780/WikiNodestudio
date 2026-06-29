@@ -13,6 +13,7 @@ export type DraftWikiNodeSuggestion = {
   parsedDocumentId: string
   rawMaterialId: string
   sourceId: string
+  knowledgeBaseId?: string | null
   operationId: string
   title: string
   objectType: KnowledgeObjectType
@@ -54,6 +55,7 @@ export type DraftWikiNodeSuggestionAcceptResult = {
   status: "accepted" | "skipped" | "failed"
   summary: string
   reviewNote?: string | null
+  knowledgeBaseId?: string | null
   nodeId?: string | null
   nodeStatus?: "draft" | "published" | "archived" | string | null
   indexSegmentCount?: number | null

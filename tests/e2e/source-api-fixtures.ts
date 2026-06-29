@@ -3,6 +3,7 @@ import type { Page } from "@playwright/test"
 const sources = [
   {
     sourceId: "src-feishu-cc",
+    knowledgeBaseId: "kb-cc-after-sales",
     sourceType: "feishu",
     title: "CC 售后政策飞书空间",
     owner: "售后运营",
@@ -13,6 +14,7 @@ const sources = [
   },
   {
     sourceId: "src-pdf-dishwasher",
+    knowledgeBaseId: "kb-product-guide",
     sourceType: "pdf",
     title: "洗碗机培训 PDF",
     owner: "产品培训",
@@ -23,6 +25,7 @@ const sources = [
   },
   {
     sourceId: "src-excel-fee",
+    knowledgeBaseId: "kb-cc-after-sales",
     sourceType: "excel",
     title: "维修收费标准 Excel",
     owner: "服务财务",
@@ -33,6 +36,7 @@ const sources = [
   },
   {
     sourceId: "src-word-manual",
+    knowledgeBaseId: "kb-product-guide",
     sourceType: "word",
     title: "产品说明书 Word",
     owner: "产品资料",
@@ -47,6 +51,7 @@ const rawMaterials = [
   {
     rawMaterialId: "rm-001",
     sourceId: "src-feishu-cc",
+    knowledgeBaseId: "kb-cc-after-sales",
     title: "售后政策空间快照",
     rawMaterialType: "document_snapshot",
     sourceVersion: "2026.06",
@@ -62,6 +67,7 @@ const rawMaterials = [
   {
     rawMaterialId: "rm-002",
     sourceId: "src-pdf-dishwasher",
+    knowledgeBaseId: "kb-product-guide",
     title: "洗碗机培训 PDF",
     rawMaterialType: "file",
     sourceVersion: "2026.05",
@@ -77,6 +83,7 @@ const rawMaterials = [
   {
     rawMaterialId: "rm-004",
     sourceId: "src-word-manual",
+    knowledgeBaseId: "kb-product-guide",
     title: "产品说明书 Word",
     rawMaterialType: "file",
     sourceVersion: "2026.05",
@@ -96,6 +103,7 @@ const parsedDocuments = [
     parsedDocumentId: "pd-001",
     rawMaterialId: "rm-001",
     sourceId: "src-feishu-cc",
+    knowledgeBaseId: "kb-cc-after-sales",
     title: "售后政策空间快照解析结果",
     contentFormat: "markdown",
     normalizedContent: "# 保修政策\n\n保修期内维修不收取人工费，收费例外需要关联人为损坏判定规则。",
@@ -122,6 +130,7 @@ const parsedDocuments = [
     parsedDocumentId: "pd-002",
     rawMaterialId: "rm-002",
     sourceId: "src-pdf-dishwasher",
+    knowledgeBaseId: "kb-product-guide",
     title: "洗碗机培训 PDF 解析结果",
     contentFormat: "markdown",
     normalizedContent: "# 洗碗机培训\n\n排查时先确认电源、水路和错误码。",
@@ -152,6 +161,7 @@ const parsedDocumentSegments = [
     parsedDocumentId: "pd-001",
     rawMaterialId: "rm-001",
     sourceId: "src-feishu-cc",
+    knowledgeBaseId: "kb-cc-after-sales",
     position: 0,
     segmentType: "section",
     title: "保修政策",
@@ -169,6 +179,7 @@ const sourceOperations = [
     operationId: "op-src-feishu-sync-001",
     operationType: "source_sync",
     sourceId: "src-feishu-cc",
+    knowledgeBaseId: "kb-cc-after-sales",
     rawMaterialId: null,
     parsedDocumentId: null,
     status: "succeeded",
@@ -182,6 +193,7 @@ const sourceOperations = [
     operationId: "op-src-feishu-parse-001",
     operationType: "parse_raw_material",
     sourceId: "src-feishu-cc",
+    knowledgeBaseId: "kb-cc-after-sales",
     rawMaterialId: "rm-001",
     parsedDocumentId: "pd-001",
     status: "succeeded",
@@ -195,6 +207,7 @@ const sourceOperations = [
     operationId: "op-word-parse-001",
     operationType: "parse_raw_material",
     sourceId: "src-word-manual",
+    knowledgeBaseId: "kb-product-guide",
     rawMaterialId: "rm-004",
     parsedDocumentId: null,
     status: "failed",
@@ -255,6 +268,7 @@ export async function mockSourceEvidenceApi(page: Page) {
         json: {
           operationId: "op-import-playwright",
           sourceId,
+          knowledgeBaseId: sourceId === "src-pdf-dishwasher" || sourceId === "src-word-manual" ? "kb-product-guide" : "kb-cc-after-sales",
           rawMaterialId: "rm-import-playwright",
           parsedDocumentId: "pd-import-playwright",
           status: "succeeded",

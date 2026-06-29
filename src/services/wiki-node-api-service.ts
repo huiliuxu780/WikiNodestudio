@@ -46,6 +46,7 @@ export function publishWikiNode(nodeId: string) {
     apiPost<WikiNodeLifecycleResult>(`/wiki-nodes/${nodeId}/publish`, {}),
     () => ({
       nodeId,
+      knowledgeBaseId: null,
       status: "published",
       indexStatus: "outdated",
       summary: "已发布 WikiNode，并准备本地 Index Segment；外部向量库同步待后续执行。",
@@ -61,6 +62,7 @@ export function reindexWikiNode(nodeId: string) {
     apiPost<WikiNodeLifecycleResult>(`/wiki-nodes/${nodeId}/reindex`, {}),
     () => ({
       nodeId,
+      knowledgeBaseId: null,
       status: "published",
       indexStatus: "outdated",
       summary: "已重新准备本地 Index Segment；外部向量库同步待后续执行。",

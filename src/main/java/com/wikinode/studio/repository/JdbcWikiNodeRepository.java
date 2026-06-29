@@ -267,7 +267,7 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
   protected List<RawMaterial> loadRawMaterials() {
     return jdbcTemplate.query(
       """
-      select rm.raw_material_id, rm.source_id, rm.title, rm.raw_material_type, rm.source_version,
+      select rm.raw_material_id, rm.source_id, rm.knowledge_base_id, rm.title, rm.raw_material_type, rm.source_version,
              rm.captured_at, rm.content_hash, rm.storage_provider, rm.storage_ref, rm.parse_status,
              (select count(*) from parsed_documents pd where pd.raw_material_id = rm.raw_material_id) as parsed_document_count,
              rm.created_at, rm.updated_at
@@ -277,6 +277,7 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       (resultSet, rowNumber) -> new RawMaterial(
         resultSet.getString("raw_material_id"),
         resultSet.getString("source_id"),
+        resultSet.getString("knowledge_base_id"),
         resultSet.getString("title"),
         resultSet.getString("raw_material_type"),
         resultSet.getString("source_version"),
@@ -296,7 +297,7 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
   protected List<ParsedDocument> loadParsedDocuments() {
     return jdbcTemplate.query(
       """
-      select parsed_document_id, raw_material_id, source_id, title, content_format, normalized_content,
+      select parsed_document_id, raw_material_id, source_id, knowledge_base_id, title, content_format, normalized_content,
              metadata_language, metadata_business_domain, parser_profile, parse_status, parse_error_summary,
              created_at, updated_at
       from parsed_documents
@@ -308,6 +309,7 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
           parsedDocumentId,
           resultSet.getString("raw_material_id"),
           resultSet.getString("source_id"),
+          resultSet.getString("knowledge_base_id"),
           resultSet.getString("title"),
           resultSet.getString("content_format"),
           resultSet.getString("normalized_content"),
@@ -327,7 +329,7 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
   protected List<ParsedDocumentSegment> loadParsedDocumentSegments() {
     return jdbcTemplate.query(
       """
-      select segment_id, parsed_document_id, raw_material_id, source_id, position, segment_type,
+      select segment_id, parsed_document_id, raw_material_id, source_id, knowledge_base_id, position, segment_type,
              title, content, content_preview, token_count, source_locator, created_at, updated_at
       from parsed_document_segments
       order by parsed_document_id, position
@@ -337,6 +339,7 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
         resultSet.getString("parsed_document_id"),
         resultSet.getString("raw_material_id"),
         resultSet.getString("source_id"),
+        resultSet.getString("knowledge_base_id"),
         resultSet.getInt("position"),
         resultSet.getString("segment_type"),
         resultSet.getString("title"),
@@ -354,7 +357,7 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
   protected List<SourceOperation> loadSourceOperations() {
     return jdbcTemplate.query(
       """
-      select operation_id, operation_type, source_id, raw_material_id, parsed_document_id, status,
+      select operation_id, operation_type, source_id, knowledge_base_id, raw_material_id, parsed_document_id, status,
              requested_by, started_at, finished_at, summary, error_summary
       from source_operations
       order by started_at desc, operation_id
@@ -363,6 +366,7 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
         resultSet.getString("operation_id"),
         resultSet.getString("operation_type"),
         resultSet.getString("source_id"),
+        resultSet.getString("knowledge_base_id"),
         resultSet.getString("raw_material_id"),
         resultSet.getString("parsed_document_id"),
         resultSet.getString("status"),
@@ -516,7 +520,7 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
   protected List<DraftWikiNodeSuggestion> loadDraftWikiNodeSuggestions() {
     return jdbcTemplate.query(
       """
-      select suggestion_id, parsed_document_id, raw_material_id, source_id, operation_id, title,
+      select suggestion_id, parsed_document_id, raw_material_id, source_id, knowledge_base_id, operation_id, title,
              object_type, subtype, content_draft, metadata_language, metadata_business_domain,
              confidence, status, review_note, conflict_status, conflict_reasons,
              matched_wiki_node_ids, matched_suggestion_ids, created_at, updated_at
@@ -532,6 +536,7 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
           resultSet.getString("parsed_document_id"),
           resultSet.getString("raw_material_id"),
           resultSet.getString("source_id"),
+          resultSet.getString("knowledge_base_id"),
           resultSet.getString("operation_id"),
           resultSet.getString("title"),
           resultSet.getString("object_type"),
@@ -561,12 +566,13 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
     int updated = jdbcTemplate.update(
       """
       update source_operations
-      set operation_type = ?, source_id = ?, raw_material_id = ?, parsed_document_id = ?, status = ?,
+      set operation_type = ?, source_id = ?, knowledge_base_id = ?, raw_material_id = ?, parsed_document_id = ?, status = ?,
           requested_by = ?, started_at = ?, finished_at = ?, summary = ?, error_summary = ?
       where operation_id = ?
       """,
       operation.operationType(),
       operation.sourceId(),
+      operation.knowledgeBaseId(),
       operation.rawMaterialId(),
       operation.parsedDocumentId(),
       operation.status(),
@@ -581,13 +587,14 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       jdbcTemplate.update(
         """
         insert into source_operations (
-          operation_id, operation_type, source_id, raw_material_id, parsed_document_id, status,
+          operation_id, operation_type, source_id, knowledge_base_id, raw_material_id, parsed_document_id, status,
           requested_by, started_at, finished_at, summary, error_summary
-        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         operation.operationId(),
         operation.operationType(),
         operation.sourceId(),
+        operation.knowledgeBaseId(),
         operation.rawMaterialId(),
         operation.parsedDocumentId(),
         operation.status(),
@@ -605,11 +612,12 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
     int updated = jdbcTemplate.update(
       """
       update raw_materials
-      set source_id = ?, title = ?, raw_material_type = ?, source_version = ?, captured_at = ?,
+      set source_id = ?, knowledge_base_id = ?, title = ?, raw_material_type = ?, source_version = ?, captured_at = ?,
           content_hash = ?, storage_provider = ?, storage_ref = ?, parse_status = ?, updated_at = ?
       where raw_material_id = ?
       """,
       rawMaterial.sourceId(),
+      rawMaterial.knowledgeBaseId(),
       rawMaterial.title(),
       rawMaterial.rawMaterialType(),
       rawMaterial.sourceVersion(),
@@ -625,12 +633,13 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       jdbcTemplate.update(
         """
         insert into raw_materials (
-          raw_material_id, source_id, title, raw_material_type, source_version, captured_at,
+          raw_material_id, source_id, knowledge_base_id, title, raw_material_type, source_version, captured_at,
           content_hash, storage_provider, storage_ref, parse_status, created_at, updated_at
-        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         rawMaterial.rawMaterialId(),
         rawMaterial.sourceId(),
+        rawMaterial.knowledgeBaseId(),
         rawMaterial.title(),
         rawMaterial.rawMaterialType(),
         rawMaterial.sourceVersion(),
@@ -651,13 +660,14 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
     int updated = jdbcTemplate.update(
       """
       update parsed_documents
-      set raw_material_id = ?, source_id = ?, title = ?, content_format = ?, normalized_content = ?,
+      set raw_material_id = ?, source_id = ?, knowledge_base_id = ?, title = ?, content_format = ?, normalized_content = ?,
           metadata_language = ?, metadata_business_domain = ?, parser_profile = ?, parse_status = ?,
           parse_error_summary = ?, updated_at = ?
       where parsed_document_id = ?
       """,
       parsedDocument.rawMaterialId(),
       parsedDocument.sourceId(),
+      parsedDocument.knowledgeBaseId(),
       parsedDocument.title(),
       parsedDocument.contentFormat(),
       parsedDocument.normalizedContent(),
@@ -673,14 +683,15 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       jdbcTemplate.update(
         """
         insert into parsed_documents (
-          parsed_document_id, raw_material_id, source_id, title, content_format, normalized_content,
+          parsed_document_id, raw_material_id, source_id, knowledge_base_id, title, content_format, normalized_content,
           metadata_language, metadata_business_domain, parser_profile, parse_status, parse_error_summary,
           created_at, updated_at
-        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         parsedDocument.parsedDocumentId(),
         parsedDocument.rawMaterialId(),
         parsedDocument.sourceId(),
+        parsedDocument.knowledgeBaseId(),
         parsedDocument.title(),
         parsedDocument.contentFormat(),
         parsedDocument.normalizedContent(),
@@ -705,14 +716,15 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       jdbcTemplate.update(
         """
         insert into parsed_document_segments (
-          segment_id, parsed_document_id, raw_material_id, source_id, position, segment_type,
+          segment_id, parsed_document_id, raw_material_id, source_id, knowledge_base_id, position, segment_type,
           title, content, content_preview, token_count, source_locator, created_at, updated_at
-        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         segment.segmentId(),
         segment.parsedDocumentId(),
         segment.rawMaterialId(),
         segment.sourceId(),
+        segment.knowledgeBaseId(),
         segment.position(),
         segment.segmentType(),
         segment.title(),
@@ -732,12 +744,13 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
     int updated = jdbcTemplate.update(
       """
       update draft_wikinode_suggestions
-      set operation_id = ?, title = ?, object_type = ?, subtype = ?, content_draft = ?,
+      set knowledge_base_id = ?, operation_id = ?, title = ?, object_type = ?, subtype = ?, content_draft = ?,
           metadata_language = ?, metadata_business_domain = ?, confidence = ?, status = ?,
           review_note = ?, conflict_status = ?, conflict_reasons = ?, matched_wiki_node_ids = ?,
           matched_suggestion_ids = ?, updated_at = ?
       where suggestion_id = ?
       """,
+      suggestion.knowledgeBaseId(),
       suggestion.operationId(),
       suggestion.title(),
       suggestion.objectType(),
@@ -759,16 +772,17 @@ public class JdbcWikiNodeRepository extends AbstractWikiNodeRepository {
       jdbcTemplate.update(
         """
         insert into draft_wikinode_suggestions (
-          suggestion_id, parsed_document_id, raw_material_id, source_id, operation_id, title,
+          suggestion_id, parsed_document_id, raw_material_id, source_id, knowledge_base_id, operation_id, title,
           object_type, subtype, content_draft, metadata_language, metadata_business_domain,
           confidence, status, review_note, conflict_status, conflict_reasons,
           matched_wiki_node_ids, matched_suggestion_ids, created_at, updated_at
-        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         suggestion.suggestionId(),
         suggestion.parsedDocumentId(),
         suggestion.rawMaterialId(),
         suggestion.sourceId(),
+        suggestion.knowledgeBaseId(),
         suggestion.operationId(),
         suggestion.title(),
         suggestion.objectType(),

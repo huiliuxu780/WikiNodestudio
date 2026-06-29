@@ -311,6 +311,43 @@ export const wikiNodeApiFixtureNodes: FixtureWikiNode[] = [
 ]
 
 export async function routeWikiNodeApiFixtures(page: Page, nodes = wikiNodeApiFixtureNodes) {
+  await page.route("**/api/knowledge-bases**", (route) => route.fulfill({
+    json: [
+      {
+        kbId: "kb-cc-after-sales",
+        name: "CC After-sales KB",
+        description: "客服售后政策、流程、收费和升级处理知识库。",
+        businessDomain: "after_sales",
+        type: "wikinode",
+        status: "active",
+        visibility: "internal",
+        owner: "Rivers",
+        settings: { defaultRetrievalStrategy: "wikinode_first" },
+        wikiNodeCount: 3,
+        sourceCount: 2,
+        archivedAt: null,
+        createdAt: "2026-06-01",
+        updatedAt: "2026-06-22",
+      },
+      {
+        kbId: "kb-product-guide",
+        name: "Product Guide KB",
+        description: "产品说明、安装指导和常见故障处理知识库。",
+        businessDomain: "product_support",
+        type: "mixed",
+        status: "active",
+        visibility: "internal",
+        owner: "Product Docs",
+        settings: { defaultRetrievalStrategy: "wikinode_first" },
+        wikiNodeCount: 1,
+        sourceCount: 1,
+        archivedAt: null,
+        createdAt: "2026-05-18",
+        updatedAt: "2026-06-20",
+      },
+    ],
+  }))
+
   await page.route("**/api/wiki-nodes", (route) => route.fulfill({ json: nodes }))
 
   await page.route("**/api/wiki-nodes/*/links", (route) => {

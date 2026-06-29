@@ -193,6 +193,7 @@ export function SourceDetailPage() {
   const [importStatus, setImportStatus] = useState<"idle" | "running" | "succeeded" | "skipped" | "failed">("idle")
   const [importSummary, setImportSummary] = useState<string | null>(null)
   const [importedSuggestionId, setImportedSuggestionId] = useState<string | null>(null)
+  const knowledgeBaseId = source?.knowledgeBaseId ?? relatedRawMaterials[0]?.knowledgeBaseId ?? "未绑定"
 
   async function handleRunIngestion() {
     if (!activeSourceId || ingestionStatus === "running") return
@@ -221,7 +222,7 @@ export function SourceDetailPage() {
     try {
       const result = await importSourceFile(activeSourceId, selectedFile)
       setImportStatus(result.status)
-      setImportSummary(`${result.summary} 文档片段 ${result.segmentCount} 条。`)
+      setImportSummary(`导入完成 · ${result.knowledgeBaseId ?? knowledgeBaseId} · ${result.summary} 文档片段 ${result.segmentCount} 条。`)
       setImportedSuggestionId(result.suggestionId ?? null)
       setSelectedFile(null)
       await Promise.all([reloadOperations(), reloadRawMaterials(), reloadSource()])
@@ -233,6 +234,7 @@ export function SourceDetailPage() {
 
   return (
     <PageScaffold title="知识来源详情" description={source ? `${source.title}。查看来源配置、快照和生成的 WikiNode。` : "查看 Source 到 Raw Material 的证据链。"}>
+      <StatusToast message={importSummary} variant={importStatus === "failed" ? "error" : "default"} onClose={() => setImportSummary(null)} />
       <ApiErrorNotice error={sourceError} onRetry={reloadSource} />
       <ApiErrorNotice error={rawMaterialsError} onRetry={reloadRawMaterials} />
       <ApiErrorNotice error={operationsError} onRetry={reloadOperations} />
@@ -240,6 +242,7 @@ export function SourceDetailPage() {
       {source ? (
         <SummaryGrid items={[
           ["来源类型", labelFromMap(sourceTypeLabels, source.sourceType)],
+          ["Knowledge Base", knowledgeBaseId],
           ["负责人", source.owner],
           ["同步状态", labelFromMap(syncStatusLabels, source.syncStatus)],
           ["Raw Material", `${source.rawMaterialCount} 个`],
@@ -253,7 +256,8 @@ export function SourceDetailPage() {
           </CardHeader>
           <CardContent className="flex flex-col gap-2 text-sm">
             <Badge variant="outline" className="w-fit">Source 阶段</Badge>
-            <p className="text-muted-foreground">Source 是原始知识来源，只负责说明来源类别、负责人、同步结果和后续快照入口。</p>
+            <p className="font-medium">{"Knowledge Base -> Source -> Raw Material"}</p>
+            <p className="text-muted-foreground">Knowledge Base：{knowledgeBaseId}</p>
             <p className="font-medium">{"Source -> Raw Material -> Parsed Document -> WikiNode"}</p>
           </CardContent>
         </Card>
@@ -280,9 +284,6 @@ export function SourceDetailPage() {
               accept=".txt,.md,.markdown,.docx,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
             />
-            {importSummary ? (
-              <p className={importStatus === "failed" ? "text-destructive" : "text-muted-foreground"}>{importSummary}</p>
-            ) : null}
             {importedSuggestionId ? (
               <Link to={`/draft-wikinode-suggestions/${importedSuggestionId}`} className="inline-flex font-medium text-primary hover:underline">
                 打开生成的 WikiNode 建议
@@ -419,6 +420,7 @@ export function RawMaterialDetailPage() {
     isLoading: isSuggestionsLoading,
     reload: reloadSuggestions,
   } = useAsyncData(() => activeRawMaterialId ? listDraftWikiNodeSuggestionsForRawMaterial(activeRawMaterialId) : Promise.resolve([]), [], [activeRawMaterialId])
+  const knowledgeBaseId = raw?.knowledgeBaseId ?? source?.knowledgeBaseId ?? "未绑定"
 
   return (
     <PageScaffold title="原始材料详情" description={raw?.title ?? "查看 Raw Material 到 Parsed Document 的证据链。"}>
@@ -431,6 +433,7 @@ export function RawMaterialDetailPage() {
       {raw ? (
         <SummaryGrid items={[
           ["材料类型", rawMaterialDisplayType(raw)],
+          ["Knowledge Base", knowledgeBaseId],
           ["来源版本", raw.sourceVersion ?? "无"],
           ["存储位置", labelFromMap(storageProviderLabels, raw.storageProvider)],
           ["解析状态", labelFromMap(parseStatusLabels, raw.parseStatus)],
@@ -444,7 +447,8 @@ export function RawMaterialDetailPage() {
           </CardHeader>
           <CardContent className="flex flex-col gap-2 text-sm">
             <Badge variant="outline" className="w-fit">Raw Material 阶段</Badge>
-            <p className="text-muted-foreground">Raw Material 是从 Source 捕获的原始快照，只作为 Parsed Document 和 WikiNode 的来源证据。</p>
+            <p className="font-medium">{"Knowledge Base -> Source -> Raw Material"}</p>
+            <p className="text-muted-foreground">Knowledge Base：{knowledgeBaseId}</p>
             <p className="font-medium">{"Source -> Raw Material -> Parsed Document -> WikiNode"}</p>
           </CardContent>
         </Card>
@@ -517,6 +521,7 @@ export function ParsedResultPreviewPage() {
   const [generationSummary, setGenerationSummary] = useState<string | null>(null)
   const [generationStatus, setGenerationStatus] = useState<"idle" | "running" | "succeeded" | "skipped" | "failed">("idle")
   const canGenerateSuggestion = Boolean(parsedDocument) && suggestions.length === 0
+  const knowledgeBaseId = parsedDocument?.knowledgeBaseId ?? raw?.knowledgeBaseId ?? source?.knowledgeBaseId ?? "未绑定"
 
   async function handleGenerateSuggestion() {
     if (!parsedDocument || generationStatus === "running") return
@@ -552,6 +557,9 @@ export function ParsedResultPreviewPage() {
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             <Badge variant="outline">标准化预览</Badge>
             {parsedDocument ? <p className="font-medium text-foreground">{parsedDocument.title}</p> : null}
+            <p className="font-medium text-foreground">{"Knowledge Base -> Source -> Raw Material -> Parsed Document"}</p>
+            <p>Knowledge Base</p>
+            <p className="font-medium text-foreground">{knowledgeBaseId}</p>
             <p>Parsed Document 是 Raw Material 解析后的标准化内容，还不是最终 WikiNode。</p>
           </CardContent>
         </Card>
@@ -1269,6 +1277,29 @@ function SummaryGrid({ items }: { items: Array<[string, string]> }) {
           <CardContent className="text-lg font-semibold">{value}</CardContent>
         </Card>
       ))}
+    </div>
+  )
+}
+
+function StatusToast({
+  message,
+  onClose,
+  variant = "default",
+}: {
+  message: string | null
+  onClose: () => void
+  variant?: "default" | "error"
+}) {
+  if (!message) return null
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className={`fixed right-6 top-6 z-50 flex max-w-[min(36rem,calc(100vw-3rem))] items-center justify-between gap-4 rounded-md border bg-popover px-4 py-3 text-sm shadow-md ${variant === "error" ? "border-destructive/40 text-destructive" : ""}`}
+    >
+      <span className="font-medium">{message}</span>
+      <Button type="button" variant="ghost" size="sm" onClick={onClose}>关闭</Button>
     </div>
   )
 }
@@ -2023,6 +2054,7 @@ function ParsedDocumentSegmentPanel({ segments, isLoading }: { segments: ParsedD
                 </div>
                 <div className="mt-2 font-medium">{segment.title}</div>
                 <p className="mt-1 text-muted-foreground">{segment.contentPreview}</p>
+                <div className="mt-2 text-xs text-muted-foreground">片段归属：{segment.knowledgeBaseId ?? "未绑定"}</div>
                 <div className="mt-2 text-xs text-muted-foreground">{segment.sourceLocator}</div>
               </div>
             ))}

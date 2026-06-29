@@ -2,6 +2,7 @@ export type SourceOperation = {
   operationId: string
   operationType: string
   sourceId: string
+  knowledgeBaseId?: string | null
   rawMaterialId?: string | null
   parsedDocumentId?: string | null
   status: string
@@ -31,6 +32,7 @@ export type SourceIngestionRunResult = {
 export type SourceImportResult = {
   operationId: string
   sourceId: string
+  knowledgeBaseId?: string | null
   rawMaterialId: string
   parsedDocumentId: string
   status: "succeeded" | "skipped" | "failed"

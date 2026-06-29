@@ -712,7 +712,9 @@ class JdbcWikiNodeRepositoryTest {
       new ClassPathResource("db/migration/V13__create_knowledge_base_schema.sql")
     );
     populator.execute(dataSource);
-    return new JdbcTemplate(dataSource);
+    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+    addSourceEvidenceKnowledgeBaseColumns(jdbcTemplate);
+    return jdbcTemplate;
   }
 
   private JdbcTemplate jdbcTemplateWithSeededRelations() {
@@ -770,7 +772,9 @@ class JdbcWikiNodeRepositoryTest {
       new ClassPathResource("db/migration/V13__create_knowledge_base_schema.sql")
     );
     populator.execute(dataSource);
-    return new JdbcTemplate(dataSource);
+    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+    addSourceOperationKnowledgeBaseColumns(jdbcTemplate);
+    return jdbcTemplate;
   }
 
   private JdbcTemplate jdbcTemplateWithParserProfiles() {
@@ -814,6 +818,47 @@ class JdbcWikiNodeRepositoryTest {
       new ClassPathResource("db/migration/V13__create_knowledge_base_schema.sql")
     );
     populator.execute(dataSource);
-    return new JdbcTemplate(dataSource);
+    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+    addDraftSuggestionKnowledgeBaseColumns(jdbcTemplate);
+    return jdbcTemplate;
+  }
+
+  private void addSourceEvidenceKnowledgeBaseColumns(JdbcTemplate jdbcTemplate) {
+    jdbcTemplate.execute("alter table raw_materials add column if not exists knowledge_base_id varchar(160)");
+    jdbcTemplate.execute("alter table parsed_documents add column if not exists knowledge_base_id varchar(160)");
+    jdbcTemplate.update("""
+      update raw_materials rm
+      set knowledge_base_id = si.knowledge_base_id
+      from source_items si
+      where rm.source_id = si.source_id
+      """);
+    jdbcTemplate.update("""
+      update parsed_documents pd
+      set knowledge_base_id = si.knowledge_base_id
+      from source_items si
+      where pd.source_id = si.source_id
+      """);
+  }
+
+  private void addSourceOperationKnowledgeBaseColumns(JdbcTemplate jdbcTemplate) {
+    jdbcTemplate.execute("alter table source_operations add column if not exists knowledge_base_id varchar(160)");
+    jdbcTemplate.update("""
+      update source_operations so
+      set knowledge_base_id = si.knowledge_base_id
+      from source_items si
+      where so.source_id = si.source_id
+      """);
+  }
+
+  private void addDraftSuggestionKnowledgeBaseColumns(JdbcTemplate jdbcTemplate) {
+    addSourceEvidenceKnowledgeBaseColumns(jdbcTemplate);
+    addSourceOperationKnowledgeBaseColumns(jdbcTemplate);
+    jdbcTemplate.execute("alter table draft_wikinode_suggestions add column if not exists knowledge_base_id varchar(160)");
+    jdbcTemplate.update("""
+      update draft_wikinode_suggestions dws
+      set knowledge_base_id = si.knowledge_base_id
+      from source_items si
+      where dws.source_id = si.source_id
+      """);
   }
 }
