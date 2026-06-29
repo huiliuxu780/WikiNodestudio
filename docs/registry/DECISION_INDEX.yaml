@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D076
+    date: "2026-06-29"
+    title: "Execute local Source import inside the Knowledge Base scope"
+    rationale: "After IM075 made Knowledge Base the persisted scope container around WikiNodes and Sources, IM076 defines the next product capability packet: local Source import execution must preserve knowledgeBaseId ownership through Raw Material, Parsed Document, document segments, Draft WikiNode Suggestions, local Index Segment preparation, WikiGraph verification, and Retrieval Test. The work is intentionally local and bounded: no real external connectors, embedding, external vector sync, approval workflow, RBAC, batch operation, export, Agent, Chatbot, Workflow Builder, Vector DB Management, product-facing Chunk Management, package changes, or lockfile changes."
+    related:
+      - IM076
+      - US076
+      - SOURCE_IMPORT_TO_KNOWLEDGE_BASE_EXECUTION
+      - KNOWLEDGE_BASE_ADMINISTRATION
   - id: D075
     date: "2026-06-29"
     title: "Implement Knowledge Base administration as the scope container"

@@ -31,6 +31,33 @@ product_docs:
   IMPLEMENTATION_SLICE_PRINCIPLES:
     file: docs/current/IMPLEMENTATION_SLICE_PRINCIPLES.md
 current_corrections:
+  SOURCE_IMPORT_TO_KNOWLEDGE_BASE_EXECUTION:
+    decision: D076
+    story_queue: docs/current/STORY_QUEUE.yaml
+    active_task: docs/current/ACTIVE_TASKS.yaml
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    models:
+      - src/main/java/com/wikinode/studio/model/SourceImportResult.java
+      - src/main/java/com/wikinode/studio/model/ParsedDocumentSegment.java
+    repository:
+      - src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
+      - src/main/java/com/wikinode/studio/repository/AbstractWikiNodeRepository.java
+      - src/main/java/com/wikinode/studio/repository/JdbcWikiNodeRepository.java
+      - src/main/java/com/wikinode/studio/repository/InMemoryWikiNodeRepository.java
+    frontend:
+      - src/pages/knowledge-base-pages.tsx
+      - src/pages/skeleton-pages.tsx
+      - src/services/source-api-service.ts
+      - src/services/knowledge-base-api-service.ts
+      - src/types/source-operation.ts
+      - src/types/raw-material.ts
+      - src/types/knowledge-base.ts
+      - src/utils/display-labels.ts
+    tests:
+      - src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+      - tests/e2e/source-raw-material-acceptance.spec.ts
+      - tests/e2e/knowledge-base-administration.spec.ts
+    smoke: scripts/api-smoke.sh
   KNOWLEDGE_BASE_ADMINISTRATION:
     decision: D075
     story_queue: docs/current/STORY_QUEUE.yaml

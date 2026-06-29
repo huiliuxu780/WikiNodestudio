@@ -6,14 +6,15 @@ notes:
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
 stories:
-  - id: US075
-    title: "Knowledge Base Administration"
+  - id: US076
+    title: "Source Import to Knowledge Base Execution"
     status: in_progress
     priority: high
-    summary: "Implement Knowledge Base as the management container around WikiNodes and Sources, with backend persistence, lifecycle APIs, frontend administration pages, and minimal Retrieval API scope."
+    summary: "Implement a local Source import execution chain inside a Knowledge Base so an uploaded or pasted source creates Raw Material and Parsed Document evidence, prepares document segments, and exposes the ownership chain through Knowledge Base, Source, Raw Material, Parsed Document, WikiGraph, and Retrieval Test surfaces."
     acceptance:
-      - "Knowledge Base has persisted backend model, seeded baseline records, CRUD APIs, and disable/archive/restore lifecycle APIs."
-      - "WikiNode and Source records expose knowledgeBaseId so Knowledge Base can act as the scope container."
-      - "Retrieval API accepts a Knowledge Base filter while continuing to return WikiNode results by default."
-      - "The frontend /knowledge-bases list, detail, and settings pages use API-backed dense management surfaces."
-      - "The flow does not implement full RBAC, permission enforcement, approval workflow, copy/move/delete, external sync, embedding, vector store sync, Agent, Chatbot, Workflow, Vector DB Management, or product-facing Chunk Management."
+      - "Source import runs are scoped by knowledgeBaseId and preserve Knowledge Base ownership on Source, Raw Material, Parsed Document, document segment, Draft WikiNode Suggestion, and generated WikiNode evidence."
+      - "A local import path accepts txt/md/docx-style content without connecting to real external systems."
+      - "Raw Material and Parsed Document details show the Knowledge Base and Source ownership chain."
+      - "Knowledge Base detail surfaces the imported Source and generated evidence without using explainer-card UI."
+      - "WikiGraph and Retrieval Test can verify the imported knowledge remains WikiNode-centered and Knowledge Base scoped."
+      - "The flow does not implement real Feishu/API/web/database connectors, embedding, external vector sync, approval workflow, RBAC, batch operations, export, Agent, Chatbot, Workflow, Vector DB Management, or product-facing Chunk Management."

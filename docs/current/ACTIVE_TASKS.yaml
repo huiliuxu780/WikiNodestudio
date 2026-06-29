@@ -6,9 +6,9 @@ notes:
   - "Do not auto-enter the next IM without explicit user confirmation."
   - "Done history stays in release docs or archive."
 tasks:
-  - id: IM075
-    story_id: US075
-    title: "Knowledge Base Administration"
+  - id: IM076
+    story_id: US076
+    title: "Source Import to Knowledge Base Execution"
     status: in_progress
     required_workflow: default
     allowed_files:
@@ -30,9 +30,9 @@ tasks:
       - "package.json"
       - "pnpm-lock.yaml"
     acceptance:
-      - "Knowledge Base list/detail/create/update/disable/archive/restore APIs are covered by backend contract tests."
-      - "A database migration creates knowledge_bases and binds wiki_nodes/source_items with knowledge_base_id."
-      - "WikiNode and Source API responses expose knowledgeBaseId."
-      - "Retrieval API filters by knowledgeBaseId and still returns WikiNode-centered results."
-      - "/knowledge-bases, /knowledge-bases/:kbId, and /knowledge-bases/:kbId/settings are API-backed dense management pages with Playwright coverage."
-      - "No full RBAC, permission enforcement, approval, copy/move/delete, external sync, embedding, vector sync, Agent, Chatbot, Workflow, Vector DB Management, or product-facing Chunk Management is added."
+      - "A local Source import execution API accepts source-scoped content and records the run under a Knowledge Base."
+      - "Imported content creates or updates Raw Material, Parsed Document, and document segment evidence with knowledgeBaseId ownership preserved."
+      - "The existing Draft WikiNode Suggestion and local Index Segment preparation path can consume the imported Parsed Document evidence."
+      - "Source, Raw Material, Parsed Document, Knowledge Base detail, WikiGraph, and Retrieval Test surfaces expose the same ownership chain in dense operator-facing layouts."
+      - "Backend contract tests, API smoke, and Playwright cover the Source import to Knowledge Base evidence chain."
+      - "No real external connector, embedding, external vector sync, approval workflow, RBAC, batch operation, export, Agent, Chatbot, Workflow, Vector DB Management, product-facing Chunk Management, package change, or lockfile change is added."

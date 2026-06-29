@@ -6,8 +6,8 @@ None.
 
 ## Active Scope Constraints
 
-- Active executable IM: `IM075 Knowledge Base Administration`.
-- IM075 may change backend model/API/repository, database migration, frontend Knowledge Base pages, frontend services/types, tests, and current/registry docs only where required to implement Knowledge Base administration as the scope container around WikiNodes and Sources.
+- Active executable IM: `IM076 Source Import to Knowledge Base Execution`.
+- IM076 may change backend model/API/repository, database migration, frontend Source / Raw Material / Parsed Document / Knowledge Base / WikiGraph / Retrieval Test surfaces, frontend services/types, tests, smoke scripts, and current/registry docs only where required to implement the local Source import to Knowledge Base evidence chain.
 - Future frontend work must follow `docs/quality/frontend-ux-guidelines.md`.
 - Future B2B/governance pages must use dense evidence consoles, tables, lists, or side panels instead of AI-style explainer-card stacks.
 
@@ -17,4 +17,4 @@ None.
 - No package or lockfile changes without a confirmed dependency decision.
 - No database, auth, permission, approval, export, batch, production formula, settlement, or charge-factor work without a confirmed task.
 - No archive execution.
-- No vector database, embedding, raw chunk exposure, external Source connector, permissions, versioning, or publishing approval work unless the active IM explicitly allows it.
+- No vector database, embedding, raw chunk exposure, real external Source connector, permissions, versioning, or publishing approval work unless the active IM explicitly allows it.
