@@ -6,16 +6,15 @@ notes:
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
 stories:
-  - id: US077
-    title: "Imported Knowledge Acceptance to WikiNode Retrieval Loop"
+  - id: US080
+    title: "External Source Connector Configuration Baseline"
     status: in_progress
     priority: high
-    summary: "Close the post-import acceptance loop so an imported Parsed Document can be reviewed as a Draft WikiNode Suggestion, accepted into a WikiNode, prepared as Index Segment evidence, verified in WikiGraph, and retrieved through Retrieval Test under the same Knowledge Base scope."
+    summary: "Turn Source management into a credible local connector-configuration and evidence console so operators can see Source ownership, ingestion mode, connection status, sync status, processing records, and the Source-to-WikiNode evidence chain without executing real external connectors."
     acceptance:
-      - "The import success path exposes a primary action to review the generated Draft WikiNode Suggestion."
-      - "A Draft WikiNode Suggestion detail page lets an operator inspect suggested WikiNode content, sourceRefs, metadata, relations, Parsed Document evidence, and Knowledge Base ownership before accepting or rejecting."
-      - "Accepting a suggestion creates or updates a WikiNode with knowledgeBaseId, sourceId, rawMaterialId, parsedDocumentId, sourceRefs, objectType, subtype, metadata, and relations preserved."
-      - "The accepted WikiNode prepares local Index Segment evidence without embedding or external vector sync."
-      - "WikiGraph can show the accepted WikiNode and imported relations under the same Knowledge Base scope."
-      - "Retrieval Test can query the same Knowledge Base scope and return the accepted WikiNode as a WikiNode-centered result."
-      - "The flow does not implement real Feishu/API/web/database connectors, embedding, external vector sync, approval workflow, RBAC, batch operations, export, Agent, Chatbot, Workflow, Vector DB Management, or product-facing Chunk Management."
+      - "Sources List shows Source type, Knowledge Base ownership, ingestion mode, connection status, sync status, last processing time, and evidence counts in a dense table."
+      - "Source Detail uses a compact operator-console layout with tabs for overview, ingestion configuration, Raw Material, Parsed Document, WikiNode Suggestions, and processing records."
+      - "Ingestion Configuration exposes local metadata only: source type, ingestion mode, connection status, sync policy, parser profile, owner, last check time, and failure reason."
+      - "Processing Records show Source Operation evidence linked to Raw Material, Parsed Document, and Draft WikiNode Suggestion records."
+      - "Knowledge Base Detail Source tab links into Source Detail and Import File without hiding ownership context."
+      - "The UI does not present real OAuth, real Feishu/API/database/web crawler execution, external scheduling, embedding, external vector sync, approval workflow, RBAC, batch operations, export, Agent, Chatbot, Workflow, Vector DB Management, or product-facing Chunk Management."

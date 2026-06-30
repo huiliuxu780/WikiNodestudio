@@ -6,9 +6,9 @@ notes:
   - "Do not auto-enter the next IM without explicit user confirmation."
   - "Done history stays in release docs or archive."
 tasks:
-  - id: IM079
-    story_id: US077
-    title: "Imported Knowledge Live Acceptance Loop"
+  - id: IM080
+    story_id: US080
+    title: "External Source Connector Configuration Baseline"
     status: in_progress
     required_workflow: default
     allowed_files:
@@ -30,11 +30,9 @@ tasks:
       - "package.json"
       - "pnpm-lock.yaml"
     acceptance:
-      - "Import success gives a clear primary route into the generated Draft WikiNode Suggestion review."
-      - "Draft WikiNode Suggestion detail exposes source evidence, suggested WikiNode fields, metadata, sourceRefs, relations, and Knowledge Base ownership in a dense operator-facing review layout."
-      - "Accepting the suggestion creates or updates a WikiNode and preserves knowledgeBaseId, sourceId, rawMaterialId, parsedDocumentId, sourceRefs, objectType, subtype, metadata, and relations."
-      - "Accepted WikiNode prepares local Index Segment evidence and remains visible from WikiNode detail."
-      - "WikiGraph shows the accepted WikiNode and imported relation evidence under Knowledge Base scope."
-      - "Retrieval Test returns the accepted WikiNode for a scoped Knowledge Base query."
-      - "A no-mock live Playwright acceptance path covers import, suggestion review, draft WikiNode, publish, WikiGraph, and Retrieval Test."
-      - "No real external connector, embedding, external vector sync, approval workflow, RBAC, batch operation, export, Agent, Chatbot, Workflow, Vector DB Management, product-facing Chunk Management, package change, or lockfile change is added."
+      - "Sources List becomes a dense Source operations table with Knowledge Base ownership, source type, ingestion mode, connection status, sync status, last processing time, and evidence counts."
+      - "Source Detail becomes a tabbed operator console for overview, ingestion configuration, Raw Material, Parsed Document, WikiNode Suggestions, and processing records."
+      - "Ingestion Configuration exposes local configuration metadata and safe actions only."
+      - "Processing Records use Source Operation evidence and link to Raw Material, Parsed Document, and Draft WikiNode Suggestion records."
+      - "Knowledge Base Detail Source tab keeps ownership context and links to Source Detail and Import File."
+      - "No real external connector, OAuth, external API/database/web crawler execution, external scheduling, embedding, external vector sync, approval workflow, RBAC, batch operation, export, Agent, Chatbot, Workflow, Vector DB Management, product-facing Chunk Management, package change, or lockfile change is added."
