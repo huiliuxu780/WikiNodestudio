@@ -20,6 +20,7 @@ import com.wikinode.studio.model.KnowledgeRelation;
 import com.wikinode.studio.model.KnowledgeRelationEvidence;
 import com.wikinode.studio.model.SourceOperation;
 import com.wikinode.studio.model.WikiNode;
+import com.wikinode.studio.model.WikiNodeLifecycleResult;
 import com.wikinode.studio.model.WikiNodeUpsertRequest;
 import java.util.List;
 import java.util.Map;
@@ -654,6 +655,8 @@ class JdbcWikiNodeRepositoryTest {
         assertThat(node.status()).isEqualTo("draft");
         assertThat(node.indexStatus()).isEqualTo("not_indexed");
         assertThat(node.contentMarkdown()).contains("排查时先确认电源、水路和错误码");
+        assertThat(node.contentMarkdown()).doesNotContain("该内容仍是待审核 WikiNode 建议");
+        assertThat(node.contentMarkdown()).doesNotContain("不会自动创建 WikiNode");
         assertThat(node.sourceRefs()).singleElement().satisfies(sourceRef -> {
           assertThat(sourceRef.sourceId()).isEqualTo("src-pdf-dishwasher");
           assertThat(sourceRef.sourceType()).isEqualTo("parsed_document");
@@ -661,6 +664,28 @@ class JdbcWikiNodeRepositoryTest {
           assertThat(sourceRef.version()).isEqualTo("rm-002");
         });
       });
+  }
+
+  @Test
+  void publishingAndReindexingKeepLocalSegmentPreparationDistinctFromExternalIndexing() {
+    JdbcTemplate jdbcTemplate = jdbcTemplateWithDraftWikiNodeSuggestions();
+    JdbcWikiNodeRepository repository = new JdbcWikiNodeRepository(jdbcTemplate);
+    DraftWikiNodeSuggestionAcceptResult accepted = repository.acceptDraftWikiNodeSuggestion(
+      "sug-002",
+      new DraftWikiNodeSuggestionAcceptRequest("确认进入草稿 WikiNode，后续人工编辑。")
+    );
+
+    WikiNodeLifecycleResult published = repository.publishWikiNode(accepted.nodeId());
+    WikiNodeLifecycleResult reindexed = repository.reindexWikiNode(accepted.nodeId());
+
+    assertThat(published.status()).isEqualTo("published");
+    assertThat(published.indexStatus()).isEqualTo("not_indexed");
+    assertThat(published.summary()).isEqualTo("已发布 WikiNode，并准备 3 条本地 Index Segment；本地 Index Segment 已准备，外部向量库尚未同步。");
+    assertThat(reindexed.status()).isEqualTo("published");
+    assertThat(reindexed.indexStatus()).isEqualTo("not_indexed");
+    assertThat(reindexed.summary()).isEqualTo("已重新准备 3 条本地 Index Segment；本地 Index Segment 已重新准备，外部向量库尚未同步。");
+    assertThat(repository.findNode(accepted.nodeId()))
+      .hasValueSatisfying(node -> assertThat(node.indexStatus()).isEqualTo("not_indexed"));
   }
 
   @Test

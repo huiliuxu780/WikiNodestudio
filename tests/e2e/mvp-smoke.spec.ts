@@ -89,11 +89,11 @@ test.describe.serial("MVP browser smoke", () => {
     await expect(page.getByLabel("摘要")).toHaveValue("编辑保存后的中文摘要。")
 
     await page.getByRole("button", { name: "发布" }).click()
-    await expect(page.getByText(/已发布 WikiNode，并准备 \d+ 条 Index Segment/)).toBeVisible()
-    await expect(page.getByText("外部向量库同步待后续执行")).toBeVisible()
+    await expect(page.getByText(/已发布 WikiNode，并准备 \d+ 条本地 Index Segment/)).toBeVisible()
+    await expect(page.getByText("本地 Index Segment 已准备，外部向量库尚未同步")).toBeVisible()
     await page.getByRole("button", { name: "重新索引" }).click()
     await expect(page.getByText(/已重新准备 \d+ 条本地 Index Segment/)).toBeVisible()
-    await expect(page.getByText("外部向量库同步待后续执行")).toBeVisible()
+    await expect(page.getByText("本地 Index Segment 已重新准备，外部向量库尚未同步")).toBeVisible()
   })
 
   test("Retrieval Test returns WikiNode results and localized no-result state", async ({ page }) => {
@@ -208,7 +208,7 @@ async function routeMutableWikiNodeApiFixture(page: Parameters<typeof routeRetri
         status: "published",
         publishStatus: "published",
         reviewStatus: "approved",
-        indexStatus: "outdated",
+        indexStatus: "not_indexed",
         metadata: {
           ...match.metadata,
           lifecycleStatus: "published",
@@ -220,8 +220,8 @@ async function routeMutableWikiNodeApiFixture(page: Parameters<typeof routeRetri
         json: {
           nodeId: published.nodeId,
           status: "published",
-          indexStatus: "outdated",
-          summary: "已发布 WikiNode，并准备 3 条 Index Segment；外部向量库同步待后续执行。",
+          indexStatus: "not_indexed",
+          summary: "已发布 WikiNode，并准备 3 条本地 Index Segment；本地 Index Segment 已准备，外部向量库尚未同步。",
           indexSegmentCount: 3,
           lastPublishedAt: "2026-06-28",
           lastIndexedAt: null,
@@ -233,7 +233,7 @@ async function routeMutableWikiNodeApiFixture(page: Parameters<typeof routeRetri
       if (!match) return route.fulfill({ status: 404, json: { message: "WikiNode not found" } })
       const prepared = {
         ...match,
-        indexStatus: match.status === "published" ? "outdated" : "not_indexed",
+        indexStatus: "not_indexed",
         lastIndexedAt: undefined,
       }
       nodes[matchIndex] = prepared
@@ -242,7 +242,7 @@ async function routeMutableWikiNodeApiFixture(page: Parameters<typeof routeRetri
           nodeId: prepared.nodeId,
           status: prepared.status,
           indexStatus: prepared.indexStatus,
-          summary: "已重新准备 3 条本地 Index Segment；外部向量库同步待后续执行。",
+          summary: "已重新准备 3 条本地 Index Segment；本地 Index Segment 已重新准备，外部向量库尚未同步。",
           indexSegmentCount: 3,
           lastPublishedAt: null,
           lastIndexedAt: null,

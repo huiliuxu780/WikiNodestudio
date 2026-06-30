@@ -424,7 +424,7 @@ const mockDraftWikiNodeSuggestions: DraftWikiNodeSuggestion[] = [
     title: "保修期内维修服务政策",
     objectType: "Article",
     subtype: "service_fee_policy",
-    contentDraft: "# 保修期内维修服务政策\n\n保修期内维修不收取人工费，收费例外需要关联人为损坏判定规则。\n\n该内容仍是待审核 WikiNode 建议，不会自动发布或索引。",
+    contentDraft: "# 保修期内维修服务政策\n\n保修期内维修不收取人工费，收费例外需要关联人为损坏判定规则。",
     metadataDraft: {
       language: "zh-CN",
       businessDomain: "after_sales",

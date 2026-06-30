@@ -74,6 +74,11 @@ export function KnowledgeBaseImportPage() {
           {importError}
         </div>
       ) : null}
+      <div className="grid gap-2 md:grid-cols-3" aria-label="导入步骤">
+        <ImportStep step="1" title="选择 Source" />
+        <ImportStep step="2" title="上传原始文档" />
+        <ImportStep step="3" title="导入后审核 WikiNode 建议" />
+      </div>
       <section className="rounded-md border bg-card">
         <div className="grid gap-0 border-b md:grid-cols-3">
           <ImportMetric label="Knowledge Base" value={knowledgeBase?.name ?? kbId} helper={kbId} />
@@ -99,10 +104,10 @@ export function KnowledgeBaseImportPage() {
               <Label htmlFor="kb-import-file">文件</Label>
               <label
                 htmlFor="kb-import-file"
-                className="flex min-h-32 cursor-pointer flex-col justify-center rounded-md border border-dashed bg-muted/20 px-4 py-5 text-sm hover:bg-muted/40"
+                className="flex min-h-36 cursor-pointer flex-col justify-center rounded-md border border-dashed bg-muted/20 px-4 py-5 text-sm hover:bg-muted/40"
               >
-                <span className="font-medium">选择文件</span>
-                <span className="mt-1 text-muted-foreground">支持 txt、md、markdown、docx；导入后进入解析结果和 WikiNode 建议评审。</span>
+                <span role="button" className="w-fit rounded-md border bg-background px-3 py-2 font-medium shadow-sm">选择文件</span>
+                <span className="mt-3 text-muted-foreground">支持 Markdown、TXT 和 Word 文档；导入后生成 Raw Material、Parsed Document、文档片段和待审核 WikiNode 建议。</span>
                 <span className="mt-3 text-foreground">{selectedFile?.name ?? "尚未选择文件"}</span>
               </label>
               <input
@@ -110,7 +115,7 @@ export function KnowledgeBaseImportPage() {
                 className="sr-only"
                 type="file"
                 accept=".txt,.md,.markdown,.docx,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                aria-label="选择文件"
+                aria-label="选择本地文件"
                 onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
               />
             </div>
@@ -145,6 +150,14 @@ export function KnowledgeBaseImportPage() {
   )
 }
 
+function ImportStep({ step, title }: { step: string; title: string }) {
+  return (
+    <div className="rounded-md border bg-card px-4 py-3 text-sm font-medium">
+      {step} {title}
+    </div>
+  )
+}
+
 function ImportMetric({ label, value, helper }: { label: string; value: string; helper?: string }) {
   return (
     <div className="min-w-0 border-b px-4 py-3 text-sm md:border-b-0 md:border-r md:last:border-r-0">
@@ -161,19 +174,26 @@ function ImportResultPanel({ result }: { result: SourceImportResult }) {
       <CardHeader>
         <CardTitle className="text-base">导入结果</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-3 text-sm md:grid-cols-4">
-        <ResultItem label="Raw Material" value={result.rawMaterialId}>
-          <Link to={`/raw-materials/${result.rawMaterialId}`} className="font-medium text-primary hover:underline">打开 Raw Material</Link>
-        </ResultItem>
-        <ResultItem label="Parsed Document" value={result.parsedDocumentId}>
-          <Link to={`/raw-materials/${result.rawMaterialId}/parsed-result`} className="font-medium text-primary hover:underline">打开解析结果</Link>
-        </ResultItem>
-        <ResultItem label="Document Segment" value={`文档片段 ${result.segmentCount} 条`} />
-        <ResultItem label="WikiNode 建议" value={result.suggestionId ?? "未生成"}>
+      <CardContent className="grid gap-4 text-sm">
+        <div className="rounded-md border bg-background p-4">
+          <div className="text-xs font-medium text-muted-foreground">下一步</div>
+          <div className="mt-1 font-medium">审核 WikiNode 建议，确认标题、正文、来源证据和关系候选后再采纳为草稿。</div>
           {result.suggestionId ? (
-            <Link to={`/draft-wikinode-suggestions/${result.suggestionId}`} className="font-medium text-primary hover:underline">查看待审核建议</Link>
+            <Button className="mt-3" asChild>
+              <Link to={`/draft-wikinode-suggestions/${result.suggestionId}`}>审核 WikiNode 建议</Link>
+            </Button>
           ) : null}
-        </ResultItem>
+        </div>
+        <div className="grid gap-3 md:grid-cols-4">
+          <ResultItem label="Raw Material" value={result.rawMaterialId}>
+            <Link to={`/raw-materials/${result.rawMaterialId}`} className="font-medium text-primary hover:underline">打开 Raw Material</Link>
+          </ResultItem>
+          <ResultItem label="Parsed Document" value={result.parsedDocumentId}>
+            <Link to={`/raw-materials/${result.rawMaterialId}/parsed-result`} className="font-medium text-primary hover:underline">打开解析结果</Link>
+          </ResultItem>
+          <ResultItem label="Document Segment" value={`文档片段 ${result.segmentCount} 条`} />
+          <ResultItem label="WikiNode 建议" value={result.suggestionId ?? "未生成"} />
+        </div>
       </CardContent>
     </Card>
   )

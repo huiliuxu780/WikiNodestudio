@@ -49,11 +49,16 @@ test.describe("Source / Raw Material / Parsed Document acceptance", () => {
     await expect(page.getByRole("heading", { name: "导入文件到知识库" })).toBeVisible()
     await expect(page.getByText("CC After-sales KB", { exact: true })).toBeVisible()
     await expect(page.getByLabel("Source")).toContainText("CC 售后政策飞书空间")
+    await expect(page.getByRole("button", { name: "选择文件" })).toBeVisible()
+    await expect(page.getByText("1 选择 Source")).toBeVisible()
+    await expect(page.getByText("2 上传原始文档")).toBeVisible()
+    await expect(page.getByText("3 导入后审核 WikiNode 建议")).toBeVisible()
+    await expect(page.getByText("支持 Markdown、TXT 和 Word 文档；导入后生成 Raw Material、Parsed Document、文档片段和待审核 WikiNode 建议。")).toBeVisible()
     await expect(page.getByText("操作日志", { exact: true })).toHaveCount(0)
     await expect(page.getByText("WikiNode 建议生成", { exact: true })).toHaveCount(0)
     await expect(page.getByText("关联 Raw Material", { exact: true })).toHaveCount(0)
 
-    await page.getByLabel("选择文件").setInputFiles({
+    await page.getByLabel("选择本地文件").setInputFiles({
       name: "service-policy.md",
       mimeType: "text/markdown",
       buffer: Buffer.from("# 服务政策\n\n导入后形成 Parsed Document 和文档片段。"),
@@ -63,8 +68,10 @@ test.describe("Source / Raw Material / Parsed Document acceptance", () => {
     await expect(page.getByRole("status").filter({ hasText: "导入完成" })).toContainText("kb-cc-after-sales")
     await expect(page.getByText("导入结果", { exact: true })).toBeVisible()
     await expect(page.getByText("文档片段 2 条", { exact: true })).toBeVisible()
+    await expect(page.getByText("下一步", { exact: true })).toBeVisible()
+    await expect(page.getByText("审核 WikiNode 建议，确认标题、正文、来源证据和关系候选后再采纳为草稿。")).toBeVisible()
     await expect(page.getByRole("link", { name: "打开解析结果" })).toHaveAttribute("href", "/raw-materials/rm-import-playwright/parsed-result")
-    await expect(page.getByRole("link", { name: "查看待审核建议" })).toHaveAttribute("href", "/draft-wikinode-suggestions/sug-pd-import-playwright")
+    await expect(page.getByRole("link", { name: "审核 WikiNode 建议" })).toHaveAttribute("href", "/draft-wikinode-suggestions/sug-pd-import-playwright")
     await expect(page.getByRole("link", { name: "打开 WikiNode 建议" })).toHaveCount(0)
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
   })
