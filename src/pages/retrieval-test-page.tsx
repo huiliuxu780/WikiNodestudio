@@ -7,6 +7,7 @@ import { RetrievalQueryPanel } from "@/components/retrieval/retrieval-query-pane
 import { RetrievalResultCard } from "@/components/retrieval/retrieval-result-card"
 import { Button } from "@/components/ui/button"
 import { useAsyncData } from "@/hooks/use-async-data"
+import { listKnowledgeBases } from "@/services/knowledge-base-api-service"
 import { createRetrievalEvaluationCase, listRetrievalLogs, searchWikiNodes } from "@/services/retrieval-api-service"
 import type { RetrievalEvaluationCase, RetrievalQuery, RetrievalResult } from "@/types/retrieval"
 import { commonLabels } from "@/utils/display-labels"
@@ -35,6 +36,7 @@ export function RetrievalTestPage() {
   const [evaluationError, setEvaluationError] = useState<Error | null>(null)
   const [isSavingEvaluation, setIsSavingEvaluation] = useState(false)
   const { data: retrievalLogs, error: logsError, reload: reloadLogs } = useAsyncData(listRetrievalLogs, [], [logReloadVersion])
+  const { data: knowledgeBases, error: knowledgeBaseError, reload: reloadKnowledgeBases } = useAsyncData(() => listKnowledgeBases({ status: "active" }), [])
 
   async function handleSearch() {
     const nextQuery = query
@@ -107,8 +109,10 @@ export function RetrievalTestPage() {
           setEvaluationCase(null)
         }}
         isSearching={isSearching}
+        knowledgeBases={knowledgeBases}
       />
       <ApiErrorNotice error={searchError} title={commonLabels.searchFailed} onRetry={() => void handleSearch()} />
+      <ApiErrorNotice error={knowledgeBaseError} title="知识库列表加载失败" onRetry={reloadKnowledgeBases} />
       <ApiErrorNotice error={logsError} title="加载查询日志失败" onRetry={reloadLogs} />
       <ApiErrorNotice error={evaluationError} title="保存评测用例失败" />
       <div className="flex flex-col gap-4">

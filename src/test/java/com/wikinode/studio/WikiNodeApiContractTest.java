@@ -308,6 +308,7 @@ class WikiNodeApiContractTest {
 
     assertThat(imported.statusCode()).isEqualTo(200);
     assertThat(imported.body()).contains("\"sourceId\":\"src-pdf-dishwasher\"");
+    assertThat(imported.body()).contains("\"knowledgeBaseId\":\"kb-product-guide\"");
     assertThat(imported.body()).contains("\"rawMaterialId\":\"");
     assertThat(imported.body()).contains("\"parsedDocumentId\":\"");
     assertThat(imported.body()).contains("\"segmentCount\":");
@@ -330,16 +331,20 @@ class WikiNodeApiContractTest {
     HttpResponse<String> operations = get("/api/raw-materials/%s/operations".formatted(rawMaterialId));
 
     assertThat(rawMaterial.statusCode()).isEqualTo(200);
+    assertThat(rawMaterial.body()).contains("\"knowledgeBaseId\":\"kb-product-guide\"");
     assertThat(rawMaterial.body()).contains("\"parseStatus\":\"parsed\"");
     assertThat(rawMaterial.body()).contains("\"parsedDocumentCount\":1");
     assertThat(parsedDocuments.statusCode()).isEqualTo(200);
     assertThat(parsedDocuments.body()).contains(parsedDocumentId);
+    assertThat(parsedDocuments.body()).contains("\"knowledgeBaseId\":\"kb-product-guide\"");
     assertThat(parsedDocument.statusCode()).isEqualTo(200);
+    assertThat(parsedDocument.body()).contains("\"knowledgeBaseId\":\"kb-product-guide\"");
     assertThat(parsedDocument.body()).contains("安装前需要确认上下水");
     assertThat(parsedDocument.body()).contains("\"contentFormat\":\"markdown\"");
     assertThat(segments.statusCode()).isEqualTo(200);
     assertThat(segments.body()).contains("\"segmentId\"");
     assertThat(segments.body()).contains("\"parsedDocumentId\":\"%s\"".formatted(parsedDocumentId));
+    assertThat(segments.body()).contains("\"knowledgeBaseId\":\"kb-product-guide\"");
     assertThat(segments.body()).contains("收费提示");
     assertThat(segments.body()).doesNotContain("\"embedding\"");
     assertThat(segments.body()).doesNotContain("\"vector");
@@ -347,10 +352,12 @@ class WikiNodeApiContractTest {
     assertThat(suggestions.body()).contains(suggestionId);
     assertThat(suggestionDetail.statusCode()).isEqualTo(200);
     assertThat(suggestionDetail.body()).contains("\"parsedDocumentId\":\"%s\"".formatted(parsedDocumentId));
+    assertThat(suggestionDetail.body()).contains("\"knowledgeBaseId\":\"kb-product-guide\"");
     assertThat(suggestionDetail.body()).contains("\"status\":\"draft\"");
     assertThat(suggestionDetail.body()).doesNotContain("\"indexSegmentId\"");
     assertThat(suggestionDetail.body()).doesNotContain("\"nodeId\"");
     assertThat(operations.statusCode()).isEqualTo(200);
+    assertThat(operations.body()).contains("\"knowledgeBaseId\":\"kb-product-guide\"");
     assertThat(operations.body()).contains("\"operationType\":\"import_source_file\"");
     assertThat(operations.body()).contains("\"operationType\":\"parse_raw_material\"");
     assertThat(operations.body()).contains("\"operationType\":\"suggest_wikinode\"");
@@ -366,7 +373,7 @@ class WikiNodeApiContractTest {
 
       ## 处理口径
 
-      端到端验收排查需要参考 [[收费政策]]，并保留图谱关系。
+      端到端验收排查需要参考 [[洗碗机故障排查]]，并保留图谱关系。
       """;
 
     HttpResponse<String> imported = postMultipart(
@@ -377,6 +384,7 @@ class WikiNodeApiContractTest {
     );
 
     assertThat(imported.statusCode()).isEqualTo(200);
+    assertThat(imported.body()).contains("\"knowledgeBaseId\":\"kb-product-guide\"");
     assertThat(imported.body()).contains("\"segmentCount\":");
     assertThat(imported.body()).contains("\"suggestionId\":\"");
 
@@ -400,20 +408,24 @@ class WikiNodeApiContractTest {
 
     assertThat(accepted.statusCode()).isEqualTo(200);
     assertThat(accepted.body()).contains("\"status\":\"accepted\"");
+    assertThat(accepted.body()).contains("\"knowledgeBaseId\":\"kb-product-guide\"");
     assertThat(accepted.body()).contains("\"nodeId\":\"");
     assertThat(accepted.body()).contains("\"indexSegmentCount\":3");
 
     String nodeId = extract(accepted.body(), "nodeId");
 
     HttpResponse<String> published = post("/api/wiki-nodes/%s/publish".formatted(nodeId), "{}");
+    HttpResponse<String> node = get("/api/wiki-nodes/%s".formatted(nodeId));
     HttpResponse<String> indexSegments = get("/api/wiki-nodes/%s/index-segments".formatted(nodeId));
-    HttpResponse<String> graph = get("/api/wiki-graph/overview");
+    HttpResponse<String> graph = get("/api/wiki-graph/overview?knowledgeBaseId=kb-product-guide");
     HttpResponse<String> retrieval = post(
       "/api/retrieval-test",
       """
         {
           "query": "端到端验收排查 图谱 召回",
-          "filters": {},
+          "filters": {
+            "knowledgeBaseId": "kb-product-guide"
+          },
           "topK": 5,
           "debug": true
         }
@@ -422,8 +434,14 @@ class WikiNodeApiContractTest {
 
     assertThat(published.statusCode()).isEqualTo(200);
     assertThat(published.body()).contains("\"nodeId\":\"%s\"".formatted(nodeId));
+    assertThat(published.body()).contains("\"knowledgeBaseId\":\"kb-product-guide\"");
     assertThat(published.body()).contains("\"status\":\"published\"");
     assertThat(published.body()).contains("\"indexStatus\":\"outdated\"");
+    assertThat(node.statusCode()).isEqualTo(200);
+    assertThat(node.body()).contains("\"knowledgeBaseId\":\"kb-product-guide\"");
+    assertThat(graph.body()).contains("\"nodeId\":\"%s\"".formatted(nodeId));
+    assertThat(graph.body()).contains("\"knowledgeBaseId\":\"kb-product-guide\"");
+    assertThat(graph.body()).doesNotContain("\"knowledgeBaseId\":\"kb-cc-after-sales\"");
 
     assertThat(indexSegments.statusCode()).isEqualTo(200);
     assertThat(indexSegments.body()).contains("\"nodeId\":\"%s\"".formatted(nodeId));
@@ -434,7 +452,7 @@ class WikiNodeApiContractTest {
     assertThat(graph.body()).contains("\"nodeId\":\"%s\"".formatted(nodeId));
     assertThat(graph.body()).contains("\"title\":\"端到端验收排查规范\"");
     assertThat(graph.body()).contains("\"fromNodeId\":\"%s\"".formatted(nodeId));
-    assertThat(graph.body()).contains("\"targetTitle\":\"收费政策\"");
+    assertThat(graph.body()).contains("\"targetTitle\":\"洗碗机故障排查\"");
     assertThat(graph.body()).contains("\"resolved\":true");
 
     assertThat(retrieval.statusCode()).isEqualTo(200);

@@ -12,7 +12,7 @@ The full product scope is captured in `docs/current/PRODUCT_SCOPE.md`; the roadm
 
 ## Active Boundary
 
-The product baseline includes the React frontend MVP, Spring Boot API, PostgreSQL + Flyway persistence, reset/seed scripts, API smoke, GitHub Actions baseline CI, v0.2 release documentation, Playwright browser coverage, Source / Raw Material / Parsed Document read-only APIs, Draft WikiNode Suggestion review APIs, WikiNode Knowledge Object API alignment, Index Segment generation and trace evidence, Retrieval API debug evidence, the Quality Issues evidence console, the publishing / metadata governance / admin planning baseline, Knowledge Relation management through the IM059-IM064 follow-up sequence, and IM066 evidence-console completion for Source Operation, Index Job, Vector Sync, Retrieval Debug, System Health, and Admin pages.
+The product baseline includes the React frontend MVP, Spring Boot API, PostgreSQL + Flyway persistence, reset/seed scripts, API smoke, GitHub Actions baseline CI, v0.2 release documentation, Playwright browser coverage, Source / Raw Material / Parsed Document read-only APIs, Draft WikiNode Suggestion review APIs, WikiNode Knowledge Object API alignment, Index Segment generation and trace evidence, Retrieval API debug evidence, the Quality Issues evidence console, the publishing / metadata governance / admin planning baseline, Knowledge Relation management through the IM059-IM064 follow-up sequence, IM066 evidence-console completion for Source Operation, Index Job, Vector Sync, Retrieval Debug, System Health, and Admin pages, and IM075 Knowledge Base administration as the persisted scope container around WikiNodes and Sources.
 
 Current development must stay inside confirmed task scope. The standing MVP exclusions remain: no real Source import, file upload, parser execution, vector database implementation, embedding invocation, product-facing Chunk Management, automated quality repair, batch operation, export, permissions, version management, audit implementation, or publishing approval flow unless explicitly approved by the user.
 
@@ -30,7 +30,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-The active executable packet is `US075` / `IM075`: Knowledge Base Administration. It implements Knowledge Base as the persisted management container around WikiNodes and Sources, adds CRUD and lifecycle APIs, binds WikiNode / Source records to a knowledgeBaseId, keeps Retrieval API WikiNode-first while adding minimal Knowledge Base filtering, and upgrades `/knowledge-bases` list/detail/settings into API-backed dense administration pages. It does not implement full RBAC, permission enforcement, approval workflow, copy/move/delete, external sync, embedding, vector store sync, Agent, Chatbot, Workflow, Vector DB Management, or product-facing Chunk Management.
+The active executable packet is `US076` / `IM076`: Source Import to Knowledge Base Execution. It connects local Source import execution to the Knowledge Base scope so imported content produces Raw Material, Parsed Document, document segment, Draft WikiNode Suggestion, and local Index Segment evidence with knowledgeBaseId ownership preserved. It must keep Retrieval API and graph verification WikiNode-centered. It does not implement real external connectors, embedding, external vector sync, approval workflow, RBAC, batch operations, export, Agent, Chatbot, Workflow, Vector DB Management, or product-facing Chunk Management.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -61,4 +61,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Current recommended next step: complete and verify `IM075`, then decide the next larger product capability packet from the remaining full-scope gaps.
+Current recommended next step: complete and verify `IM076`, then decide whether the next capability packet should address external connector configuration, publishing approval, permissions, or retrieval evaluation depth.

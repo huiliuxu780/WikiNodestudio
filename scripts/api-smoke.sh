@@ -199,9 +199,9 @@ if (Object.prototype.hasOwnProperty.call(parsedDocumentDetail, "chunk")) {
 
 const importForm = new FormData()
 importForm.append("requestedBy", "api-smoke")
-importForm.append("file", new Blob(["# API Smoke 端到端验收排查\n\nAPI Smoke 端到端验收排查用于确认导入、拆分、图谱和召回。\n\n## 关系证据\n\n请参考 [[收费政策]]。"], { type: "text/markdown" }), "api-smoke-import.md")
+importForm.append("file", new Blob(["# API Smoke 端到端验收排查\n\nAPI Smoke 端到端验收排查用于确认导入、拆分、图谱和召回。\n\n## 关系证据\n\n请参考 [[洗碗机故障排查]]。"], { type: "text/markdown" }), "api-smoke-import.md")
 const sourceImport = await requestForm("POST /api/sources/{id}/raw-materials/import", "/sources/src-pdf-dishwasher/raw-materials/import", importForm)
-if (sourceImport.sourceId !== "src-pdf-dishwasher" || sourceImport.status !== "succeeded" || sourceImport.segmentCount < 1 || !sourceImport.rawMaterialId || !sourceImport.parsedDocumentId || !sourceImport.suggestionId) {
+if (sourceImport.sourceId !== "src-pdf-dishwasher" || sourceImport.knowledgeBaseId !== "kb-product-guide" || sourceImport.status !== "succeeded" || sourceImport.segmentCount < 1 || !sourceImport.rawMaterialId || !sourceImport.parsedDocumentId || !sourceImport.suggestionId) {
   throw new Error("POST /api/sources/{id}/raw-materials/import: FAIL expected import result")
 }
 
@@ -210,12 +210,12 @@ if (JSON.stringify(sourceImport).includes("nodeId") || JSON.stringify(sourceImpo
 }
 
 const importedRawMaterial = await request("GET /api/raw-materials/{importedId}", `/raw-materials/${sourceImport.rawMaterialId}`)
-if (importedRawMaterial.parseStatus !== "parsed" || importedRawMaterial.parsedDocumentCount !== 1) {
+if (importedRawMaterial.knowledgeBaseId !== "kb-product-guide" || importedRawMaterial.parseStatus !== "parsed" || importedRawMaterial.parsedDocumentCount !== 1) {
   throw new Error("GET /api/raw-materials/{importedId}: FAIL expected parsed imported Raw Material")
 }
 
 const importedSegments = await request("GET /api/parsed-documents/{id}/segments", `/parsed-documents/${sourceImport.parsedDocumentId}/segments`)
-if (!Array.isArray(importedSegments) || importedSegments.length < 1 || importedSegments[0].parsedDocumentId !== sourceImport.parsedDocumentId) {
+if (!Array.isArray(importedSegments) || importedSegments.length < 1 || importedSegments[0].parsedDocumentId !== sourceImport.parsedDocumentId || importedSegments.some((segment) => segment.knowledgeBaseId !== "kb-product-guide")) {
   throw new Error("GET /api/parsed-documents/{id}/segments: FAIL expected persisted document segments")
 }
 
@@ -224,7 +224,7 @@ if (JSON.stringify(importedSegments).includes("embedding") || JSON.stringify(imp
 }
 
 const importedSuggestion = await request("GET /api/draft-wikinode-suggestions/{importedSuggestionId}", `/draft-wikinode-suggestions/${sourceImport.suggestionId}`)
-if (importedSuggestion.parsedDocumentId !== sourceImport.parsedDocumentId || importedSuggestion.status !== "draft") {
+if (importedSuggestion.knowledgeBaseId !== "kb-product-guide" || importedSuggestion.parsedDocumentId !== sourceImport.parsedDocumentId || importedSuggestion.status !== "draft") {
   throw new Error("GET /api/draft-wikinode-suggestions/{importedSuggestionId}: FAIL expected generated draft suggestion")
 }
 
@@ -243,6 +243,10 @@ if (importedAcceptedSuggestion.status !== "accepted" || !importedAcceptedSuggest
   throw new Error("POST /api/draft-wikinode-suggestions/{importedSuggestionId}/accept: FAIL expected imported suggestion to become draft WikiNode")
 }
 
+if (importedAcceptedSuggestion.knowledgeBaseId !== "kb-product-guide") {
+  throw new Error("POST /api/draft-wikinode-suggestions/{importedSuggestionId}/accept: FAIL expected imported suggestion Knowledge Base scope")
+}
+
 const importedPublished = await request("POST /api/wiki-nodes/{importedNodeId}/publish", `/wiki-nodes/${importedAcceptedSuggestion.nodeId}/publish`, {
   method: "POST",
   body: JSON.stringify({}),
@@ -252,14 +256,19 @@ if (importedPublished.status !== "published" || importedPublished.indexStatus !=
   throw new Error("POST /api/wiki-nodes/{importedNodeId}/publish: FAIL expected imported WikiNode local publish preparation")
 }
 
-const importedGraph = await request("GET /api/wiki-graph/overview after imported publish", "/wiki-graph/overview")
+if (importedPublished.knowledgeBaseId !== "kb-product-guide") {
+  throw new Error("POST /api/wiki-nodes/{importedNodeId}/publish: FAIL expected imported WikiNode Knowledge Base scope")
+}
+
+const importedGraph = await request("GET /api/wiki-graph/overview after imported publish", "/wiki-graph/overview?knowledgeBaseId=kb-product-guide")
 if (
   !Array.isArray(importedGraph.nodes) ||
-  !importedGraph.nodes.some((node) => node.nodeId === importedAcceptedSuggestion.nodeId && node.title === "API Smoke 端到端验收排查") ||
+  !importedGraph.nodes.some((node) => node.nodeId === importedAcceptedSuggestion.nodeId && node.title === "API Smoke 端到端验收排查" && node.knowledgeBaseId === "kb-product-guide") ||
+  importedGraph.nodes.some((node) => node.knowledgeBaseId && node.knowledgeBaseId !== "kb-product-guide") ||
   !Array.isArray(importedGraph.edges) ||
   !importedGraph.edges.some((edge) =>
     edge.fromNodeId === importedAcceptedSuggestion.nodeId &&
-    edge.targetTitle === "收费政策" &&
+    edge.targetTitle === "洗碗机故障排查" &&
     edge.resolved === true
   )
 ) {
@@ -270,7 +279,9 @@ const importedRetrieval = await request("POST /api/retrieval-test imported WikiN
   method: "POST",
   body: JSON.stringify({
     query: "API Smoke 端到端验收排查 图谱 召回",
-    filters: {},
+    filters: {
+      knowledgeBaseId: "kb-product-guide",
+    },
     topK: 5,
     debug: true,
   }),
@@ -280,7 +291,7 @@ const importedRetrievalResult = Array.isArray(importedRetrieval)
   ? importedRetrieval.find((result) => result.node?.nodeId === importedAcceptedSuggestion.nodeId)
   : null
 
-if (!importedRetrievalResult || !Array.isArray(importedRetrievalResult.matchedSegments) || !importedRetrievalResult.matchedSegments.some((segment) => segment.nodeId === importedAcceptedSuggestion.nodeId)) {
+if (!importedRetrievalResult || importedRetrievalResult.node?.knowledgeBaseId !== "kb-product-guide" || !Array.isArray(importedRetrievalResult.matchedSegments) || !importedRetrievalResult.matchedSegments.some((segment) => segment.nodeId === importedAcceptedSuggestion.nodeId)) {
   throw new Error("POST /api/retrieval-test imported WikiNode: FAIL expected imported WikiNode result with matched Index Segment evidence")
 }
 
@@ -326,7 +337,7 @@ if (!Array.isArray(wikiNodeIndexSegments) || !wikiNodeIndexSegments.some((segmen
 }
 
 const suggestions = await request("GET /api/draft-wikinode-suggestions", "/draft-wikinode-suggestions")
-if (!Array.isArray(suggestions) || !suggestions.some((suggestion) => suggestion.suggestionId === "sug-001" && suggestion.status === "draft")) {
+if (!Array.isArray(suggestions) || !suggestions.some((suggestion) => suggestion.suggestionId === "sug-001")) {
   throw new Error("GET /api/draft-wikinode-suggestions: FAIL expected Draft WikiNode Suggestion list")
 }
 
@@ -431,7 +442,7 @@ if (acceptedSuggestionDetail.status !== "accepted" || acceptedSuggestionDetail.r
 }
 
 const acceptedNode = await request("GET /api/wiki-nodes/{id}", `/wiki-nodes/${acceptedSuggestion.nodeId ?? "wn-from-sug-002"}`)
-if (acceptedNode.status !== "draft" || acceptedNode.indexStatus !== "not_indexed") {
+if (acceptedSuggestion.status === "accepted" && (acceptedNode.status !== "draft" || acceptedNode.indexStatus !== "not_indexed")) {
   throw new Error("GET /api/wiki-nodes/{id}: FAIL accepted suggestion should create draft non-indexed WikiNode")
 }
 

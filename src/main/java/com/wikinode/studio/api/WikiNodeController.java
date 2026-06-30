@@ -240,8 +240,8 @@ public class WikiNodeController {
   }
 
   @GetMapping("/wiki-graph/overview")
-  public WikiGraphOverview getWikiGraphOverview() {
-    return repository.graphOverview();
+  public WikiGraphOverview getWikiGraphOverview(@RequestParam(required = false) String knowledgeBaseId) {
+    return repository.graphOverview(knowledgeBaseId);
   }
 
   @GetMapping("/wiki-graph/ego/{id}")

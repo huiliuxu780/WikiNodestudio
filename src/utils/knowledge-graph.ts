@@ -30,6 +30,7 @@ export type KnowledgeGraphEdge = {
 
 export type KnowledgeGraphFilters = {
   search: string
+  knowledgeBaseId: string
   objectType: string
   indexStatus: string
   relationType: KnowledgeGraphRelationTypeFilter
@@ -128,6 +129,7 @@ export function matchesKnowledgeGraphFilters(node: WikiNode, filters: KnowledgeG
 
   return (
     (!normalizedSearch || searchable.includes(normalizedSearch)) &&
+    (filters.knowledgeBaseId === "all" || node.knowledgeBaseId === filters.knowledgeBaseId) &&
     (filters.objectType === "all" || node.objectType === filters.objectType) &&
     (filters.indexStatus === "all" || node.indexStatus === filters.indexStatus)
   )

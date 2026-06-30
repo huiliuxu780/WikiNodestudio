@@ -40,11 +40,61 @@ test.describe("Retrieval Test debug experience", () => {
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
   })
 
+  test("sends Knowledge Base scope through Retrieval API filters", async ({ page }) => {
+    let submittedKnowledgeBaseId = ""
+    await page.route("**/api/retrieval-test", async (route) => {
+      if (route.request().method() !== "POST") return route.fallback()
+      const request = route.request().postDataJSON() as { filters?: { knowledgeBaseId?: string } }
+      submittedKnowledgeBaseId = request.filters?.knowledgeBaseId ?? ""
+      return route.fulfill({
+        json: [{
+          node: {
+            nodeId: "wn-013",
+            knowledgeBaseId: "kb-product-guide",
+            slug: "wn-013",
+            title: "西门子 WM14U 洗衣机",
+            nodeType: "product",
+            objectType: "Product",
+            subtype: "product_model",
+            metadata: { businessDomain: "product_support" },
+            relations: [],
+            processingProfile: "product_master_v1",
+            summary: "西门子 WM14U 洗衣机产品主数据。",
+            contentMarkdown: "WM14U 产品知识。",
+            tags: ["产品知识"],
+            status: "published",
+            sourceRefs: [],
+            indexStatus: "indexed",
+            incomingCount: 0,
+            outgoingCount: 0,
+            brokenLinkCount: 0,
+            owner: "Product Docs",
+            version: 1,
+            createdAt: "2026-06-26",
+            updatedAt: "2026-06-26",
+          },
+          score: 0.9,
+          matchedReason: "Matched Knowledge Base scoped WikiNode.",
+          matchedFields: ["title"],
+        }],
+      })
+    })
+
+    await page.goto("/retrieval-test")
+    await page.getByLabel("Knowledge Base").click()
+    await page.getByRole("option", { name: "Product Guide KB" }).click()
+    await page.getByLabel("检索问题").fill("WM14U")
+    await page.getByRole("button", { name: "检索" }).click()
+
+    await expect(page.getByText("西门子 WM14U 洗衣机", { exact: true }).first()).toBeVisible()
+    expect(submittedKnowledgeBaseId).toBe("kb-product-guide")
+  })
+
   test("shows actionable no-result guidance without changing product language", async ({ page }) => {
     await page.goto("/retrieval-test")
 
     await page.getByLabel("检索问题").fill("zzzz-no-result-前端验收")
-    await page.getByRole("combobox").nth(1).click()
+    await page.getByLabel("发布状态").click()
     await page.getByRole("option", { name: "已归档" }).click()
     await page.getByRole("button", { name: "检索" }).click()
 

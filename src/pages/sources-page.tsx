@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Link } from "react-router-dom"
 
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PageHeader } from "@/components/layout/page-header"
 import { ApiErrorNotice } from "@/components/api-error-notice"
@@ -13,47 +14,22 @@ export function SourcesPage() {
   const { data: sources, error: sourcesError, reload: reloadSources } = useAsyncData(listSources, [])
   const [selectedSourceId, setSelectedSourceId] = useState("")
   const activeSourceId = selectedSourceId || sources[0]?.sourceId || ""
+  const activeSource = sources.find((source) => source.sourceId === activeSourceId) ?? sources[0]
   const { data: selectedNodes, error: nodesError, reload: reloadNodes } = useAsyncData(() => getNodesBySourceId(activeSourceId), [], [activeSourceId])
 
   return (
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
         title="知识来源"
-        description="查看 Source、Raw Material、Parsed Document 到 WikiNode 的上游证据链。"
+        description="按 Source 查看快照、解析结果、生成的 WikiNode 和最近处理状态。"
+        actions={activeSource ? (
+          <Button asChild>
+            <Link to={sourceImportHref(activeSource)}>导入文件</Link>
+          </Button>
+        ) : null}
       />
       <ApiErrorNotice error={sourcesError} onRetry={reloadSources} />
       <ApiErrorNotice error={nodesError} onRetry={reloadNodes} />
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">上游证据链</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-3 text-sm md:grid-cols-[1fr_1.2fr]">
-          <div className="rounded-md border bg-muted/20 px-3 py-2">
-            <div className="font-medium">Source - Raw Material - Parsed Document - WikiNode</div>
-            <p className="mt-1 text-muted-foreground">{"Source -> Raw Material -> Parsed Document -> WikiNode"}</p>
-          </div>
-          <div className="rounded-md border border-dashed px-3 py-2">
-            <div className="font-medium">按来源查看快照、解析预览和生成的 WikiNode。</div>
-            <p className="mt-1 text-muted-foreground">用于定位某个业务来源进入知识库后的证据链位置。</p>
-          </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="grid gap-3 p-4 text-sm md:grid-cols-3">
-          <div className="rounded-md border bg-muted/20 px-3 py-2">
-            <div className="font-medium">Source 是原始知识的来源。</div>
-            <p className="mt-1 text-muted-foreground">记录来源类型、负责人、同步状态和最近更新时间。</p>
-          </div>
-          <div className="rounded-md border bg-muted/20 px-3 py-2">
-            <div className="font-medium">Raw Material 是来源快照。</div>
-            <p className="mt-1 text-muted-foreground">保留进入标准化处理前的原始材料证据。</p>
-          </div>
-          <div className="rounded-md border bg-muted/20 px-3 py-2">
-            <div className="font-medium">Parsed Document 是标准化预览。</div>
-            <p className="mt-1 text-muted-foreground">帮助评审内容结构、段落证据和后续 WikiNode 建议。</p>
-          </div>
-        </CardContent>
-      </Card>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
         <Card>
           <CardHeader>
@@ -70,12 +46,13 @@ export function SourcesPage() {
                   <th className="p-2">最后同步</th>
                   <th className="p-2">Raw Material</th>
                   <th className="p-2">生成节点</th>
+                  <th className="p-2">操作</th>
                 </tr>
               </thead>
               <tbody>
                 {sources.length === 0 ? (
                   <tr>
-                    <td className="p-4 text-sm text-muted-foreground" colSpan={7}>
+                    <td className="p-4 text-sm text-muted-foreground" colSpan={8}>
                       暂无知识来源。来源接入后会在这里展示快照、解析预览和关联 WikiNode。
                     </td>
                   </tr>
@@ -90,6 +67,15 @@ export function SourcesPage() {
                     <td className="p-2">{source.lastSyncedAt}</td>
                     <td className="p-2">{source.rawMaterialCount} 个 Raw Material</td>
                     <td className="p-2">{source.generatedNodes}</td>
+                    <td className="p-2">
+                      <Link
+                        to={sourceImportHref(source)}
+                        className="whitespace-nowrap font-medium text-primary hover:underline"
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        导入文件
+                      </Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -116,4 +102,10 @@ export function SourcesPage() {
       </div>
     </div>
   )
+}
+
+function sourceImportHref(source: { sourceId: string; knowledgeBaseId?: string | null }) {
+  return source.knowledgeBaseId
+    ? `/knowledge-bases/${source.knowledgeBaseId}/import?sourceId=${source.sourceId}`
+    : `/sources/${source.sourceId}`
 }

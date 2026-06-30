@@ -83,6 +83,23 @@ test.describe("WikiGraph canvas visualization", () => {
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
   })
 
+  test("filters graph nodes by Knowledge Base ownership", async ({ page }) => {
+    const nodes = wikiNodeApiFixtureNodes.map((node) => ({
+      ...node,
+      knowledgeBaseId: node.objectType === "Product" || node.objectType === "MediaAsset" || node.objectType === "Collection" || node.objectType === "DataRecord"
+        ? "kb-product-guide"
+        : "kb-cc-after-sales",
+    }))
+    await routeWikiNodeApiFixtures(page, nodes)
+    await page.goto("/wiki-graph")
+
+    await page.getByTestId("wiki-graph-filter-knowledge-base").click()
+    await page.getByRole("option", { name: "Product Guide KB" }).click()
+
+    await expect(page.getByTestId("wiki-graph-node").filter({ hasText: "西门子 WM14U 洗衣机" })).toBeVisible()
+    await expect(page.getByTestId("wiki-graph-node").filter({ hasText: "保修期内维修服务政策" })).toHaveCount(0)
+  })
+
   test("filters relations by type and status with legend and edge detail", async ({ page }) => {
     const nodes = wikiNodeApiFixtureNodes.map((node) => node.nodeId === "wn-001"
       ? {

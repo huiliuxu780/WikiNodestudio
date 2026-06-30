@@ -37,6 +37,7 @@ export function searchWikiNodes(query: RetrievalQuery): RetrievalResult[] {
   return mockWikiNodes
     .filter((node) => !query.filters.nodeType || node.nodeType === query.filters.nodeType)
     .filter((node) => !query.filters.status || node.status === query.filters.status)
+    .filter((node) => !query.filters.knowledgeBaseId || node.knowledgeBaseId === query.filters.knowledgeBaseId)
     .map((node) => {
       const fieldScores = {
         title: fieldScore(cleanQuery, node.title, 0.48),

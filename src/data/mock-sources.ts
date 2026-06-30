@@ -3,6 +3,7 @@ import type { SourceItem } from "@/types/source"
 export const mockSources: SourceItem[] = [
   {
     sourceId: "src-feishu-cc",
+    knowledgeBaseId: "kb-cc-after-sales",
     sourceType: "feishu",
     title: "CC 售后政策飞书空间",
     owner: "Rivers",
@@ -13,6 +14,7 @@ export const mockSources: SourceItem[] = [
   },
   {
     sourceId: "src-pdf-dishwasher",
+    knowledgeBaseId: "kb-product-guide",
     sourceType: "pdf",
     title: "洗碗机培训 PDF",
     owner: "Training Ops",
@@ -23,6 +25,7 @@ export const mockSources: SourceItem[] = [
   },
   {
     sourceId: "src-excel-fee",
+    knowledgeBaseId: "kb-cc-after-sales",
     sourceType: "excel",
     title: "维修收费标准 Excel",
     owner: "Service Finance",
@@ -33,6 +36,7 @@ export const mockSources: SourceItem[] = [
   },
   {
     sourceId: "src-word-manual",
+    knowledgeBaseId: "kb-product-guide",
     sourceType: "word",
     title: "产品说明书 Word",
     owner: "Product Docs",
@@ -43,6 +47,7 @@ export const mockSources: SourceItem[] = [
   },
   {
     sourceId: "src-web-faq",
+    knowledgeBaseId: "kb-cc-after-sales",
     sourceType: "web",
     title: "官网售后 FAQ",
     owner: "Service Content",
@@ -53,6 +58,7 @@ export const mockSources: SourceItem[] = [
   },
   {
     sourceId: "src-legacy-kb",
+    knowledgeBaseId: "kb-cc-after-sales",
     sourceType: "legacy_kb",
     title: "历史客服知识库",
     owner: "Knowledge Ops",

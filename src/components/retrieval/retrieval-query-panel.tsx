@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import type { RetrievalQuery } from "@/types/retrieval"
+import type { KnowledgeBase } from "@/types/knowledge-base"
 import { actionLabels, commonLabels, labelFromMap, nodeTypeLabels, statusLabels } from "@/utils/display-labels"
 
 const sampleQueries = [
@@ -27,13 +28,17 @@ export function RetrievalQueryPanel({
   onSearch,
   onReset,
   isSearching = false,
+  knowledgeBases = [],
 }: {
   value: RetrievalQuery
   onChange: (value: RetrievalQuery) => void
   onSearch: () => void
   onReset: () => void
   isSearching?: boolean
+  knowledgeBases?: KnowledgeBase[]
 }) {
+  const knowledgeBaseLabels = Object.fromEntries(knowledgeBases.map((kb) => [kb.kbId, kb.name]))
+
   return (
     <div className="flex flex-col gap-4 rounded-lg border bg-card p-4">
       <div className="flex flex-col gap-2">
@@ -46,7 +51,16 @@ export function RetrievalQueryPanel({
         />
         <p className="text-xs text-muted-foreground">示例问题只会填入输入框，点击检索后返回 WikiNode 结果。</p>
       </div>
-      <div className="grid gap-3 md:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-5">
+        <FilterSelect
+          label="Knowledge Base"
+          value={value.filters.knowledgeBaseId ?? "all"}
+          labels={knowledgeBaseLabels}
+          items={knowledgeBases.map((kb) => kb.kbId)}
+          onChange={(knowledgeBaseId) =>
+            onChange({ ...value, filters: { ...value.filters, knowledgeBaseId: knowledgeBaseId === "all" ? undefined : knowledgeBaseId } })
+          }
+        />
         <FilterSelect
           label="节点类型"
           value={value.filters.nodeType ?? "all"}
@@ -127,7 +141,7 @@ function FilterSelect({
     <div className="flex flex-col gap-2">
       <Label>{label}</Label>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="w-full">
+        <SelectTrigger className="w-full" aria-label={label}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

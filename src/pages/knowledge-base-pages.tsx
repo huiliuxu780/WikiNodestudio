@@ -241,10 +241,12 @@ export function KnowledgeBaseDetailPage() {
 export function KnowledgeBaseSettingsPage() {
   const { kbId = "" } = useParams()
   const { data, isLoading, error, reload } = useAsyncData(() => getKnowledgeBase(kbId), null as KnowledgeBase | null, [kbId])
+  const { data: sources } = useAsyncData(() => listSources(), [] as SourceItem[], [kbId])
   const [form, setForm] = useState<KnowledgeBaseInput | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [feedback, setFeedback] = useState<string | null>(null)
   const [saveError, setSaveError] = useState<Error | null>(null)
+  const firstSource = sources.find((source) => source.knowledgeBaseId === kbId)
 
   const activeForm = useMemo(() => {
     if (form) return form
@@ -287,7 +289,19 @@ export function KnowledgeBaseSettingsPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader title="知识库设置" description="维护知识库基础信息和默认策略。" />
+      <PageHeader
+        title="知识库设置"
+        description="维护知识库基础信息和默认策略。"
+        actions={firstSource ? (
+          <Button asChild variant="outline">
+            <Link to={`/knowledge-bases/${kbId}/import?sourceId=${firstSource.sourceId}`}>导入文件</Link>
+          </Button>
+        ) : (
+          <Button asChild variant="outline">
+            <Link to={`/knowledge-bases/${kbId}`}>查看 Source</Link>
+          </Button>
+        )}
+      />
       <ApiErrorNotice error={error} onRetry={reload} />
       <ApiErrorNotice error={saveError} title={commonLabels.saveFailed} />
       <ToastMessage message={feedback} onClose={() => setFeedback(null)} />
@@ -576,14 +590,15 @@ function ScopedSourceTable({ sources, isLoading }: { sources: SourceItem[]; isLo
           <TableHead>生成 WikiNode</TableHead>
           <TableHead>负责人</TableHead>
           <TableHead>最近同步</TableHead>
+          <TableHead>操作</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {isLoading ? (
-          <TableRow><TableCell colSpan={7} className="text-muted-foreground">正在加载 Source 归属...</TableCell></TableRow>
+          <TableRow><TableCell colSpan={8} className="text-muted-foreground">正在加载 Source 归属...</TableCell></TableRow>
         ) : null}
         {!isLoading && sources.length === 0 ? (
-          <TableRow><TableCell colSpan={7} className="text-muted-foreground">该知识库下暂无 Source。</TableCell></TableRow>
+          <TableRow><TableCell colSpan={8} className="text-muted-foreground">该知识库下暂无 Source。</TableCell></TableRow>
         ) : null}
         {sources.map((source) => (
           <TableRow key={source.sourceId}>
@@ -597,6 +612,11 @@ function ScopedSourceTable({ sources, isLoading }: { sources: SourceItem[]; isLo
             <TableCell>{source.generatedNodes}</TableCell>
             <TableCell>{source.owner}</TableCell>
             <TableCell>{source.lastSyncedAt}</TableCell>
+            <TableCell>
+              <Link to={`/knowledge-bases/${source.knowledgeBaseId ?? ""}/import?sourceId=${source.sourceId}`} className="whitespace-nowrap font-medium text-primary hover:underline">
+                导入文件
+              </Link>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

@@ -2,6 +2,7 @@ package com.wikinode.studio.model;
 
 public record GraphNode(
   String nodeId,
+  String knowledgeBaseId,
   String title,
   String nodeType,
   String status,

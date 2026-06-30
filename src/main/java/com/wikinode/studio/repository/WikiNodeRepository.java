@@ -80,7 +80,7 @@ public interface WikiNodeRepository {
 
   List<WikiLink> brokenLinks();
 
-  WikiGraphOverview graphOverview();
+  WikiGraphOverview graphOverview(String knowledgeBaseId);
 
   WikiGraphOverview graphEgo(String nodeId);
 

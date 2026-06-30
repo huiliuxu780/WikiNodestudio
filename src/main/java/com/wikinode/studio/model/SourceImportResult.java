@@ -5,6 +5,7 @@ import java.util.List;
 public record SourceImportResult(
   String operationId,
   String sourceId,
+  String knowledgeBaseId,
   String rawMaterialId,
   String parsedDocumentId,
   String status,

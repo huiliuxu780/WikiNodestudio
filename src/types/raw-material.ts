@@ -1,6 +1,7 @@
 export type RawMaterial = {
   rawMaterialId: string
   sourceId: string
+  knowledgeBaseId?: string | null
   title: string
   rawMaterialType: string
   sourceVersion?: string
@@ -30,6 +31,7 @@ export type ParsedDocument = {
   parsedDocumentId: string
   rawMaterialId: string
   sourceId: string
+  knowledgeBaseId?: string | null
   title: string
   contentFormat: string
   normalizedContent: string
@@ -47,6 +49,7 @@ export type ParsedDocumentSegment = {
   parsedDocumentId: string
   rawMaterialId: string
   sourceId: string
+  knowledgeBaseId?: string | null
   position: number
   segmentType: string
   title: string
