@@ -12,9 +12,9 @@ The full product scope is captured in `docs/current/PRODUCT_SCOPE.md`; the roadm
 
 ## Active Boundary
 
-The product baseline includes the React frontend MVP, Spring Boot API, PostgreSQL + Flyway persistence, reset/seed scripts, API smoke, GitHub Actions baseline CI, v0.2 release documentation, Playwright browser coverage, Source / Raw Material / Parsed Document read-only APIs, Draft WikiNode Suggestion review APIs, WikiNode Knowledge Object API alignment, Index Segment generation and trace evidence, Retrieval API debug evidence, the Quality Issues evidence console, the publishing / metadata governance / admin planning baseline, Knowledge Relation management through the IM059-IM064 follow-up sequence, IM066 evidence-console completion for Source Operation, Index Job, Vector Sync, Retrieval Debug, System Health, and Admin pages, and IM075 Knowledge Base administration as the persisted scope container around WikiNodes and Sources.
+The product baseline includes the React frontend MVP, Spring Boot API, PostgreSQL + Flyway persistence, reset/seed scripts, API smoke, GitHub Actions baseline CI, v0.2 release documentation, Playwright browser coverage, Source / Raw Material / Parsed Document APIs, local file import into Raw Material / Parsed Document evidence, Draft WikiNode Suggestion review APIs, WikiNode Knowledge Object API alignment, Index Segment generation and trace evidence, Retrieval API debug evidence, the Quality Issues evidence console, the publishing / metadata governance / admin planning baseline, Knowledge Relation management through the IM059-IM064 follow-up sequence, IM066 evidence-console completion for Source Operation, Index Job, Vector Sync, Retrieval Debug, System Health, and Admin pages, and IM075 Knowledge Base administration as the persisted scope container around WikiNodes and Sources.
 
-Current development must stay inside confirmed task scope. The standing MVP exclusions remain: no real Source import, file upload, parser execution, vector database implementation, embedding invocation, product-facing Chunk Management, automated quality repair, batch operation, export, permissions, version management, audit implementation, or publishing approval flow unless explicitly approved by the user.
+Current development must stay inside confirmed task scope. The standing MVP exclusions remain: no real external connectors, external parser integrations, vector database implementation, embedding invocation, product-facing Chunk Management, automated quality repair, batch operation, export, permissions, version management, audit implementation, or publishing approval flow unless explicitly approved by the user.
 
 The current full-requirement completion assessment is captured in `docs/current/REQUIREMENT_COMPLETION_AUDIT.md`. Its conclusion is that the local MVP baseline and current Knowledge Relation MVP scope are complete, but the full product requirements are not complete.
 
@@ -30,7 +30,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-The active executable packet is `US077` / `IM077`: Imported Knowledge Acceptance to WikiNode Retrieval Loop. It closes the post-import loop so a generated Draft WikiNode Suggestion can be reviewed, accepted into a WikiNode, prepared as local Index Segment evidence, verified in WikiGraph, and returned by Retrieval Test under the same Knowledge Base scope. It must keep Retrieval API and graph verification WikiNode-centered. It does not implement real external connectors, embedding, external vector sync, approval workflow, RBAC, batch operations, export, Agent, Chatbot, Workflow, Vector DB Management, or product-facing Chunk Management.
+The active executable packet is `US077` / `IM079`: Imported Knowledge Live Acceptance Loop. It verifies the live local path so a locally imported document can be reviewed as a Draft WikiNode Suggestion, accepted into a WikiNode, prepared as local Index Segment evidence, verified in WikiGraph, and returned by Retrieval Test under the same Knowledge Base scope. It must keep Retrieval API and graph verification WikiNode-centered. It does not implement real external connectors, embedding, external vector sync, approval workflow, RBAC, batch operations, export, Agent, Chatbot, Workflow, Vector DB Management, or product-facing Chunk Management.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -61,4 +61,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Current recommended next step: complete and verify `IM077`, then decide whether the next capability packet should address external connector configuration, publishing approval, permissions, or retrieval evaluation depth.
+Current recommended next step: complete and verify `IM079`, then decide whether the next capability packet should address external connector configuration, publishing approval, permissions, or retrieval evaluation depth.
