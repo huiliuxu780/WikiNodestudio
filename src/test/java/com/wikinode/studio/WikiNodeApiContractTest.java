@@ -354,6 +354,8 @@ class WikiNodeApiContractTest {
     assertThat(suggestionDetail.body()).contains("\"parsedDocumentId\":\"%s\"".formatted(parsedDocumentId));
     assertThat(suggestionDetail.body()).contains("\"knowledgeBaseId\":\"kb-product-guide\"");
     assertThat(suggestionDetail.body()).contains("\"status\":\"draft\"");
+    assertThat(suggestionDetail.body()).doesNotContain("该内容仍是待审核 WikiNode 建议");
+    assertThat(suggestionDetail.body()).doesNotContain("不会自动创建 WikiNode");
     assertThat(suggestionDetail.body()).doesNotContain("\"indexSegmentId\"");
     assertThat(suggestionDetail.body()).doesNotContain("\"nodeId\"");
     assertThat(operations.statusCode()).isEqualTo(200);
@@ -436,9 +438,12 @@ class WikiNodeApiContractTest {
     assertThat(published.body()).contains("\"nodeId\":\"%s\"".formatted(nodeId));
     assertThat(published.body()).contains("\"knowledgeBaseId\":\"kb-product-guide\"");
     assertThat(published.body()).contains("\"status\":\"published\"");
-    assertThat(published.body()).contains("\"indexStatus\":\"outdated\"");
+    assertThat(published.body()).contains("\"indexStatus\":\"not_indexed\"");
+    assertThat(published.body()).contains("本地 Index Segment 已准备");
     assertThat(node.statusCode()).isEqualTo(200);
     assertThat(node.body()).contains("\"knowledgeBaseId\":\"kb-product-guide\"");
+    assertThat(node.body()).doesNotContain("该内容仍是待审核 WikiNode 建议");
+    assertThat(node.body()).doesNotContain("不会自动创建 WikiNode");
     assertThat(graph.body()).contains("\"nodeId\":\"%s\"".formatted(nodeId));
     assertThat(graph.body()).contains("\"knowledgeBaseId\":\"kb-product-guide\"");
     assertThat(graph.body()).doesNotContain("\"knowledgeBaseId\":\"kb-cc-after-sales\"");
@@ -572,9 +577,9 @@ class WikiNodeApiContractTest {
     assertThat(publish.statusCode()).isEqualTo(200);
     assertThat(publish.body()).contains("\"nodeId\":\"wn-from-sug-002\"");
     assertThat(publish.body()).contains("\"status\":\"published\"");
-    assertThat(publish.body()).contains("\"indexStatus\":\"outdated\"");
+    assertThat(publish.body()).contains("\"indexStatus\":\"not_indexed\"");
     assertThat(publish.body()).contains("\"indexSegmentCount\":3");
-    assertThat(publish.body()).contains("外部向量库同步待后续执行");
+    assertThat(publish.body()).contains("本地 Index Segment 已准备，外部向量库尚未同步");
     assertThat(publish.body()).doesNotContain("\"indexSegmentId\"");
     assertThat(publish.body()).doesNotContain("\"vectorDocId\"");
     assertThat(publish.body()).doesNotContain("\"embedding\"");
@@ -582,7 +587,7 @@ class WikiNodeApiContractTest {
 
     assertThat(node.statusCode()).isEqualTo(200);
     assertThat(node.body()).contains("\"status\":\"published\"");
-    assertThat(node.body()).contains("\"indexStatus\":\"outdated\"");
+    assertThat(node.body()).contains("\"indexStatus\":\"not_indexed\"");
     assertThat(node.body()).contains("\"lifecycleStatus\":\"published\"");
     assertThat(node.body()).doesNotContain("\"published\":true");
 
@@ -596,9 +601,9 @@ class WikiNodeApiContractTest {
 
     assertThat(reindex.statusCode()).isEqualTo(200);
     assertThat(reindex.body()).contains("\"nodeId\":\"wn-from-sug-002\"");
-    assertThat(reindex.body()).contains("\"indexStatus\":\"outdated\"");
+    assertThat(reindex.body()).contains("\"indexStatus\":\"not_indexed\"");
     assertThat(reindex.body()).contains("\"indexSegmentCount\":3");
-    assertThat(reindex.body()).contains("外部向量库同步待后续执行");
+    assertThat(reindex.body()).contains("本地 Index Segment 已重新准备，外部向量库尚未同步");
     assertThat(reindex.body()).doesNotContain("\"vectorDocId\"");
     assertThat(reindex.body()).doesNotContain("\"embedding\"");
   }

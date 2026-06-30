@@ -215,7 +215,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
     }
 
     String today = LocalDate.now().toString();
-    WikiNode published = nodeWithLifecycle(existing, "published", "outdated", today, existing.lastIndexedAt());
+    WikiNode published = nodeWithLifecycle(existing, "published", "not_indexed", today, null);
     replaceNode(nodeId, published);
     List<IndexSegment> segments = generateIndexSegmentsForNode(nodeId);
 
@@ -223,8 +223,8 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       nodeId,
       published.knowledgeBaseId(),
       "published",
-      "outdated",
-      "已发布 WikiNode，并准备 %d 条 Index Segment；外部向量库同步待后续执行。".formatted(segments.size()),
+      "not_indexed",
+      "已发布 WikiNode，并准备 %d 条本地 Index Segment；本地 Index Segment 已准备，外部向量库尚未同步。".formatted(segments.size()),
       segments.size(),
       today,
       published.lastIndexedAt()
@@ -234,7 +234,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   @Override
   public WikiNodeLifecycleResult reindexWikiNode(String nodeId) {
     WikiNode existing = loadNode(nodeId).orElseThrow(() -> new IllegalArgumentException("WikiNode not found"));
-    String nextIndexStatus = "published".equals(existing.status()) ? "outdated" : "not_indexed";
+    String nextIndexStatus = "not_indexed";
     WikiNode prepared = nodeWithLifecycle(existing, existing.status(), nextIndexStatus, null, null);
     replaceNode(nodeId, prepared);
     List<IndexSegment> segments = generateIndexSegmentsForNode(nodeId);
@@ -244,7 +244,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
       prepared.knowledgeBaseId(),
       prepared.status(),
       nextIndexStatus,
-      "已重新准备 %d 条本地 Index Segment；外部向量库同步待后续执行。".formatted(segments.size()),
+      "已重新准备 %d 条本地 Index Segment；本地 Index Segment 已重新准备，外部向量库尚未同步。".formatted(segments.size()),
       segments.size(),
       null,
       prepared.lastIndexedAt()
@@ -674,13 +674,14 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
 
   @Override
   public List<DraftWikiNodeSuggestion> listDraftWikiNodeSuggestions() {
-    return List.copyOf(loadDraftWikiNodeSuggestions());
+    return loadDraftWikiNodeSuggestions().stream().map(this::cleanDraftSuggestion).toList();
   }
 
   @Override
   public List<DraftWikiNodeSuggestion> listDraftWikiNodeSuggestionsForParsedDocument(String parsedDocumentId) {
     return loadDraftWikiNodeSuggestions().stream()
       .filter(suggestion -> suggestion.parsedDocumentId().equals(parsedDocumentId))
+      .map(this::cleanDraftSuggestion)
       .toList();
   }
 
@@ -688,6 +689,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   public List<DraftWikiNodeSuggestion> listDraftWikiNodeSuggestionsForRawMaterial(String rawMaterialId) {
     return loadDraftWikiNodeSuggestions().stream()
       .filter(suggestion -> suggestion.rawMaterialId().equals(rawMaterialId))
+      .map(this::cleanDraftSuggestion)
       .toList();
   }
 
@@ -695,6 +697,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   public Optional<DraftWikiNodeSuggestion> findDraftWikiNodeSuggestion(String suggestionId) {
     return loadDraftWikiNodeSuggestions().stream()
       .filter(suggestion -> suggestion.suggestionId().equals(suggestionId))
+      .map(this::cleanDraftSuggestion)
       .findFirst();
   }
 
@@ -1275,7 +1278,7 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
         .toList(),
       null,
       summaryForSuggestion(suggestion),
-      suggestion.contentDraft(),
+      cleanDraftContent(suggestion.contentDraft()),
       tagsForSuggestion(suggestion),
       "draft",
       sourceRefsForSuggestion(suggestion),
@@ -1676,9 +1679,45 @@ abstract class AbstractWikiNodeRepository implements WikiNodeRepository {
   private String contentDraft(ParsedDocument parsedDocument, String suggestedTitle) {
     String content = Optional.ofNullable(parsedDocument.normalizedContent()).orElse("").trim();
     if (content.startsWith("# ")) {
-      return "%s\n\n该内容仍是待审核 WikiNode 建议，不会自动创建 WikiNode、发布或索引。".formatted(content);
+      return content;
     }
-    return "# %s\n\n%s\n\n该内容仍是待审核 WikiNode 建议，不会自动创建 WikiNode、发布或索引。".formatted(suggestedTitle, content);
+    return "# %s\n\n%s".formatted(suggestedTitle, content);
+  }
+
+  private String cleanDraftContent(String content) {
+    return Optional.ofNullable(content).orElse("")
+      .replace("该内容仍是待审核 WikiNode 建议，不会自动创建 WikiNode、发布或索引。", "")
+      .replace("该内容仍是待审核 WikiNode 建议，不会自动发布或索引。", "")
+      .trim();
+  }
+
+  private DraftWikiNodeSuggestion cleanDraftSuggestion(DraftWikiNodeSuggestion suggestion) {
+    return new DraftWikiNodeSuggestion(
+      suggestion.suggestionId(),
+      suggestion.parsedDocumentId(),
+      suggestion.rawMaterialId(),
+      suggestion.sourceId(),
+      suggestion.knowledgeBaseId(),
+      suggestion.operationId(),
+      suggestion.title(),
+      suggestion.objectType(),
+      suggestion.subtype(),
+      cleanDraftContent(suggestion.contentDraft()),
+      suggestion.metadataDraft(),
+      suggestion.sourceRefs(),
+      suggestion.relationCandidates(),
+      suggestion.confidence(),
+      suggestion.status(),
+      suggestion.reviewNote(),
+      suggestion.conflictStatus(),
+      suggestion.conflictReasons(),
+      suggestion.matchedWikiNodeIds(),
+      suggestion.matchedSuggestionIds(),
+      suggestion.sourceRefCount(),
+      suggestion.relationCandidateCount(),
+      suggestion.createdAt(),
+      suggestion.updatedAt()
+    );
   }
 
   private String today() {
