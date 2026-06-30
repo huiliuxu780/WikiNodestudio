@@ -64,6 +64,7 @@ test.describe("Imported knowledge live acceptance loop", () => {
 
     await page.goto(`/wiki-graph?knowledgeBaseId=kb-cc-after-sales`)
     await expect(page.getByTestId("wiki-graph-canvas")).toBeVisible()
+    await expect(page.getByTestId("wiki-graph-loading")).toHaveCount(0, { timeout: 30_000 })
     await page.getByTestId("wiki-graph-filter-search").fill(title)
     await expect(page.getByTestId("wiki-graph-node").filter({ hasText: title })).toBeVisible()
 

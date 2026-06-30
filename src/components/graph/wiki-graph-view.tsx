@@ -81,10 +81,12 @@ export function WikiGraphView({
   nodes,
   knowledgeBases = [],
   initialKnowledgeBaseId = "all",
+  isLoading = false,
 }: {
   nodes: WikiNode[]
   knowledgeBases?: KnowledgeBase[]
   initialKnowledgeBaseId?: string
+  isLoading?: boolean
 }) {
   const initialFilters = { ...defaultFilters, knowledgeBaseId: initialKnowledgeBaseId || "all" }
   const [filters, setFilters] = useState<KnowledgeGraphFilters>(initialFilters)
@@ -243,7 +245,14 @@ export function WikiGraphView({
         <Card data-slot="wiki-graph-canvas-frame" className="min-h-[720px] p-0">
           <div data-testid="knowledge-graph-workspace" className="h-full">
             <div data-testid="wiki-graph-canvas" className="h-full min-h-[720px] overflow-hidden rounded-md">
-              {graph.nodes.length ? (
+              {isLoading ? (
+                <div
+                  data-testid="wiki-graph-loading"
+                  className="flex h-full min-h-[720px] items-center justify-center p-6 text-center text-sm text-muted-foreground"
+                >
+                  正在加载知识图谱...
+                </div>
+              ) : graph.nodes.length ? (
                 <ReactFlow
                   nodes={flowNodes}
                   edges={flowEdges}

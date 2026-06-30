@@ -30,6 +30,20 @@ test.describe("WikiGraph canvas visualization", () => {
     await expect(page.getByTestId("wiki-graph-canvas")).toBeVisible()
   })
 
+  test("shows graph loading state instead of an empty graph while API data is pending", async ({ page }) => {
+    await page.unroute("**/api/wiki-nodes")
+    await page.route("**/api/wiki-nodes", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      await route.fulfill({ json: wikiNodeApiFixtureNodes })
+    })
+
+    await page.goto("/wiki-graph")
+
+    await expect(page.getByTestId("wiki-graph-loading")).toContainText("正在加载知识图谱")
+    await expect(page.getByText("当前筛选条件下没有图谱数据")).toHaveCount(0)
+    await expect(page.getByTestId("wiki-graph-node").filter({ hasText: "西门子 WM14U 洗衣机" })).toBeVisible()
+  })
+
   test("renders an interactive node-edge graph with filters and inspector details", async ({ page }) => {
     await page.goto("/wiki-graph")
 
