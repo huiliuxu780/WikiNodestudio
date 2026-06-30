@@ -171,7 +171,7 @@ function ImportResultPanel({ result }: { result: SourceImportResult }) {
         <ResultItem label="Document Segment" value={`文档片段 ${result.segmentCount} 条`} />
         <ResultItem label="WikiNode 建议" value={result.suggestionId ?? "未生成"}>
           {result.suggestionId ? (
-            <Link to={`/draft-wikinode-suggestions/${result.suggestionId}`} className="font-medium text-primary hover:underline">打开 WikiNode 建议</Link>
+            <Link to={`/draft-wikinode-suggestions/${result.suggestionId}`} className="font-medium text-primary hover:underline">查看待审核建议</Link>
           ) : null}
         </ResultItem>
       </CardContent>

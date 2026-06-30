@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D077
+    date: "2026-06-30"
+    title: "Close imported knowledge acceptance through WikiNode retrieval"
+    rationale: "After IM076 made Knowledge Base scoped local Source import executable, IM077 closes the next operator loop: generated Draft WikiNode Suggestions must be reviewable, accepted into WikiNodes, prepared as local Index Segment evidence, visible in WikiGraph, and returned by Retrieval Test under the same Knowledge Base scope. The work remains local and bounded: no real external connectors, embedding, external vector sync, approval workflow, RBAC, batch operation, export, Agent, Chatbot, Workflow Builder, Vector DB Management, product-facing Chunk Management, package changes, or lockfile changes."
+    related:
+      - IM077
+      - US077
+      - IMPORTED_KNOWLEDGE_ACCEPTANCE_LOOP
+      - SOURCE_IMPORT_TO_KNOWLEDGE_BASE_EXECUTION
   - id: D076
     date: "2026-06-29"
     title: "Execute local Source import inside the Knowledge Base scope"

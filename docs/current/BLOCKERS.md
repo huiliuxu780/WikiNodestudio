@@ -6,8 +6,8 @@ None.
 
 ## Active Scope Constraints
 
-- Active executable IM: `IM076 Source Import to Knowledge Base Execution`.
-- IM076 may change backend model/API/repository, database migration, frontend Source / Raw Material / Parsed Document / Knowledge Base / WikiGraph / Retrieval Test surfaces, frontend services/types, tests, smoke scripts, and current/registry docs only where required to implement the local Source import to Knowledge Base evidence chain.
+- Active executable IM: `IM077 Imported Knowledge Acceptance to WikiNode Retrieval Loop`.
+- IM077 may change backend model/API/repository, database migration, frontend import result / Draft WikiNode Suggestion / WikiNode detail / Index Segment / WikiGraph / Retrieval Test surfaces, frontend services/types, tests, smoke scripts, and current/registry docs only where required to close the local imported knowledge acceptance-to-retrieval loop.
 - Future frontend work must follow `docs/quality/frontend-ux-guidelines.md`.
 - Future B2B/governance pages must use dense evidence consoles, tables, lists, or side panels instead of AI-style explainer-card stacks.
 

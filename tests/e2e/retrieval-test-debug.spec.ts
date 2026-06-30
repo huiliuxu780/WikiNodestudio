@@ -90,6 +90,59 @@ test.describe("Retrieval Test debug experience", () => {
     expect(submittedKnowledgeBaseId).toBe("kb-product-guide")
   })
 
+  test("applies query and Knowledge Base scope from verification URL", async ({ page }) => {
+    let submittedQuery = ""
+    let submittedKnowledgeBaseId = ""
+    await page.route("**/api/retrieval-test", async (route) => {
+      if (route.request().method() !== "POST") return route.fallback()
+      const request = route.request().postDataJSON() as { query?: string; filters?: { knowledgeBaseId?: string } }
+      submittedQuery = request.query ?? ""
+      submittedKnowledgeBaseId = request.filters?.knowledgeBaseId ?? ""
+      return route.fulfill({
+        json: [{
+          node: {
+            nodeId: "wn-from-sug-api-only",
+            knowledgeBaseId: "kb-cc-after-sales",
+            slug: "wn-from-sug-api-only",
+            title: "API Only WikiNode 建议",
+            nodeType: "policy",
+            objectType: "Article",
+            subtype: "service_fee_policy",
+            metadata: { businessDomain: "api_alignment" },
+            relations: [],
+            processingProfile: "feishu_article_v1",
+            summary: "API Only WikiNode 建议。",
+            contentMarkdown: "API Only WikiNode 建议。",
+            tags: ["draft-suggestion"],
+            status: "draft",
+            sourceRefs: [],
+            indexStatus: "not_indexed",
+            incomingCount: 0,
+            outgoingCount: 0,
+            brokenLinkCount: 0,
+            owner: "Knowledge Ops",
+            version: 1,
+            createdAt: "2026-06-30",
+            updatedAt: "2026-06-30",
+          },
+          score: 0.88,
+          matchedReason: "Matched accepted imported WikiNode.",
+          matchedFields: ["title"],
+        }],
+      })
+    })
+
+    await page.goto("/retrieval-test?knowledgeBaseId=kb-cc-after-sales&q=API%20Only%20WikiNode%20%E5%BB%BA%E8%AE%AE")
+    await expect(page.getByLabel("Knowledge Base")).toContainText("CC After-sales KB")
+    await expect(page.getByLabel("检索问题")).toHaveValue("API Only WikiNode 建议")
+
+    await page.getByRole("button", { name: "检索" }).click()
+
+    await expect(page.getByText("API Only WikiNode 建议", { exact: true }).first()).toBeVisible()
+    expect(submittedQuery).toBe("API Only WikiNode 建议")
+    expect(submittedKnowledgeBaseId).toBe("kb-cc-after-sales")
+  })
+
   test("shows actionable no-result guidance without changing product language", async ({ page }) => {
     await page.goto("/retrieval-test")
 
