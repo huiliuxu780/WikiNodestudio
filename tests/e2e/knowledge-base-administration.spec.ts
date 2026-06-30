@@ -161,6 +161,8 @@ test.describe("Knowledge Base administration", () => {
             title: "售后政策飞书空间",
             sourceType: "feishu",
             owner: "Rivers",
+            ingestionMode: "manual_import",
+            connectionStatus: "available",
             syncStatus: "synced",
             lastSyncedAt: "2026-06-20",
             generatedNodes: 3,
@@ -172,6 +174,8 @@ test.describe("Knowledge Base administration", () => {
             title: "洗碗机培训 PDF",
             sourceType: "pdf",
             owner: "Product Docs",
+            ingestionMode: "manual_import",
+            connectionStatus: "available",
             syncStatus: "synced",
             lastSyncedAt: "2026-06-17",
             generatedNodes: 1,
@@ -225,7 +229,12 @@ test.describe("Knowledge Base administration", () => {
     await expect(page.getByRole("row", { name: /保修期内维修服务政策/ })).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(/\bfee_policy\b|\bprocedure\b|\bterm\b/)
     await page.getByRole("tab", { name: "Source" }).click()
-    await expect(page.getByRole("row", { name: /售后政策飞书空间/ })).toBeVisible()
+    const sourceRow = page.getByRole("row", { name: /售后政策飞书空间/ })
+    await expect(sourceRow).toBeVisible()
+    await expect(sourceRow).toContainText("手动导入")
+    await expect(sourceRow).toContainText("连接可用")
+    await expect(sourceRow).toContainText("已同步")
+    await expect(sourceRow.getByRole("link", { name: "查看 Source" })).toHaveAttribute("href", "/sources/src-feishu-cc")
     await expect(page.getByRole("link", { name: "导入文件" }).first()).toHaveAttribute("href", "/knowledge-bases/kb-cc-after-sales/import?sourceId=src-feishu-cc")
     await page.getByRole("tab", { name: "召回范围" }).click()
     await expect(page.getByText("filters.knowledgeBaseId = kb-cc-after-sales")).toBeVisible()

@@ -7,6 +7,12 @@ const sources = [
     sourceType: "feishu",
     title: "CC 售后政策飞书空间",
     owner: "售后运营",
+    ingestionMode: "scheduled_sync",
+    connectionStatus: "available",
+    syncPolicy: "daily",
+    defaultParserProfile: "feishu_article_v1",
+    lastCheckedAt: "2026-06-20 10:28",
+    lastFailureReason: null,
     syncStatus: "synced",
     lastSyncedAt: "2026-06-18",
     generatedNodes: 4,
@@ -18,6 +24,12 @@ const sources = [
     sourceType: "pdf",
     title: "洗碗机培训 PDF",
     owner: "产品培训",
+    ingestionMode: "manual_import",
+    connectionStatus: "available",
+    syncPolicy: "manual",
+    defaultParserProfile: "pdf_manual_article_v1",
+    lastCheckedAt: "2026-06-18 15:10",
+    lastFailureReason: null,
     syncStatus: "synced",
     lastSyncedAt: "2026-06-17",
     generatedNodes: 2,
@@ -29,6 +41,12 @@ const sources = [
     sourceType: "excel",
     title: "维修收费标准 Excel",
     owner: "服务财务",
+    ingestionMode: "manual_import",
+    connectionStatus: "not_configured",
+    syncPolicy: "manual",
+    defaultParserProfile: "excel_fee_table_v1",
+    lastCheckedAt: "2026-06-16 09:00",
+    lastFailureReason: null,
     syncStatus: "pending",
     lastSyncedAt: "2026-06-16",
     generatedNodes: 1,
@@ -40,6 +58,12 @@ const sources = [
     sourceType: "word",
     title: "产品说明书 Word",
     owner: "产品资料",
+    ingestionMode: "manual_import",
+    connectionStatus: "failed",
+    syncPolicy: "paused",
+    defaultParserProfile: "word_manual_article_v1",
+    lastCheckedAt: "2026-06-15 18:20",
+    lastFailureReason: "解析 Profile 未匹配当前文档结构",
     syncStatus: "failed",
     lastSyncedAt: "2026-06-15",
     generatedNodes: 1,
@@ -304,6 +328,10 @@ export async function mockSourceEvidenceApi(page: Page) {
 
     if (path === "/api/parser-profiles") {
       return route.fulfill({ json: parserProfiles })
+    }
+
+    if (path === "/api/knowledge-bases") {
+      return route.fulfill({ json: knowledgeBases })
     }
 
     const knowledgeBaseMatch = path.match(/^\/api\/knowledge-bases\/([^/]+)$/)

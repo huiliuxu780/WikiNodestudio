@@ -253,7 +253,7 @@ test.describe("Retrieval Test debug experience", () => {
     await expect(page.getByText("命中片段：seg-001")).toBeVisible()
 
     await page.getByRole("button", { name: "保存为评测用例" }).click()
-    await expect(page.getByText("评测用例证据")).toBeVisible()
+    await expect(page.getByRole("heading", { name: "评测用例证据" })).toBeVisible()
     await expect(page.getByText("eval-ui-warranty")).toBeVisible()
     await expect(page.getByText("命中预期 WikiNode。")).toBeVisible()
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
