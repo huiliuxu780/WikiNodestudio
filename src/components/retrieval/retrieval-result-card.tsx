@@ -45,7 +45,7 @@ export function RetrievalResultCard({ result }: { result: RetrievalResult }) {
         </div>
         <InfoRow label="召回结果类型" value="WikiNode（业务知识节点）" />
         <InfoRow label="为什么命中" value={formatMatchedReason(result.matchedReason)} />
-        <InfoRow label="命中字段" value={formatMatchedFields(result.matchedFields)} />
+        <InfoRow label="命中字段" value={formatMatchedFields(result.matchedFields ?? [])} />
         <InfoRow label="来源证据" value={sourceRefs.map((source) => source.sourceTitle).join("、") || commonLabels.none} />
         <InfoRow
           label="WikiLink 上下文"

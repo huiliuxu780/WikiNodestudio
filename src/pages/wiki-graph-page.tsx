@@ -9,8 +9,12 @@ import { useSearchParams } from "react-router-dom"
 export function WikiGraphPage() {
   const [searchParams] = useSearchParams()
   const initialKnowledgeBaseId = searchParams.get("knowledgeBaseId") ?? "all"
-  const { data: nodes, error, reload } = useAsyncData(listWikiNodes, [])
-  const { data: knowledgeBases, error: knowledgeBaseError, reload: reloadKnowledgeBases } = useAsyncData(() => listKnowledgeBases({ status: "active" }), [])
+  const { data: nodes, error, isLoading, reload } = useAsyncData(listWikiNodes, [])
+  const {
+    data: knowledgeBases,
+    error: knowledgeBaseError,
+    reload: reloadKnowledgeBases,
+  } = useAsyncData(() => listKnowledgeBases({ status: "active" }), [])
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -20,7 +24,12 @@ export function WikiGraphPage() {
       />
       <ApiErrorNotice error={error} onRetry={reload} />
       <ApiErrorNotice error={knowledgeBaseError} title="知识库列表加载失败" onRetry={reloadKnowledgeBases} />
-      <WikiGraphView nodes={nodes} knowledgeBases={knowledgeBases} initialKnowledgeBaseId={initialKnowledgeBaseId} />
+      <WikiGraphView
+        nodes={nodes}
+        knowledgeBases={knowledgeBases}
+        initialKnowledgeBaseId={initialKnowledgeBaseId}
+        isLoading={isLoading}
+      />
     </div>
   )
 }

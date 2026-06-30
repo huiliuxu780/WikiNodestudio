@@ -424,7 +424,11 @@ export function formatApiErrorMessage(error: Error) {
     return "Slug 已存在，请更换后重试"
   }
 
-  if (normalized.includes("failed to load api data") || normalized.includes("failed to fetch")) {
+  if (
+    normalized.includes("failed to load api data") ||
+    normalized.includes("failed to fetch") ||
+    normalized === "load failed"
+  ) {
     return commonLabels.backendUnavailable
   }
 

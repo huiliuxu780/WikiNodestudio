@@ -6,9 +6,9 @@ notes:
   - "Do not auto-enter the next IM without explicit user confirmation."
   - "Done history stays in release docs or archive."
 tasks:
-  - id: IM077
+  - id: IM079
     story_id: US077
-    title: "Imported Knowledge Acceptance to WikiNode Retrieval Loop"
+    title: "Imported Knowledge Live Acceptance Loop"
     status: in_progress
     required_workflow: default
     allowed_files:
@@ -36,4 +36,5 @@ tasks:
       - "Accepted WikiNode prepares local Index Segment evidence and remains visible from WikiNode detail."
       - "WikiGraph shows the accepted WikiNode and imported relation evidence under Knowledge Base scope."
       - "Retrieval Test returns the accepted WikiNode for a scoped Knowledge Base query."
+      - "A no-mock live Playwright acceptance path covers import, suggestion review, draft WikiNode, publish, WikiGraph, and Retrieval Test."
       - "No real external connector, embedding, external vector sync, approval workflow, RBAC, batch operation, export, Agent, Chatbot, Workflow, Vector DB Management, product-facing Chunk Management, package change, or lockfile change is added."
