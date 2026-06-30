@@ -1,20 +1,21 @@
 version: 2
-updated_at: "2026-06-29"
+updated_at: "2026-06-30"
 source_of_truth: "current_story_queue"
 notes:
   - "Only ready, in_progress, and blocked stories belong here."
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
 stories:
-  - id: US076
-    title: "Source Import to Knowledge Base Execution"
+  - id: US077
+    title: "Imported Knowledge Acceptance to WikiNode Retrieval Loop"
     status: in_progress
     priority: high
-    summary: "Implement a local Source import execution chain inside a Knowledge Base so an uploaded or pasted source creates Raw Material and Parsed Document evidence, prepares document segments, and exposes the ownership chain through Knowledge Base, Source, Raw Material, Parsed Document, WikiGraph, and Retrieval Test surfaces."
+    summary: "Close the post-import acceptance loop so an imported Parsed Document can be reviewed as a Draft WikiNode Suggestion, accepted into a WikiNode, prepared as Index Segment evidence, verified in WikiGraph, and retrieved through Retrieval Test under the same Knowledge Base scope."
     acceptance:
-      - "Source import runs are scoped by knowledgeBaseId and preserve Knowledge Base ownership on Source, Raw Material, Parsed Document, document segment, Draft WikiNode Suggestion, and generated WikiNode evidence."
-      - "A local import path accepts txt/md/docx-style content without connecting to real external systems."
-      - "Raw Material and Parsed Document details show the Knowledge Base and Source ownership chain."
-      - "Knowledge Base detail surfaces the imported Source and generated evidence without using explainer-card UI."
-      - "WikiGraph and Retrieval Test can verify the imported knowledge remains WikiNode-centered and Knowledge Base scoped."
+      - "The import success path exposes a primary action to review the generated Draft WikiNode Suggestion."
+      - "A Draft WikiNode Suggestion detail page lets an operator inspect suggested WikiNode content, sourceRefs, metadata, relations, Parsed Document evidence, and Knowledge Base ownership before accepting or rejecting."
+      - "Accepting a suggestion creates or updates a WikiNode with knowledgeBaseId, sourceId, rawMaterialId, parsedDocumentId, sourceRefs, objectType, subtype, metadata, and relations preserved."
+      - "The accepted WikiNode prepares local Index Segment evidence without embedding or external vector sync."
+      - "WikiGraph can show the accepted WikiNode and imported relations under the same Knowledge Base scope."
+      - "Retrieval Test can query the same Knowledge Base scope and return the accepted WikiNode as a WikiNode-centered result."
       - "The flow does not implement real Feishu/API/web/database connectors, embedding, external vector sync, approval workflow, RBAC, batch operations, export, Agent, Chatbot, Workflow, Vector DB Management, or product-facing Chunk Management."

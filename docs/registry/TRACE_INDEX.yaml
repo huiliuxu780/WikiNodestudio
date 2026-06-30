@@ -31,6 +31,37 @@ product_docs:
   IMPLEMENTATION_SLICE_PRINCIPLES:
     file: docs/current/IMPLEMENTATION_SLICE_PRINCIPLES.md
 current_corrections:
+  IMPORTED_KNOWLEDGE_ACCEPTANCE_LOOP:
+    decision: D077
+    story_queue: docs/current/STORY_QUEUE.yaml
+    active_task: docs/current/ACTIVE_TASKS.yaml
+    plan: docs/current/IM077_IMPORTED_KNOWLEDGE_ACCEPTANCE_LOOP_PLAN.md
+    api: src/main/java/com/wikinode/studio/api/WikiNodeController.java
+    models:
+      - src/main/java/com/wikinode/studio/model/DraftWikiNodeSuggestion.java
+      - src/main/java/com/wikinode/studio/model/DraftWikiNodeSuggestionAcceptResult.java
+      - src/main/java/com/wikinode/studio/model/WikiNode.java
+    repository:
+      - src/main/java/com/wikinode/studio/repository/WikiNodeRepository.java
+      - src/main/java/com/wikinode/studio/repository/AbstractWikiNodeRepository.java
+      - src/main/java/com/wikinode/studio/repository/JdbcWikiNodeRepository.java
+      - src/main/java/com/wikinode/studio/repository/InMemoryWikiNodeRepository.java
+    frontend:
+      - src/pages/knowledge-base-import-page.tsx
+      - src/pages/skeleton-pages.tsx
+      - src/pages/wiki-graph-page.tsx
+      - src/pages/retrieval-test-page.tsx
+      - src/services/source-api-service.ts
+      - src/services/wiki-node-api-service.ts
+      - src/types/draft-wikinode-suggestion.ts
+      - src/types/wiki.ts
+    tests:
+      - src/test/java/com/wikinode/studio/WikiNodeApiContractTest.java
+      - tests/e2e/source-raw-material-acceptance.spec.ts
+      - tests/e2e/draft-wikinode-suggestion-readonly.spec.ts
+      - tests/e2e/wiki-graph-canvas.spec.ts
+      - tests/e2e/retrieval-test-debug.spec.ts
+    smoke: scripts/api-smoke.sh
   SOURCE_IMPORT_TO_KNOWLEDGE_BASE_EXECUTION:
     decision: D076
     story_queue: docs/current/STORY_QUEUE.yaml

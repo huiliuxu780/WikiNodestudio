@@ -77,8 +77,17 @@ const nodeTypes = {
   brokenLink: BrokenLinkNode,
 }
 
-export function WikiGraphView({ nodes, knowledgeBases = [] }: { nodes: WikiNode[]; knowledgeBases?: KnowledgeBase[] }) {
-  const [filters, setFilters] = useState<KnowledgeGraphFilters>(defaultFilters)
+export function WikiGraphView({
+  nodes,
+  knowledgeBases = [],
+  initialKnowledgeBaseId = "all",
+}: {
+  nodes: WikiNode[]
+  knowledgeBases?: KnowledgeBase[]
+  initialKnowledgeBaseId?: string
+}) {
+  const initialFilters = { ...defaultFilters, knowledgeBaseId: initialKnowledgeBaseId || "all" }
+  const [filters, setFilters] = useState<KnowledgeGraphFilters>(initialFilters)
   const [selectedNodeId, setSelectedNodeId] = useState("")
   const [selectedEdgeId, setSelectedEdgeId] = useState("")
   const [inspectorOpen, setInspectorOpen] = useState(false)
@@ -200,7 +209,7 @@ export function WikiGraphView({ nodes, knowledgeBases = [] }: { nodes: WikiNode[
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button data-testid="wiki-graph-reset-filters" variant="outline" size="sm" onClick={() => setFilters(defaultFilters)}>
+          <Button data-testid="wiki-graph-reset-filters" variant="outline" size="sm" onClick={() => setFilters(initialFilters)}>
             <RotateCcwIcon data-icon="inline-start" />
             {actionLabels.reset}筛选
           </Button>

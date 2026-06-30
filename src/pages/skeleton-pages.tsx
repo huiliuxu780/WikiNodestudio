@@ -641,44 +641,51 @@ export function DraftWikiNodeSuggestionDetailPage() {
   }
 
   return (
-    <PageScaffold title="WikiNode 建议详情" description="查看 Draft WikiNode Suggestion，并处理单条采纳、拒绝或重新生成。">
+    <PageScaffold title="WikiNode 建议详情" description="审核建议内容、来源证据和关系候选，采纳后进入 WikiNode 验证链路。">
       <ApiErrorNotice error={error} onRetry={reload} />
       {isLoading ? <LoadingBlock text="正在加载 WikiNode 建议..." /> : null}
       {suggestion ? (
         <>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">评审路径</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <p className="text-muted-foreground">Parsed Document → Draft WikiNode Suggestion → Review Decision</p>
-              <p className="rounded-md border bg-muted/20 p-3 text-muted-foreground">
-                评审重点包括标题、Knowledge Object 类型、来源证据、关系候选和冲突状态。
-              </p>
-              <Link className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" to="/draft-wikinode-suggestions">
-                回到建议评审
-              </Link>
-            </CardContent>
-          </Card>
           <SummaryGrid items={[
             ["建议标题", suggestion.title],
+            ["Knowledge Base", suggestion.knowledgeBaseId ?? "未绑定"],
             ["状态", labelFromMap(draftWikiNodeSuggestionStatusLabels, suggestion.status)],
             ["Knowledge Object", labelFromMap(objectTypeLabels, suggestion.objectType)],
             ["业务子类型", suggestion.subtype ? labelFromMap(subtypeLabels, suggestion.subtype) : "无"],
-            ["来源证据", `${suggestion.sourceRefCount} 条`],
-            ["关系候选", `${suggestion.relationCandidateCount} 条`],
+            ["证据数量", `${suggestion.sourceRefCount} 条`],
+            ["关系数量", `${suggestion.relationCandidateCount} 条`],
             ["冲突状态", labelFromMap(draftWikiNodeSuggestionConflictLabels, suggestion.conflictStatus)],
             ["可信度", formatConfidence(suggestion.confidence)],
             ["Source Operation", suggestion.operationId],
           ]} />
           <Card>
-            <CardContent className="space-y-3 p-4 text-sm text-muted-foreground">
-              <p>采纳会进入草稿 WikiNode，并保留来源证据；拒绝或重新生成会更新建议审核状态和替代关系。</p>
-              <div className="flex flex-wrap gap-2 text-xs">
-                <span className="rounded-md border px-2 py-1">Source {suggestion.sourceId}</span>
-                <span className="rounded-md border px-2 py-1">Raw Material {suggestion.rawMaterialId}</span>
-                <span className="rounded-md border px-2 py-1">Parsed Document {suggestion.parsedDocumentId}</span>
-                <span className="rounded-md border px-2 py-1">Source Operation {suggestion.operationId}</span>
+            <CardHeader>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <CardTitle className="text-base">审核工作台</CardTitle>
+                <Link className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" to="/draft-wikinode-suggestions">
+                  回到建议评审
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent className="grid gap-4 text-sm lg:grid-cols-[minmax(0,1fr)_360px]">
+              <div className="rounded-md border p-3">
+                <div className="font-medium">建议内容</div>
+                <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap rounded-md bg-muted/30 p-3 text-sm leading-6">
+                  {suggestion.contentDraft}
+                </pre>
+              </div>
+              <div className="grid gap-3">
+                <div className="rounded-md border p-3">
+                  <div className="font-medium">证据链</div>
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    <span className="rounded-md border px-2 py-1">Source {suggestion.sourceId}</span>
+                    <span className="rounded-md border px-2 py-1">Raw Material {suggestion.rawMaterialId}</span>
+                    <span className="rounded-md border px-2 py-1">Parsed Document {suggestion.parsedDocumentId}</span>
+                    <span className="rounded-md border px-2 py-1">Source Operation {suggestion.operationId}</span>
+                  </div>
+                </div>
+                <SuggestionEvidenceBlock suggestion={suggestion} />
+                <SuggestionRelationBlock suggestion={suggestion} />
               </div>
             </CardContent>
           </Card>
@@ -726,9 +733,21 @@ export function DraftWikiNodeSuggestionDetailPage() {
                 </div>
               )}
               {linkedAcceptedNodeId ? (
-                <Link className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" to={`/wiki-nodes/${linkedAcceptedNodeId}`}>
-                  打开草稿 WikiNode
-                </Link>
+                <div className="flex flex-wrap gap-3">
+                  <Link className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" to={`/wiki-nodes/${linkedAcceptedNodeId}`}>
+                    打开草稿 WikiNode
+                  </Link>
+                  {suggestion.knowledgeBaseId ? (
+                    <Link className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" to={`/wiki-graph?knowledgeBaseId=${suggestion.knowledgeBaseId}`}>
+                      查看图谱
+                    </Link>
+                  ) : null}
+                  {suggestion.knowledgeBaseId ? (
+                    <Link className="inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" to={`/retrieval-test?knowledgeBaseId=${suggestion.knowledgeBaseId}&q=${encodeURIComponent(suggestion.title)}`}>
+                      检索验证
+                    </Link>
+                  ) : null}
+                </div>
               ) : null}
               {canRetrySuggestion ? (
                 <div className="space-y-2 rounded-md border p-3">
@@ -786,7 +805,6 @@ export function DraftWikiNodeSuggestionDetailPage() {
               ) : null}
             </CardContent>
           </Card>
-          <DraftWikiNodeSuggestionPanel suggestions={[suggestion]} isLoading={false} mode="detail" showReviewOutcome={false} />
         </>
       ) : null}
     </PageScaffold>

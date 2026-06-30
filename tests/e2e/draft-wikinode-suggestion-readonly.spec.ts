@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test"
 
 const apiSource = {
   sourceId: "src-api-only",
+  knowledgeBaseId: "kb-cc-after-sales",
   sourceType: "feishu",
   title: "API Only Source",
   owner: "API Owner",
@@ -14,6 +15,7 @@ const apiSource = {
 const apiRawMaterial = {
   rawMaterialId: "rm-api-only",
   sourceId: "src-api-only",
+  knowledgeBaseId: "kb-cc-after-sales",
   title: "API Only Raw Material",
   rawMaterialType: "document_snapshot",
   sourceVersion: "2026.06",
@@ -31,6 +33,7 @@ const apiParsedDocument = {
   parsedDocumentId: "pd-api-only",
   rawMaterialId: "rm-api-only",
   sourceId: "src-api-only",
+  knowledgeBaseId: "kb-cc-after-sales",
   title: "API Only Parsed Document",
   contentFormat: "markdown",
   normalizedContent: "# API Only Parsed Document\n\n这是来自 API 的标准化内容。",
@@ -61,6 +64,7 @@ const apiSuggestion = {
   parsedDocumentId: "pd-api-only",
   rawMaterialId: "rm-api-only",
   sourceId: "src-api-only",
+  knowledgeBaseId: "kb-cc-after-sales",
   operationId: "op-api-suggest-001",
   title: "API Only WikiNode 建议",
   objectType: "Article",
@@ -235,7 +239,6 @@ test.describe("Draft WikiNode Suggestion read-only review", () => {
     await page.goto("/draft-wikinode-suggestions")
 
     await expect(page.getByText("评审工作台")).toBeVisible()
-    await expect(page.getByText("Source → Raw Material → Parsed Document → Source Operation → Draft WikiNode Suggestion → 评审决策")).toBeVisible()
     await expect(page.getByRole("link", { name: "查看 Source" }).first()).toHaveAttribute("href", "/sources/src-api-only")
     await expect(page.getByRole("link", { name: "查看 Raw Material" }).first()).toHaveAttribute("href", "/raw-materials/rm-api-only")
     await expect(page.getByRole("link", { name: "查看 Parsed Result" }).first()).toHaveAttribute("href", "/raw-materials/rm-api-only/parsed-result")
@@ -244,9 +247,15 @@ test.describe("Draft WikiNode Suggestion read-only review", () => {
     await page.goto("/draft-wikinode-suggestions/sug-api-only")
 
     await expect(page.getByRole("link", { name: "回到建议评审" })).toHaveAttribute("href", "/draft-wikinode-suggestions")
-    await expect(page.getByText("评审路径")).toBeVisible()
-    await expect(page.getByText("Parsed Document → Draft WikiNode Suggestion → Review Decision")).toBeVisible()
-    await expect(page.getByText("评审重点包括标题、Knowledge Object 类型、来源证据、关系候选和冲突状态。")).toBeVisible()
+    await expect(page.getByText("审核工作台", { exact: true })).toBeVisible()
+    await expect(page.getByText("Knowledge Base", { exact: true })).toBeVisible()
+    await expect(page.getByText("kb-cc-after-sales", { exact: true })).toBeVisible()
+    await expect(page.getByText("建议内容", { exact: true })).toBeVisible()
+    await expect(page.getByText("来源证据", { exact: true })).toBeVisible()
+    await expect(page.getByText("关系候选", { exact: true })).toBeVisible()
+    await expect(page.getByText("评审路径")).toHaveCount(0)
+    await expect(page.getByText("Parsed Document → Draft WikiNode Suggestion → Review Decision")).toHaveCount(0)
+    await expect(page.getByText("评审重点包括标题、Knowledge Object 类型、来源证据、关系候选和冲突状态。")).toHaveCount(0)
   })
 
   test("generates one Draft WikiNode Suggestion from Parsed Result without review actions", async ({ page }) => {
@@ -286,14 +295,19 @@ test.describe("Draft WikiNode Suggestion read-only review", () => {
     await page.goto("/draft-wikinode-suggestions/sug-api-only")
 
     await expect(page.getByRole("heading", { name: "WikiNode 建议详情" })).toBeVisible()
-    await expect(page.getByText(/查看 Draft WikiNode Suggestion，并处理单条采纳、拒绝或重新生成/)).toBeVisible()
+    await expect(page.getByText(/查看 Draft WikiNode Suggestion，并处理单条采纳、拒绝或重新生成/)).toHaveCount(0)
     await expect(page.getByText("API Only WikiNode 建议").first()).toBeVisible()
+    await expect(page.getByText("Knowledge Base", { exact: true })).toBeVisible()
+    await expect(page.getByText("kb-cc-after-sales", { exact: true })).toBeVisible()
     await expect(page.getByText("Source src-api-only", { exact: true }).first()).toBeVisible()
     await expect(page.getByText("Raw Material rm-api-only", { exact: true }).first()).toBeVisible()
     await expect(page.getByText("Parsed Document pd-api-only", { exact: true }).first()).toBeVisible()
     await expect(page.getByText("Source Operation op-api-suggest-001")).toBeVisible()
     await expect(page.getByText("来源证据推断")).toBeVisible()
-    await expect(page.getByText("采纳会进入草稿 WikiNode，并保留来源证据；拒绝或重新生成会更新建议审核状态和替代关系。")).toBeVisible()
+    await expect(page.getByText("采纳会进入草稿 WikiNode，并保留来源证据；拒绝或重新生成会更新建议审核状态和替代关系。")).toHaveCount(0)
+    await expect(page.getByText("建议内容", { exact: true })).toBeVisible()
+    await expect(page.getByText("来源证据", { exact: true })).toBeVisible()
+    await expect(page.getByText("关系候选", { exact: true })).toBeVisible()
 
     await expect(page.getByText("存在冲突，不能直接采纳为 WikiNode。")).toBeVisible()
     await expect(page.getByRole("button", { name: "采纳为草稿 WikiNode" })).toHaveCount(0)
@@ -336,7 +350,7 @@ test.describe("Draft WikiNode Suggestion read-only review", () => {
     await expect(page.getByText("已拒绝 WikiNode 建议。")).toBeVisible()
     await expect(page.getByText("当前状态为已拒绝，不能继续采纳或拒绝。")).toBeVisible()
     await expect(page.getByText("证据不足，暂不进入 WikiNode。")).toBeVisible()
-    await expect(page.getByText("采纳会进入草稿 WikiNode，并保留来源证据；拒绝或重新生成会更新建议审核状态和替代关系。")).toBeVisible()
+    await expect(page.getByText("采纳会进入草稿 WikiNode，并保留来源证据；拒绝或重新生成会更新建议审核状态和替代关系。")).toHaveCount(0)
     await expect(page.getByRole("button", { name: "采纳" })).toHaveCount(0)
     await expect(page.getByRole("button", { name: "发布" })).toHaveCount(0)
     await expect(page.getByRole("button", { name: "索引" })).toHaveCount(0)
@@ -363,6 +377,7 @@ test.describe("Draft WikiNode Suggestion read-only review", () => {
       return route.fulfill({
         json: {
           suggestionId: "sug-api-only",
+          knowledgeBaseId: "kb-cc-after-sales",
           status: "accepted",
           summary: "已采纳为草稿 WikiNode，并准备 3 条 Index Segment。",
           reviewNote: payload.reviewNote,
@@ -385,6 +400,8 @@ test.describe("Draft WikiNode Suggestion read-only review", () => {
     await expect(page.getByText("当前状态为已采纳，不能继续采纳或拒绝。")).toBeVisible()
     await expect(page.getByText("确认进入草稿 WikiNode，后续人工编辑。")).toBeVisible()
     await expect(page.getByRole("link", { name: "打开草稿 WikiNode" })).toHaveAttribute("href", "/wiki-nodes/wn-from-sug-api-only")
+    await expect(page.getByRole("link", { name: "查看图谱" })).toHaveAttribute("href", "/wiki-graph?knowledgeBaseId=kb-cc-after-sales")
+    await expect(page.getByRole("link", { name: "检索验证" })).toHaveAttribute("href", "/retrieval-test?knowledgeBaseId=kb-cc-after-sales&q=API%20Only%20WikiNode%20%E5%BB%BA%E8%AE%AE")
     await expect(page.getByRole("button", { name: "发布" })).toHaveCount(0)
     await expect(page.getByRole("button", { name: "索引" })).toHaveCount(0)
     await expect(page.getByRole("button", { name: "批量转换" })).toHaveCount(0)

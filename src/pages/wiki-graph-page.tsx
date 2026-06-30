@@ -4,8 +4,11 @@ import { ApiErrorNotice } from "@/components/api-error-notice"
 import { useAsyncData } from "@/hooks/use-async-data"
 import { listKnowledgeBases } from "@/services/knowledge-base-api-service"
 import { listWikiNodes } from "@/services/wiki-node-api-service"
+import { useSearchParams } from "react-router-dom"
 
 export function WikiGraphPage() {
+  const [searchParams] = useSearchParams()
+  const initialKnowledgeBaseId = searchParams.get("knowledgeBaseId") ?? "all"
   const { data: nodes, error, reload } = useAsyncData(listWikiNodes, [])
   const { data: knowledgeBases, error: knowledgeBaseError, reload: reloadKnowledgeBases } = useAsyncData(() => listKnowledgeBases({ status: "active" }), [])
 
@@ -17,7 +20,7 @@ export function WikiGraphPage() {
       />
       <ApiErrorNotice error={error} onRetry={reload} />
       <ApiErrorNotice error={knowledgeBaseError} title="知识库列表加载失败" onRetry={reloadKnowledgeBases} />
-      <WikiGraphView nodes={nodes} knowledgeBases={knowledgeBases} />
+      <WikiGraphView nodes={nodes} knowledgeBases={knowledgeBases} initialKnowledgeBaseId={initialKnowledgeBaseId} />
     </div>
   )
 }

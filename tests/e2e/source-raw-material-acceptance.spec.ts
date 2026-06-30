@@ -64,7 +64,8 @@ test.describe("Source / Raw Material / Parsed Document acceptance", () => {
     await expect(page.getByText("导入结果", { exact: true })).toBeVisible()
     await expect(page.getByText("文档片段 2 条", { exact: true })).toBeVisible()
     await expect(page.getByRole("link", { name: "打开解析结果" })).toHaveAttribute("href", "/raw-materials/rm-import-playwright/parsed-result")
-    await expect(page.getByRole("link", { name: "打开 WikiNode 建议" })).toHaveAttribute("href", "/draft-wikinode-suggestions/sug-pd-import-playwright")
+    await expect(page.getByRole("link", { name: "查看待审核建议" })).toHaveAttribute("href", "/draft-wikinode-suggestions/sug-pd-import-playwright")
+    await expect(page.getByRole("link", { name: "打开 WikiNode 建议" })).toHaveCount(0)
     await expect(page.locator("main").last()).not.toContainText(forbiddenProductTerms)
   })
 

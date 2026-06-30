@@ -22,9 +22,11 @@ const defaultQuery: RetrievalQuery = {
 export function RetrievalTestPage() {
   const [searchParams] = useSearchParams()
   const queryFromRoute = searchParams.get("q")
+  const knowledgeBaseIdFromRoute = searchParams.get("knowledgeBaseId")
   const [query, setQuery] = useState<RetrievalQuery>({
     ...defaultQuery,
     query: queryFromRoute ?? defaultQuery.query,
+    filters: knowledgeBaseIdFromRoute ? { ...defaultQuery.filters, knowledgeBaseId: knowledgeBaseIdFromRoute } : defaultQuery.filters,
   })
   const [submittedQuery, setSubmittedQuery] = useState(query)
   const [results, setResults] = useState<RetrievalResult[]>([])

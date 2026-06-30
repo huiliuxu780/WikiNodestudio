@@ -30,7 +30,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-The active executable packet is `US076` / `IM076`: Source Import to Knowledge Base Execution. It connects local Source import execution to the Knowledge Base scope so imported content produces Raw Material, Parsed Document, document segment, Draft WikiNode Suggestion, and local Index Segment evidence with knowledgeBaseId ownership preserved. It must keep Retrieval API and graph verification WikiNode-centered. It does not implement real external connectors, embedding, external vector sync, approval workflow, RBAC, batch operations, export, Agent, Chatbot, Workflow, Vector DB Management, or product-facing Chunk Management.
+The active executable packet is `US077` / `IM077`: Imported Knowledge Acceptance to WikiNode Retrieval Loop. It closes the post-import loop so a generated Draft WikiNode Suggestion can be reviewed, accepted into a WikiNode, prepared as local Index Segment evidence, verified in WikiGraph, and returned by Retrieval Test under the same Knowledge Base scope. It must keep Retrieval API and graph verification WikiNode-centered. It does not implement real external connectors, embedding, external vector sync, approval workflow, RBAC, batch operations, export, Agent, Chatbot, Workflow, Vector DB Management, or product-facing Chunk Management.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -61,4 +61,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Current recommended next step: complete and verify `IM076`, then decide whether the next capability packet should address external connector configuration, publishing approval, permissions, or retrieval evaluation depth.
+Current recommended next step: complete and verify `IM077`, then decide whether the next capability packet should address external connector configuration, publishing approval, permissions, or retrieval evaluation depth.
