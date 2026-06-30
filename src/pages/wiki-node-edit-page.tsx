@@ -10,7 +10,6 @@ import { IndexStatusBadge } from "@/components/wiki/index-status-badge"
 import { NodeTypeBadge } from "@/components/wiki/node-type-badge"
 import { StatusBadge } from "@/components/wiki/status-badge"
 import { WikiNodeEditor } from "@/components/wiki/wiki-node-editor"
-import { WikiNodeExplorer } from "@/components/wiki/wiki-node-explorer"
 import { WikiNodeInspector } from "@/components/wiki/wiki-node-inspector"
 import { useAsyncData } from "@/hooks/use-async-data"
 import { generateIndexSegmentsForWikiNode, listIndexSegmentsForWikiNode } from "@/services/index-segment-api-service"
@@ -39,7 +38,6 @@ const emptyLinks: WikiNodeLinks = {
 export function WikiNodeEditPage() {
   const { nodeId } = useParams()
   const location = useLocation()
-  const [explorerQuery, setExplorerQuery] = useState("")
   const [draftNode, setDraftNode] = useState<WikiNode | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [reloadVersion, setReloadVersion] = useState(0)
@@ -252,8 +250,7 @@ export function WikiNodeEditPage() {
           }
         />
       </div>
-      <div className="grid min-h-0 flex-1 grid-cols-[280px_minmax(0,1fr)_380px]" data-testid="wikinode-editor-workspace">
-        <WikiNodeExplorer nodes={nodes} currentNodeId={node.nodeId} query={explorerQuery} onQueryChange={setExplorerQuery} />
+      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_380px]" data-testid="wikinode-editor-workspace">
         <div className="flex min-w-0 flex-col gap-3">
           {feedback ? <FeedbackNotice title={feedback} /> : null}
           {validationError ? <p className="px-4 text-sm text-destructive">{validationError}</p> : null}

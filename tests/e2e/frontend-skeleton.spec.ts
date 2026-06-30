@@ -464,7 +464,8 @@ test.describe("Frontend skeleton IA", () => {
 
     await expect(page.getByRole("heading", { name: "保修期内维修服务政策" })).toBeVisible()
     await expect(page.getByTestId("wikinode-editor-workspace")).toBeVisible()
-    await expect(page.getByTestId("wikinode-explorer")).toBeVisible()
+    await expect(page.getByTestId("wikinode-explorer")).toHaveCount(0)
+    await expect(page.getByPlaceholder("搜索知识节点")).toHaveCount(0)
     await expect(page.getByTestId("wikinode-markdown-editor")).toBeVisible()
     await expect(page.getByTestId("wikinode-inspector")).toBeVisible()
     await expect(page.getByRole("tab", { name: "元数据" })).toBeVisible()

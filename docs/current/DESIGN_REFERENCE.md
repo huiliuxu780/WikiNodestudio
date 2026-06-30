@@ -42,9 +42,14 @@ Navigation groups should map to the product scope:
 
 Inside `SidebarInset`, the WikiNode Editor should use:
 
-- Left: WikiNode Explorer.
-- Middle: Markdown Editor and Preview.
+- Main: the current WikiNode Markdown Editor and Preview.
 - Right: Inspector Panel.
+
+The WikiNode detail/edit route must stay focused on the current WikiNode. Do not
+show a persistent "recent nodes" or all-node explorer inside the editor. Broad
+WikiNode discovery belongs on the WikiNode list page, global sidebar navigation,
+or a deliberate switcher/search action, not as a fixed panel in the editing
+workspace.
 
 Inspector tabs:
 
