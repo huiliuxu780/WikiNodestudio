@@ -1,14 +1,14 @@
 version: 2
-updated_at: "2026-06-30"
+updated_at: "2026-07-01"
 source_of_truth: "current_active_tasks"
 notes:
   - "Each IM is a product capability slice and must stop after local verification and commit."
   - "Do not auto-enter the next IM without explicit user confirmation."
   - "Done history stays in release docs or archive."
 tasks:
-  - id: IM080
-    story_id: US080
-    title: "External Source Connector Configuration Baseline"
+  - id: IM081
+    story_id: US081
+    title: "Source Connector Credential UX and Connection Readiness"
     status: in_progress
     required_workflow: default
     allowed_files:
@@ -30,9 +30,9 @@ tasks:
       - "package.json"
       - "pnpm-lock.yaml"
     acceptance:
-      - "Sources List becomes a dense Source operations table with Knowledge Base ownership, source type, ingestion mode, connection status, sync status, last processing time, and evidence counts."
-      - "Source Detail becomes a tabbed operator console for overview, ingestion configuration, Raw Material, Parsed Document, WikiNode Suggestions, and processing records."
-      - "Ingestion Configuration exposes local configuration metadata and safe actions only."
-      - "Processing Records use Source Operation evidence and link to Raw Material, Parsed Document, and Draft WikiNode Suggestion records."
-      - "Knowledge Base Detail Source tab keeps ownership context and links to Source Detail and Import File."
-      - "No real external connector, OAuth, external API/database/web crawler execution, external scheduling, embedding, external vector sync, approval workflow, RBAC, batch operation, export, Agent, Chatbot, Workflow, Vector DB Management, product-facing Chunk Management, package change, or lockfile change is added."
+      - "Sources List shows credential status and last credential check in the dense Source operations table."
+      - "Source Detail header summary shows credential readiness without exposing secret values."
+      - "Source Detail Ingestion Configuration tab separates Connector Profile from Credential and Connection Readiness."
+      - "Knowledge Base Detail Source tab shows credential readiness in the ownership table and keeps Source Detail / Import File actions."
+      - "Processing Records show connection-check evidence through Source Operation rows."
+      - "No real external connector, OAuth, secret storage, token/password/private-key input, external API/database/web crawler execution, external scheduling, embedding, external vector sync, approval workflow, RBAC, batch operation, export, Agent, Chatbot, Workflow, Vector DB Management, product-facing Chunk Management, package change, or lockfile change is added."

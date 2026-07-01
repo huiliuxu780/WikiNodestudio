@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D081
+    date: "2026-07-01"
+    title: "Show Source credential readiness without real secret handling"
+    rationale: "After IM080 made Source connector configuration visible, IM081 adds the next operator layer: credential readiness and connection-check evidence. The UI may show masked credential profile labels, credential status, credential scope, last check time, and failure reason, but it must not add real OAuth, real secret storage, token/password/private-key input, external API/database/web crawler execution, real connection testing, external scheduling, embedding, vector sync, approval workflow, RBAC, batch/export, Agent, Chatbot, Workflow Builder, Vector DB Management, product-facing Chunk Management, package changes, or lockfile changes."
+    related:
+      - IM081
+      - US081
+      - SOURCE_CONNECTOR_CREDENTIAL_UX
+      - EXTERNAL_SOURCE_CONNECTOR_CONFIGURATION_BASELINE
   - id: D080
     date: "2026-06-30"
     title: "Design Source connector configuration as a local evidence console before real integration"

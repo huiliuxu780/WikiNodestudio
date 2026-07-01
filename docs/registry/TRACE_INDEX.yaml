@@ -31,6 +31,21 @@ product_docs:
   IMPLEMENTATION_SLICE_PRINCIPLES:
     file: docs/current/IMPLEMENTATION_SLICE_PRINCIPLES.md
 current_corrections:
+  SOURCE_CONNECTOR_CREDENTIAL_UX:
+    decision: D081
+    story_queue: docs/current/STORY_QUEUE.yaml
+    active_task: docs/current/ACTIVE_TASKS.yaml
+    plan: docs/current/IM081_SOURCE_CONNECTOR_CREDENTIAL_UX_PLAN.md
+    frontend:
+      - src/pages/sources-page.tsx
+      - src/pages/skeleton-pages.tsx
+      - src/pages/knowledge-base-pages.tsx
+      - src/types/source.ts
+      - src/utils/display-labels.ts
+    tests:
+      - tests/e2e/source-raw-material-acceptance.spec.ts
+      - tests/e2e/source-operation-readonly-logs.spec.ts
+      - tests/e2e/knowledge-base-administration.spec.ts
   EXTERNAL_SOURCE_CONNECTOR_CONFIGURATION_BASELINE:
     decision: D080
     story_queue: docs/current/STORY_QUEUE.yaml

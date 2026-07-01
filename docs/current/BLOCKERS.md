@@ -6,8 +6,9 @@ None.
 
 ## Active Scope Constraints
 
-- Active executable IM: `IM080 External Source Connector Configuration Baseline`.
-- IM080 may change Source / Knowledge Base / Raw Material / Parsed Document / Draft WikiNode Suggestion / Source Operation local configuration and evidence surfaces, plus required API/model/repository fields only if they remain local metadata and are needed for the accepted Source connector configuration baseline.
+- Active executable IM: `IM081 Source Connector Credential UX and Connection Readiness`.
+- IM081 may change Source / Knowledge Base / Source Operation local configuration and evidence surfaces for credential readiness metadata only.
+- IM081 must not add real OAuth, real secret storage, token/password/private-key input, external API/database/web crawler execution, or real connection testing.
 - Future frontend work must follow `docs/quality/frontend-ux-guidelines.md`.
 - Future B2B/governance pages must use dense evidence consoles, tables, lists, or side panels instead of AI-style explainer-card stacks.
 
