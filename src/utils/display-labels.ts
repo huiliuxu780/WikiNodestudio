@@ -141,6 +141,27 @@ export const syncStatusLabels: Record<string, string> = {
   disabled: "已停用",
 }
 
+export const sourceIngestionModeLabels: Record<string, string> = {
+  manual_import: "手动导入",
+  scheduled_sync: "定时同步",
+  external_push: "外部推送",
+  not_configured: "未配置",
+}
+
+export const sourceConnectionStatusLabels: Record<string, string> = {
+  not_configured: "未配置",
+  available: "连接可用",
+  failed: "连接异常",
+  disabled: "已停用",
+}
+
+export const sourceSyncPolicyLabels: Record<string, string> = {
+  manual: "手动",
+  daily: "每日",
+  weekly: "每周",
+  paused: "暂停",
+}
+
 export const parseStatusLabels: Record<string, string> = {
   not_parsed: "未解析",
   queued: "等待解析",

@@ -1,5 +1,14 @@
 version: 1
 decisions:
+  - id: D080
+    date: "2026-06-30"
+    title: "Design Source connector configuration as a local evidence console before real integration"
+    rationale: "After IM079 proved the local imported-document-to-WikiNode-to-Graph-to-Retrieval acceptance loop, the next packet should make Source management credible for operators. IM080 defines a local connector-configuration baseline around Source ownership, ingestion mode, connection status, sync status, Source Operation records, and the Source-to-WikiNode evidence chain. It deliberately avoids real Feishu/API/database/web crawler execution, OAuth, external scheduling, embedding, external vector sync, approval workflow, RBAC, batch operations, export, Agent, Chatbot, Workflow Builder, Vector DB Management, product-facing Chunk Management, package changes, and lockfile changes."
+    related:
+      - IM080
+      - US080
+      - EXTERNAL_SOURCE_CONNECTOR_CONFIGURATION_BASELINE
+      - IMPORTED_KNOWLEDGE_ACCEPTANCE_LOOP
   - id: D077
     date: "2026-06-30"
     title: "Close imported knowledge acceptance through WikiNode retrieval"

@@ -3,6 +3,12 @@ export type SourceItem = {
   sourceType: "feishu" | "pdf" | "word" | "excel" | "web" | "manual" | "api" | "database" | "legacy_kb"
   title: string
   owner: string
+  ingestionMode?: "manual_import" | "scheduled_sync" | "external_push" | "not_configured"
+  connectionStatus?: "not_configured" | "available" | "failed" | "disabled"
+  syncPolicy?: "manual" | "daily" | "weekly" | "paused"
+  defaultParserProfile?: string | null
+  lastCheckedAt?: string | null
+  lastFailureReason?: string | null
   syncStatus: "not_configured" | "pending" | "synced" | "failed" | "disabled"
   lastSyncedAt: string
   generatedNodes: number

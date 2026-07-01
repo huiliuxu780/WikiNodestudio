@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { LinkList } from "@/components/wiki/link-list"
 import { useAsyncData } from "@/hooks/use-async-data"
@@ -69,9 +70,12 @@ import {
   rawMaterialTypeLabels,
   relationCandidateSourceLabels,
   relationTypeLabels,
+  sourceConnectionStatusLabels,
+  sourceIngestionModeLabels,
   sourceTypeLabels,
   sourceOperationStatusLabels,
   sourceOperationTypeLabels,
+  sourceSyncPolicyLabels,
   storageProviderLabels,
   statusLabels,
   subtypeLabels,
@@ -227,53 +231,209 @@ export function SourceDetailPage() {
           ["来源类型", labelFromMap(sourceTypeLabels, source.sourceType)],
           ["Knowledge Base", knowledgeBaseId],
           ["负责人", source.owner],
+          ["连接状态", labelFromMap(sourceConnectionStatusLabels, source.connectionStatus ?? "not_configured")],
           ["同步状态", labelFromMap(syncStatusLabels, source.syncStatus)],
+          ["接入模式", labelFromMap(sourceIngestionModeLabels, source.ingestionMode ?? "not_configured")],
           ["Raw Material", `${source.rawMaterialCount} 个`],
           ["生成 WikiNode", String(source.generatedNodes)],
         ]} />
       ) : null}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">WikiNode 建议生成</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3 text-sm md:flex-row md:items-center md:justify-between">
-          <div className="space-y-1">
-            <p className="text-muted-foreground">扫描当前 Source 下已有 Parsed Document，生成待审核 Draft WikiNode Suggestion。</p>
-            {ingestionSummary ? (
-              <p className={ingestionStatus === "failed" ? "text-destructive" : "text-foreground"}>{ingestionSummary}</p>
-            ) : null}
-          </div>
-          <Button type="button" onClick={handleRunIngestion} disabled={!activeSourceId || ingestionStatus === "running"} className="w-fit">
-            {ingestionStatus === "running" ? "生成中..." : "生成 WikiNode 建议"}
-          </Button>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">关联 Raw Material</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-2 md:grid-cols-2">
-          {isRawMaterialsLoading ? (
-            <LoadingBlock text="正在加载 Raw Material..." />
-          ) : relatedRawMaterials.length === 0 ? (
-            <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-              当前 Source 暂无关联 Raw Material。
-            </div>
-          ) : relatedRawMaterials.map((raw) => (
-            <Link key={raw.rawMaterialId} to={`/raw-materials/${raw.rawMaterialId}`} className="rounded-md border p-3 text-sm hover:bg-muted/40">
-              <div className="font-medium">{raw.title}</div>
-              <div className="mt-1 text-muted-foreground">{raw.rawMaterialId} · {rawMaterialDisplayType(raw)} · {labelFromMap(parseStatusLabels, raw.parseStatus)}</div>
-            </Link>
-          ))}
-        </CardContent>
-      </Card>
-      <SimpleList items={[
-        "来源配置",
-        "Raw Material 快照",
-        "生成的 WikiNode",
-      ]} />
-      <SourceOperationLogPanel operations={operations} isLoading={isOperationsLoading} />
+      <Tabs defaultValue="overview" className="gap-0">
+        <Card className="p-0">
+          <CardHeader className="border-b pb-0">
+            <TabsList variant="line">
+              <TabsTrigger value="overview">概览</TabsTrigger>
+              <TabsTrigger value="configuration">接入配置</TabsTrigger>
+              <TabsTrigger value="raw-material">Raw Material</TabsTrigger>
+              <TabsTrigger value="parsed-document">Parsed Document</TabsTrigger>
+              <TabsTrigger value="suggestions">WikiNode 建议</TabsTrigger>
+              <TabsTrigger value="operations">处理记录</TabsTrigger>
+            </TabsList>
+          </CardHeader>
+          <TabsContent value="overview" className="m-0">
+            <CardContent className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="space-y-3">
+                <div className="text-sm font-medium">Source 处理概览</div>
+                <SummaryGrid items={[
+                  ["最近检查", source?.lastCheckedAt ?? source?.lastSyncedAt ?? "无"],
+                  ["默认 Parser Profile", source?.defaultParserProfile ?? "未配置"],
+                  ["同步策略", labelFromMap(sourceSyncPolicyLabels, source?.syncPolicy ?? "manual")],
+                  ["失败原因", source?.lastFailureReason ?? "无"],
+                ]} />
+              </div>
+              <div className="rounded-md border p-3 text-sm">
+                <div className="font-medium">WikiNode 建议生成</div>
+                <div className="mt-2 text-muted-foreground">从已有 Parsed Document 生成待审核 Draft WikiNode Suggestion。</div>
+                {ingestionSummary ? (
+                  <div className={ingestionStatus === "failed" ? "mt-2 text-destructive" : "mt-2 text-foreground"}>{ingestionSummary}</div>
+                ) : null}
+                <Button type="button" onClick={handleRunIngestion} disabled={!activeSourceId || ingestionStatus === "running"} className="mt-3 w-fit">
+                  {ingestionStatus === "running" ? "生成中..." : "生成 WikiNode 建议"}
+                </Button>
+              </div>
+            </CardContent>
+          </TabsContent>
+          <TabsContent value="configuration" className="m-0">
+            <CardContent className="p-4">
+              <SourceConfigurationTable source={source} knowledgeBaseId={knowledgeBaseId} />
+            </CardContent>
+          </TabsContent>
+          <TabsContent value="raw-material" className="m-0">
+            <CardContent className="grid gap-2 p-4 md:grid-cols-2">
+              <div className="col-span-full text-sm font-medium">关联 Raw Material</div>
+              {isRawMaterialsLoading ? (
+                <LoadingBlock text="正在加载 Raw Material..." />
+              ) : relatedRawMaterials.length === 0 ? (
+                <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+                  当前 Source 暂无关联 Raw Material。
+                </div>
+              ) : relatedRawMaterials.map((raw) => (
+                <Link key={raw.rawMaterialId} to={`/raw-materials/${raw.rawMaterialId}`} className="rounded-md border p-3 text-sm hover:bg-muted/40">
+                  <div className="font-medium">{raw.title}</div>
+                  <div className="mt-1 text-muted-foreground">{raw.rawMaterialId} · {rawMaterialDisplayType(raw)} · {labelFromMap(parseStatusLabels, raw.parseStatus)}</div>
+                </Link>
+              ))}
+            </CardContent>
+          </TabsContent>
+          <TabsContent value="parsed-document" className="m-0">
+            <CardContent className="p-4">
+              <ParsedDocumentEntryTable rawMaterials={relatedRawMaterials} />
+            </CardContent>
+          </TabsContent>
+          <TabsContent value="suggestions" className="m-0">
+            <CardContent className="p-4">
+              <SummaryGrid items={[
+                ["生成 WikiNode", source ? String(source.generatedNodes) : "0"],
+                ["关联 Source", activeSourceId],
+                ["Knowledge Base", knowledgeBaseId],
+              ]} />
+            </CardContent>
+          </TabsContent>
+          <TabsContent value="operations" className="m-0">
+            <CardContent className="p-4">
+              <SourceOperationEvidenceTable operations={operations} isLoading={isOperationsLoading} />
+            </CardContent>
+          </TabsContent>
+        </Card>
+      </Tabs>
     </PageScaffold>
+  )
+}
+
+function SourceConfigurationTable({ source, knowledgeBaseId }: { source: SourceItem | null; knowledgeBaseId: string }) {
+  const rows = [
+    ["Source 类型", source ? labelFromMap(sourceTypeLabels, source.sourceType) : "无"],
+    ["接入模式", labelFromMap(sourceIngestionModeLabels, source?.ingestionMode ?? "not_configured")],
+    ["连接状态", labelFromMap(sourceConnectionStatusLabels, source?.connectionStatus ?? "not_configured")],
+    ["同步策略", labelFromMap(sourceSyncPolicyLabels, source?.syncPolicy ?? "manual")],
+    ["默认 Parser Profile", source?.defaultParserProfile ?? "未配置"],
+    ["默认 Knowledge Base", knowledgeBaseId],
+    ["负责人", source?.owner ?? "无"],
+    ["最近检查时间", source?.lastCheckedAt ?? source?.lastSyncedAt ?? "无"],
+    ["失败原因", source?.lastFailureReason ?? "无"],
+  ]
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[720px] text-left text-sm">
+        <thead className="border-b text-xs text-muted-foreground">
+          <tr>
+            <th className="px-3 py-2 font-medium">配置项</th>
+            <th className="px-3 py-2 font-medium">当前值</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y">
+          {rows.map(([label, value]) => (
+            <tr key={label}>
+              <td className="whitespace-nowrap px-3 py-3 font-medium">{label}</td>
+              <td className="px-3 py-3 text-muted-foreground">{value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function SourceOperationEvidenceTable({ operations, isLoading }: { operations: SourceOperation[]; isLoading: boolean }) {
+  if (isLoading) {
+    return <LoadingBlock text="正在加载 Source Operation..." />
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[920px] text-left text-sm">
+        <thead className="border-b text-xs text-muted-foreground">
+          <tr>
+            <th className="px-3 py-2 font-medium">时间</th>
+            <th className="px-3 py-2 font-medium">操作类型</th>
+            <th className="px-3 py-2 font-medium">状态</th>
+            <th className="px-3 py-2 font-medium">Raw Material</th>
+            <th className="px-3 py-2 font-medium">Parsed Document</th>
+            <th className="px-3 py-2 font-medium">失败原因</th>
+            <th className="px-3 py-2 font-medium">操作人</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y">
+          {operations.length === 0 ? (
+            <tr>
+              <td colSpan={7} className="px-3 py-4 text-muted-foreground">暂无 Source Operation 记录。</td>
+            </tr>
+          ) : operations.map((operation) => (
+            <tr key={operation.operationId} className="align-top">
+              <td className="whitespace-nowrap px-3 py-3 font-medium">{operation.startedAt}</td>
+              <td className="px-3 py-3">{labelFromMap(sourceOperationTypeLabels, operation.operationType)}</td>
+              <td className="px-3 py-3">
+                <Badge variant={operation.status === "failed" ? "destructive" : "secondary"}>
+                  {labelFromMap(sourceOperationStatusLabels, operation.status)}
+                </Badge>
+              </td>
+              <td className="px-3 py-3 text-muted-foreground">{operation.rawMaterialId ?? "无"}</td>
+              <td className="px-3 py-3 text-muted-foreground">{operation.parsedDocumentId ?? "无"}</td>
+              <td className={operation.errorSummary ? "px-3 py-3 text-destructive" : "px-3 py-3 text-muted-foreground"}>
+                {operation.errorSummary ?? "无"}
+              </td>
+              <td className="px-3 py-3 text-muted-foreground">{operation.requestedBy}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function ParsedDocumentEntryTable({ rawMaterials }: { rawMaterials: RawMaterial[] }) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[720px] text-left text-sm">
+        <thead className="border-b text-xs text-muted-foreground">
+          <tr>
+            <th className="px-3 py-2 font-medium">Raw Material</th>
+            <th className="px-3 py-2 font-medium">解析状态</th>
+            <th className="px-3 py-2 font-medium">入口</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y">
+          {rawMaterials.length === 0 ? (
+            <tr>
+              <td colSpan={3} className="px-3 py-4 text-muted-foreground">暂无 Parsed Document 入口。</td>
+            </tr>
+          ) : rawMaterials.map((raw) => (
+            <tr key={raw.rawMaterialId}>
+              <td className="px-3 py-3 font-medium">{raw.title}</td>
+              <td className="px-3 py-3 text-muted-foreground">{labelFromMap(parseStatusLabels, raw.parseStatus)}</td>
+              <td className="px-3 py-3">
+                {raw.parsedDocumentCount > 0 ? (
+                  <Link to={`/raw-materials/${raw.rawMaterialId}/parsed-result`} className="font-medium text-primary hover:underline">查看解析结果</Link>
+                ) : (
+                  <span className="text-muted-foreground">暂无</span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   )
 }
 

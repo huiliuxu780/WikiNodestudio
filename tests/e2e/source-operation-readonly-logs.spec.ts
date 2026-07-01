@@ -106,11 +106,10 @@ test.describe("Source Operation read-only logs", () => {
     await page.goto("/sources/src-api-only")
 
     await expect(page.getByRole("button", { name: "生成 WikiNode 建议" })).toBeVisible()
-    await expect(page.getByRole("heading", { name: "操作日志" })).toBeVisible()
-    await expect(page.getByText("按时间查看来源处理动作、处理状态、关联对象和错误摘要。")).toBeVisible()
+    await page.getByRole("tab", { name: "处理记录" }).click()
     await expect(page.getByText("来源同步")).toBeVisible()
     await expect(page.getByText("解析 Raw Material")).toBeVisible()
-    await expect(page.getByText("执行人 system")).toHaveCount(2)
+    await expect(page.getByText("system")).toHaveCount(2)
 
     await expect(page.getByRole("button", { name: "同步" })).toHaveCount(0)
     await expect(page.getByRole("button", { name: "上传" })).toHaveCount(0)
@@ -124,8 +123,9 @@ test.describe("Source Operation read-only logs", () => {
     await page.getByRole("button", { name: "生成 WikiNode 建议" }).click()
 
     await expect(page.getByText("已从 Source 生成 1 条待审核 WikiNode 建议。").first()).toBeVisible()
+    await page.getByRole("tab", { name: "处理记录" }).click()
     await expect(page.getByText("生成 WikiNode 建议").first()).toBeVisible()
-    await expect(page.getByText("执行人 ui")).toBeVisible()
+    await expect(page.getByText("ui")).toBeVisible()
   })
 
   test("renders Raw Material Operation logs as read-only parser evidence", async ({ page }) => {

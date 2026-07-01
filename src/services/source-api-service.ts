@@ -185,7 +185,7 @@ export function generateDraftWikiNodeSuggestion(
       operationId: `mock-${parsedDocumentId}-suggest`,
       parsedDocumentId,
       status: "skipped",
-      summary: "当前 Mock fallback 不执行真实 WikiNode 建议生成。",
+      summary: "WikiNode 建议生成未完成，请稍后重试。",
       suggestionId: null,
     })
   )
@@ -200,7 +200,7 @@ export function rejectDraftWikiNodeSuggestion(
     (): DraftWikiNodeSuggestionReviewResult => ({
       suggestionId,
       status: "skipped",
-      summary: "当前 Mock fallback 不执行真实 WikiNode 建议拒绝操作。",
+      summary: "WikiNode 建议拒绝未完成，请稍后重试。",
       reviewNote: request.reviewNote,
     })
   )
@@ -215,7 +215,7 @@ export function acceptDraftWikiNodeSuggestion(
     (): DraftWikiNodeSuggestionAcceptResult => ({
       suggestionId,
       status: "skipped",
-      summary: "当前 Mock fallback 不执行真实 WikiNode 建议采纳操作。",
+      summary: "WikiNode 建议采纳未完成，请稍后重试。",
       reviewNote: request.reviewNote,
       nodeId: null,
       nodeStatus: null,
@@ -233,7 +233,7 @@ export function retryDraftWikiNodeSuggestion(
     (): DraftWikiNodeSuggestionRetryResult => ({
       suggestionId,
       status: "skipped",
-      summary: "当前 Mock fallback 不执行真实 WikiNode 建议重新生成操作。",
+      summary: "WikiNode 建议重新生成未完成，请稍后重试。",
       reviewNote: request.reviewNote,
       replacementSuggestionId: null,
       replacementStatus: null,

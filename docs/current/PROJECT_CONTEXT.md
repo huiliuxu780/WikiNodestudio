@@ -30,7 +30,7 @@ Use these release documents for baseline acceptance and handoff:
 - `docs/release/mvp-baseline-v0.2.md`
 - `docs/release/mvp-v0.2-acceptance-checklist.md`
 
-The active executable packet is `US077` / `IM079`: Imported Knowledge Live Acceptance Loop. It verifies the live local path so a locally imported document can be reviewed as a Draft WikiNode Suggestion, accepted into a WikiNode, prepared as local Index Segment evidence, verified in WikiGraph, and returned by Retrieval Test under the same Knowledge Base scope. It must keep Retrieval API and graph verification WikiNode-centered. It does not implement real external connectors, embedding, external vector sync, approval workflow, RBAC, batch operations, export, Agent, Chatbot, Workflow, Vector DB Management, or product-facing Chunk Management.
+The active executable packet is `US080` / `IM080`: External Source Connector Configuration Baseline. It turns Source management into a local connector-configuration and evidence console so operators can inspect Source ownership, ingestion mode, connection status, sync status, Source Operation records, and the Source-to-WikiNode evidence chain. It does not implement real external connectors, OAuth, external API/database/web crawler execution, external scheduling, embedding, external vector sync, approval workflow, RBAC, batch operations, export, Agent, Chatbot, Workflow, Vector DB Management, or product-facing Chunk Management.
 
 The frontend UX polish rules are captured in `docs/quality/frontend-ux-guidelines.md` and should be treated as standing frontend quality guidance for future UI work.
 
@@ -61,4 +61,4 @@ The frontend UX polish rules are captured in `docs/quality/frontend-ux-guideline
 
 ## Current Recommendation
 
-Current recommended next step: complete and verify `IM079`, then decide whether the next capability packet should address external connector configuration, publishing approval, permissions, or retrieval evaluation depth.
+Current recommended next step: implement `IM080` from `docs/current/IM080_EXTERNAL_SOURCE_CONNECTOR_CONFIGURATION_BASELINE_PLAN.md`, starting with Playwright coverage before frontend/API implementation.

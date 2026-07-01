@@ -43,6 +43,8 @@ import {
   labelFromMap,
   nodeTypeLabels,
   objectTypeLabels,
+  sourceConnectionStatusLabels,
+  sourceIngestionModeLabels,
   sourceTypeLabels,
   statusLabels,
   subtypeLabels,
@@ -580,47 +582,64 @@ function ScopedWikiNodeTable({ wikiNodes, isLoading }: { wikiNodes: WikiNode[]; 
 
 function ScopedSourceTable({ sources, isLoading }: { sources: SourceItem[]; isLoading: boolean }) {
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Source</TableHead>
-          <TableHead>类型</TableHead>
-          <TableHead>同步状态</TableHead>
-          <TableHead>Raw Material</TableHead>
-          <TableHead>生成 WikiNode</TableHead>
-          <TableHead>负责人</TableHead>
-          <TableHead>最近同步</TableHead>
-          <TableHead>操作</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {isLoading ? (
-          <TableRow><TableCell colSpan={8} className="text-muted-foreground">正在加载 Source 归属...</TableCell></TableRow>
-        ) : null}
-        {!isLoading && sources.length === 0 ? (
-          <TableRow><TableCell colSpan={8} className="text-muted-foreground">该知识库下暂无 Source。</TableCell></TableRow>
-        ) : null}
-        {sources.map((source) => (
-          <TableRow key={source.sourceId}>
-            <TableCell>
-              <Link to={`/sources/${source.sourceId}`} className="font-medium hover:underline">{source.title}</Link>
-              <div className="text-xs text-muted-foreground">{source.sourceId}</div>
-            </TableCell>
-            <TableCell>{labelFromMap(sourceTypeLabels, source.sourceType)}</TableCell>
-            <TableCell><Badge variant={source.syncStatus === "failed" ? "destructive" : "outline"}>{labelFromMap(syncStatusLabels, source.syncStatus)}</Badge></TableCell>
-            <TableCell>{source.rawMaterialCount}</TableCell>
-            <TableCell>{source.generatedNodes}</TableCell>
-            <TableCell>{source.owner}</TableCell>
-            <TableCell>{source.lastSyncedAt}</TableCell>
-            <TableCell>
-              <Link to={`/knowledge-bases/${source.knowledgeBaseId ?? ""}/import?sourceId=${source.sourceId}`} className="whitespace-nowrap font-medium text-primary hover:underline">
-                导入文件
-              </Link>
-            </TableCell>
+    <div className="overflow-x-auto">
+      <Table className="min-w-[1040px]">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Source</TableHead>
+            <TableHead>来源类型</TableHead>
+            <TableHead>接入模式</TableHead>
+            <TableHead>连接状态</TableHead>
+            <TableHead>同步状态</TableHead>
+            <TableHead>Raw Material</TableHead>
+            <TableHead>WikiNode 建议</TableHead>
+            <TableHead>处理记录</TableHead>
+            <TableHead>负责人</TableHead>
+            <TableHead>最近同步</TableHead>
+            <TableHead>操作</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {isLoading ? (
+            <TableRow><TableCell colSpan={11} className="text-muted-foreground">正在加载 Source 归属...</TableCell></TableRow>
+          ) : null}
+          {!isLoading && sources.length === 0 ? (
+            <TableRow><TableCell colSpan={11} className="text-muted-foreground">该知识库下暂无 Source。</TableCell></TableRow>
+          ) : null}
+          {sources.map((source) => (
+            <TableRow key={source.sourceId}>
+              <TableCell>
+                <Link to={`/sources/${source.sourceId}`} className="font-medium hover:underline">{source.title}</Link>
+                <div className="text-xs text-muted-foreground">{source.sourceId}</div>
+              </TableCell>
+              <TableCell>{labelFromMap(sourceTypeLabels, source.sourceType)}</TableCell>
+              <TableCell>{labelFromMap(sourceIngestionModeLabels, source.ingestionMode ?? "not_configured")}</TableCell>
+              <TableCell>
+                <Badge variant={source.connectionStatus === "failed" ? "destructive" : "outline"}>
+                  {labelFromMap(sourceConnectionStatusLabels, source.connectionStatus ?? "not_configured")}
+                </Badge>
+              </TableCell>
+              <TableCell><Badge variant={source.syncStatus === "failed" ? "destructive" : "outline"}>{labelFromMap(syncStatusLabels, source.syncStatus)}</Badge></TableCell>
+              <TableCell>{source.rawMaterialCount}</TableCell>
+              <TableCell>{source.generatedNodes}</TableCell>
+              <TableCell>{source.generatedNodes + source.rawMaterialCount}</TableCell>
+              <TableCell>{source.owner}</TableCell>
+              <TableCell>{source.lastSyncedAt}</TableCell>
+              <TableCell>
+                <div className="flex flex-wrap gap-2">
+                  <Button asChild variant="outline" size="sm">
+                    <Link to={`/sources/${source.sourceId}`}>查看 Source</Link>
+                  </Button>
+                  <Button asChild size="sm">
+                    <Link to={`/knowledge-bases/${source.knowledgeBaseId ?? ""}/import?sourceId=${source.sourceId}`}>导入文件</Link>
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   )
 }
 

@@ -6,8 +6,8 @@ None.
 
 ## Active Scope Constraints
 
-- Active executable IM: `IM079 Imported Knowledge Live Acceptance Loop`.
-- IM079 may change frontend import result / Draft WikiNode Suggestion / WikiNode detail / Index Segment / WikiGraph / Retrieval Test surfaces, frontend services/types, tests, smoke scripts, and current/registry docs only where required to verify and close the local imported knowledge acceptance-to-retrieval loop.
+- Active executable IM: `IM080 External Source Connector Configuration Baseline`.
+- IM080 may change Source / Knowledge Base / Raw Material / Parsed Document / Draft WikiNode Suggestion / Source Operation local configuration and evidence surfaces, plus required API/model/repository fields only if they remain local metadata and are needed for the accepted Source connector configuration baseline.
 - Future frontend work must follow `docs/quality/frontend-ux-guidelines.md`.
 - Future B2B/governance pages must use dense evidence consoles, tables, lists, or side panels instead of AI-style explainer-card stacks.
 
