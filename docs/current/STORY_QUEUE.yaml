@@ -1,20 +1,20 @@
 version: 2
-updated_at: "2026-06-30"
+updated_at: "2026-07-01"
 source_of_truth: "current_story_queue"
 notes:
   - "Only ready, in_progress, and blocked stories belong here."
   - "Done history stays in release docs or archive."
   - "Each story is a product capability slice, not a tiny UI patch."
 stories:
-  - id: US080
-    title: "External Source Connector Configuration Baseline"
+  - id: US081
+    title: "Source Connector Credential UX and Connection Readiness"
     status: in_progress
     priority: high
-    summary: "Turn Source management into a credible local connector-configuration and evidence console so operators can see Source ownership, ingestion mode, connection status, sync status, processing records, and the Source-to-WikiNode evidence chain without executing real external connectors."
+    summary: "Extend the Source connector console with credential readiness and connection-check evidence so operators can understand whether a Source is missing, configured, expired, revoked, or not required without exposing or storing real secrets."
     acceptance:
-      - "Sources List shows Source type, Knowledge Base ownership, ingestion mode, connection status, sync status, last processing time, and evidence counts in a dense table."
-      - "Source Detail uses a compact operator-console layout with tabs for overview, ingestion configuration, Raw Material, Parsed Document, WikiNode Suggestions, and processing records."
-      - "Ingestion Configuration exposes local metadata only: source type, ingestion mode, connection status, sync policy, parser profile, owner, last check time, and failure reason."
-      - "Processing Records show Source Operation evidence linked to Raw Material, Parsed Document, and Draft WikiNode Suggestion records."
-      - "Knowledge Base Detail Source tab links into Source Detail and Import File without hiding ownership context."
-      - "The UI does not present real OAuth, real Feishu/API/database/web crawler execution, external scheduling, embedding, external vector sync, approval workflow, RBAC, batch operations, export, Agent, Chatbot, Workflow, Vector DB Management, or product-facing Chunk Management."
+      - "Sources List shows credential status and last credential check alongside Knowledge Base ownership, ingestion mode, connection status, sync status, and evidence counts."
+      - "Source Detail summary shows credential readiness without exposing token, password, app secret, private key, cookie, or raw auth header values."
+      - "Source Detail Ingestion Configuration tab separates Connector Profile from Credential and Connection Readiness."
+      - "Knowledge Base Detail Source tab shows credential readiness in the Source ownership table."
+      - "Processing Records can show connection-check evidence using Source Operation rows."
+      - "The UI does not present real OAuth, real Feishu/API/database/web crawler execution, secret storage, external scheduling, embedding, external vector sync, approval workflow, RBAC, batch operations, export, Agent, Chatbot, Workflow, Vector DB Management, or product-facing Chunk Management."

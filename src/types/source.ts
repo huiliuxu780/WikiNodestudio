@@ -4,6 +4,11 @@ export type SourceItem = {
   title: string
   owner: string
   ingestionMode?: "manual_import" | "scheduled_sync" | "external_push" | "not_configured"
+  credentialProfile?: string | null
+  credentialStatus?: "not_required" | "missing" | "configured" | "expired" | "revoked"
+  credentialScope?: string | null
+  credentialOwner?: string | null
+  lastCredentialCheckedAt?: string | null
   connectionStatus?: "not_configured" | "available" | "failed" | "disabled"
   syncPolicy?: "manual" | "daily" | "weekly" | "paused"
   defaultParserProfile?: string | null

@@ -162,6 +162,11 @@ test.describe("Knowledge Base administration", () => {
             sourceType: "feishu",
             owner: "Rivers",
             ingestionMode: "manual_import",
+            credentialProfile: "feishu-after-sales-space",
+            credentialStatus: "configured",
+            credentialScope: "售后知识空间只读",
+            credentialOwner: "Rivers",
+            lastCredentialCheckedAt: "2026-06-20 10:25",
             connectionStatus: "available",
             syncStatus: "synced",
             lastSyncedAt: "2026-06-20",
@@ -175,6 +180,11 @@ test.describe("Knowledge Base administration", () => {
             sourceType: "pdf",
             owner: "Product Docs",
             ingestionMode: "manual_import",
+            credentialProfile: "无需凭据",
+            credentialStatus: "not_required",
+            credentialScope: null,
+            credentialOwner: "Product Docs",
+            lastCredentialCheckedAt: "2026-06-17 09:20",
             connectionStatus: "available",
             syncStatus: "synced",
             lastSyncedAt: "2026-06-17",
@@ -232,6 +242,8 @@ test.describe("Knowledge Base administration", () => {
     const sourceRow = page.getByRole("row", { name: /售后政策飞书空间/ })
     await expect(sourceRow).toBeVisible()
     await expect(sourceRow).toContainText("手动导入")
+    await expect(sourceRow).toContainText("已配置")
+    await expect(sourceRow).toContainText("2026-06-20 10:25")
     await expect(sourceRow).toContainText("连接可用")
     await expect(sourceRow).toContainText("已同步")
     await expect(sourceRow.getByRole("link", { name: "查看 Source" })).toHaveAttribute("href", "/sources/src-feishu-cc")

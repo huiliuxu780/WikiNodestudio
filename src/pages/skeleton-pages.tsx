@@ -71,6 +71,7 @@ import {
   relationCandidateSourceLabels,
   relationTypeLabels,
   sourceConnectionStatusLabels,
+  sourceCredentialStatusLabels,
   sourceIngestionModeLabels,
   sourceTypeLabels,
   sourceOperationStatusLabels,
@@ -231,6 +232,7 @@ export function SourceDetailPage() {
           ["来源类型", labelFromMap(sourceTypeLabels, source.sourceType)],
           ["Knowledge Base", knowledgeBaseId],
           ["负责人", source.owner],
+          ["凭据状态", labelFromMap(sourceCredentialStatusLabels, source.credentialStatus ?? "missing")],
           ["连接状态", labelFromMap(sourceConnectionStatusLabels, source.connectionStatus ?? "not_configured")],
           ["同步状态", labelFromMap(syncStatusLabels, source.syncStatus)],
           ["接入模式", labelFromMap(sourceIngestionModeLabels, source.ingestionMode ?? "not_configured")],
@@ -321,37 +323,56 @@ export function SourceDetailPage() {
 }
 
 function SourceConfigurationTable({ source, knowledgeBaseId }: { source: SourceItem | null; knowledgeBaseId: string }) {
-  const rows = [
+  const connectorRows = [
     ["Source 类型", source ? labelFromMap(sourceTypeLabels, source.sourceType) : "无"],
     ["接入模式", labelFromMap(sourceIngestionModeLabels, source?.ingestionMode ?? "not_configured")],
-    ["连接状态", labelFromMap(sourceConnectionStatusLabels, source?.connectionStatus ?? "not_configured")],
     ["同步策略", labelFromMap(sourceSyncPolicyLabels, source?.syncPolicy ?? "manual")],
     ["默认 Parser Profile", source?.defaultParserProfile ?? "未配置"],
     ["默认 Knowledge Base", knowledgeBaseId],
     ["负责人", source?.owner ?? "无"],
+  ]
+  const readinessRows = [
+    ["凭据 Profile", source?.credentialProfile ?? "未配置"],
+    ["凭据状态", labelFromMap(sourceCredentialStatusLabels, source?.credentialStatus ?? "missing")],
+    ["凭据范围", source?.credentialScope ?? "无"],
+    ["凭据负责人", source?.credentialOwner ?? source?.owner ?? "无"],
+    ["连接状态", labelFromMap(sourceConnectionStatusLabels, source?.connectionStatus ?? "not_configured")],
     ["最近检查时间", source?.lastCheckedAt ?? source?.lastSyncedAt ?? "无"],
+    ["凭据检查时间", source?.lastCredentialCheckedAt ?? source?.lastCheckedAt ?? "无"],
     ["失败原因", source?.lastFailureReason ?? "无"],
   ]
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[720px] text-left text-sm">
-        <thead className="border-b text-xs text-muted-foreground">
-          <tr>
-            <th className="px-3 py-2 font-medium">配置项</th>
-            <th className="px-3 py-2 font-medium">当前值</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y">
-          {rows.map(([label, value]) => (
-            <tr key={label}>
-              <td className="whitespace-nowrap px-3 py-3 font-medium">{label}</td>
-              <td className="px-3 py-3 text-muted-foreground">{value}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="grid gap-5">
+      <ConfigurationSection title="连接器配置" rows={connectorRows} />
+      <ConfigurationSection title="凭据与连接状态" rows={readinessRows} />
     </div>
+  )
+}
+
+function ConfigurationSection({ title, rows }: { title: string; rows: string[][] }) {
+  return (
+    <section className="space-y-3">
+      <h2 className="text-sm font-medium">{title}</h2>
+      <div className="overflow-x-auto rounded-md border">
+        <table className="w-full min-w-[720px] text-left text-sm">
+          <thead className="border-b bg-muted/40 text-xs text-muted-foreground">
+            <tr>
+              <th className="px-3 py-2 font-medium">配置项</th>
+              <th className="px-3 py-2 font-medium">当前值</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {rows.map(([label, value]) => (
+              <tr key={label}>
+                <td className="whitespace-nowrap px-3 py-3 font-medium">{label}</td>
+                <td className="px-3 py-3 text-muted-foreground">{value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   )
 }
 
