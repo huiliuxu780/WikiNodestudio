@@ -155,6 +155,14 @@ export const sourceConnectionStatusLabels: Record<string, string> = {
   disabled: "已停用",
 }
 
+export const sourceCredentialStatusLabels: Record<string, string> = {
+  not_required: "无需凭据",
+  missing: "缺少凭据",
+  configured: "已配置",
+  expired: "已过期",
+  revoked: "已撤销",
+}
+
 export const sourceSyncPolicyLabels: Record<string, string> = {
   manual: "手动",
   daily: "每日",
@@ -172,6 +180,7 @@ export const parseStatusLabels: Record<string, string> = {
 }
 
 export const sourceOperationTypeLabels: Record<string, string> = {
+  connection_check: "连接检查",
   source_sync: "来源同步",
   file_upload: "文件上传",
   import_source_file: "文件接入",
